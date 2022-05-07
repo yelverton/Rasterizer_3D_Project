@@ -13,10 +13,110 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Setup">
+      <UniqueIdentifier>{b7479dab-63f7-4d56-9ed6-10fa062d6189}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Setup">
+      <UniqueIdentifier>{19609758-b4e2-41b1-822c-41c09dd66abb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\HLSL">
+      <UniqueIdentifier>{4eda0535-ba79-4c77-a2b1-529bef369d5e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Helper">
+      <UniqueIdentifier>{0262caf6-788e-404c-bd7c-217e01b191f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Helper">
+      <UniqueIdentifier>{7cf329e3-ca58-4826-a164-e307220d9c84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Scene">
+      <UniqueIdentifier>{d9ee1b6c-7cb9-4cbf-982d-29013fc75563}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scene">
+      <UniqueIdentifier>{eecd08f1-f16f-4a16-a20b-d633eb40357b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Scene\ModelReader">
+      <UniqueIdentifier>{7ac4764a-58bf-4673-98a1-5d8a09144dea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scene\ModelReader">
+      <UniqueIdentifier>{f71845f6-8ac7-4d27-8cbf-802c4dd5f43e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Setup\PipelineHelper.cpp">
+      <Filter>Source Files\Setup</Filter>
+    </ClCompile>
+    <ClCompile Include="Setup\WindowHelper.cpp">
+      <Filter>Source Files\Setup</Filter>
+    </ClCompile>
+    <ClCompile Include="Setup\D3D11Helper.cpp">
+      <Filter>Source Files\Setup</Filter>
+    </ClCompile>
+    <ClCompile Include="Helper\BufferHelper.cpp">
+      <Filter>Source Files\Helper</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\Mesh.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Helper\ErrorLog.cpp">
+      <Filter>Source Files\Helper</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\ModelHelper.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\ModelReader\ObjHelper.cpp">
+      <Filter>Source Files\Scene\ModelReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\ModelReader\MtlReader.cpp">
+      <Filter>Source Files\Scene\ModelReader</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="PixelShader.hlsl">
+      <Filter>Resource Files\HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="VertexShader.hlsl">
+      <Filter>Resource Files\HLSL</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Setup\PipelineHelper.h">
+      <Filter>Header Files\Setup</Filter>
+    </ClInclude>
+    <ClInclude Include="Setup\WindowHelper.h">
+      <Filter>Header Files\Setup</Filter>
+    </ClInclude>
+    <ClInclude Include="Setup\D3D11Helper.h">
+      <Filter>Header Files\Setup</Filter>
+    </ClInclude>
+    <ClInclude Include="Helper\BufferHelper.h">
+      <Filter>Header Files\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="Helper\BufferType.h">
+      <Filter>Header Files\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Mesh.h">
+      <Filter>Header Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Texture.h">
+      <Filter>Header Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Helper\Vertex.h">
+      <Filter>Header Files\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="Helper\ErrorLog.h">
+      <Filter>Header Files\Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\ModelHelper.h">
+      <Filter>Header Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\ModelReader\ObjHelper.h">
+      <Filter>Header Files\Scene\ModelReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\ModelReader\MtlReader.h">
+      <Filter>Header Files\Scene\ModelReader</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
