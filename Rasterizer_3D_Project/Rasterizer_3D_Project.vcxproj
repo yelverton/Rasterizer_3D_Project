@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Helper\BufferHelper.cpp" />
     <ClCompile Include="Helper\ErrorLog.cpp" />
     <ClCompile Include="main.cpp" />
@@ -177,6 +178,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Helper\BufferHelper.h" />
     <ClInclude Include="Helper\BufferType.h" />
     <ClInclude Include="Helper\ErrorLog.h" />
@@ -185,7 +187,6 @@
     <ClInclude Include="Scene\ModelHelper.h" />
     <ClInclude Include="Scene\ModelReader\MtlReader.h" />
     <ClInclude Include="Scene\ModelReader\ObjHelper.h" />
-    <ClInclude Include="Scene\Texture.h" />
     <ClInclude Include="Setup\D3D11Helper.h" />
     <ClInclude Include="Setup\PipelineHelper.h" />
     <ClInclude Include="Setup\WindowHelper.h" />

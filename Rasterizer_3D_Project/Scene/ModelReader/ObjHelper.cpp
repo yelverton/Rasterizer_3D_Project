@@ -61,7 +61,9 @@ int checkIfVertexExist(vector<XMINT3>& input, XMINT3 check)
 
 bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, ID3D11DeviceContext* immediateContext)
 {
-	string pictures[3] = { "", "", "" };
+	string ambient = "";
+	string diffuse = "";
+	string specular = "";
 	vector<float> specularExponent;
 
 	std::ifstream file("Scene/models/" + modelName + ".obj");
@@ -110,12 +112,13 @@ bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, 
 						f_ID.clear();
 						vertex.clear();
 						indices.clear();
+						indicesCounter = 0;
 					}
 					else
 						sendToMesh = true;
 
 					iss >> readArea;
-					mtlReader(mtlFile, pictures, readArea, specularExponent);
+					mtlReader(mtlFile, ambient, diffuse, specular, readArea, specularExponent);
 				}
 				if (word == "f")
 				{
@@ -126,7 +129,7 @@ bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, 
 						getNr = checkIfVertexExist(f_ID, tempINT3[i]);
 						if (getNr != -1)
 						{
-							indices.push_back(indices[getNr]);
+							indices.push_back(getNr);
 						}
 						else 
 						{

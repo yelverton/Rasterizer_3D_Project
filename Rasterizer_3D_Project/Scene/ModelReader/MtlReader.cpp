@@ -1,6 +1,7 @@
 #include "MtlReader.h"
 
-bool mtlReader(std::string mtlFile, std::string picutes[], std::string readArea, std::vector<float>& specularExponent)
+bool mtlReader(std::string mtlFile, std::string& ambient, std::string& diffuse, 
+	std::string& specular, std::string readArea, std::vector<float>& specularExponent)
 {
 	std::ifstream file("Scene/models/" + mtlFile);
 	if (!file.is_open())
@@ -35,15 +36,15 @@ bool mtlReader(std::string mtlFile, std::string picutes[], std::string readArea,
 				{
 					if (word == "map_Kd") {
 						iss >> word;
-						picutes[0] = word;
+						ambient = word;
 					}
 					else if (word == "map_Ks") {
 						iss >> word;
-						picutes[1] = word;
+						diffuse = word;
 					}
 					else if (word == "map_Ka") {
 						iss >> word;
-						picutes[2] = word;
+						specular = word;
 					}
 					else if (word == "Ns")
 					{

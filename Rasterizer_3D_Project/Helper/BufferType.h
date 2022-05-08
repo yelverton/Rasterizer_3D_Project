@@ -15,6 +15,11 @@ struct BufferData
     XMFLOAT4X4 projection;
 };
 
+struct VPmatrix
+{
+    XMFLOAT4X4 viewProj;
+};
+
 struct LightData
 {
     XMFLOAT3 lightPosition;

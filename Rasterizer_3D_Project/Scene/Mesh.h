@@ -5,6 +5,7 @@
 #include <wrl/client.h>
 #include <vector>
 #include <directxmath.h>
+#include <string>
 using namespace DirectX;
 
 class Mesh
