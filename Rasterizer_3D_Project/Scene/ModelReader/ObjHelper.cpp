@@ -16,6 +16,8 @@ XMFLOAT2 extractFloat2(istringstream& iss)
 	iss >> input.x;
 	iss >> input.y;
 
+	//ErrorLog::Log(std::to_string(input.x) + " " + std::to_string(input.y));
+
 	return input;
 }
 
@@ -37,6 +39,11 @@ vector<XMINT3> extractLetter(istringstream& iss)
 		}
 		count = 0;
 		input.push_back(XMINT3((atoi(index[0].c_str()) - 1), (atoi(index[1].c_str()) - 1), (atoi(index[2].c_str()) - 1)));
+	}
+
+	if (input.size() > 3)
+	{
+		input.erase(input.end() - 1, input.end());
 	}
 
 	return input;
@@ -65,6 +72,8 @@ bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, 
 	string diffuse = "";
 	string specular = "";
 	vector<float> specularExponent;
+	std::vector<UINT> indexCount;
+	std::vector<UINT> startLocation;
 
 	std::ifstream file("Scene/models/" + modelName + ".obj");
 	if (!file.is_open())
@@ -77,8 +86,8 @@ bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, 
 	std::vector<DWORD> indices;
 
 	vector<XMFLOAT3> v; // local space
-	vector<XMFLOAT2> vt; // uv
 	vector<XMFLOAT3> vn; // loc
+	vector<XMFLOAT2> vt; // uv
 
 	vector<XMINT3> tempINT3; 
 	vector<XMINT3> f_ID;
@@ -88,9 +97,10 @@ bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, 
 	int getNr;
 
 	bool sendToMesh = false;
+	bool done = false;
 
 	istringstream iss;
-	while (!file.eof())
+	while (!file.eof() && !done)
 	{
 		getline(file, line);
 		if (file.is_open())
@@ -102,23 +112,42 @@ bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, 
 				iss >> word;
 				if (word == "mtllib") iss >> mtlFile;
 				if (word == "v") v.push_back(extractFloat3(iss));
+				if (word == "vn") vn.push_back(extractFloat3(iss));
 				if (word == "vt") vt.push_back(extractFloat2(iss));
-				if (word == "vt") vn.push_back(extractFloat3(iss));
 				if (word == "usemtl")
 				{
 					if (sendToMesh)
 					{
-						mesh.push_back(Mesh(device, immediateContext, vertex, indices));
-						f_ID.clear();
-						vertex.clear();
-						indices.clear();
-						indicesCounter = 0;
+						if (indexCount.size() == 0)
+						{
+							indexCount.push_back(indices.size());
+						}
+						else
+						{
+							indexCount.push_back(indices.size());
+							for (int i = 0; i < indexCount.size() - 1; i++)
+							{
+								indexCount[indexCount.size() - 1] -= indexCount[i];
+							}
+						}
+
+						startLocation.push_back(indices.size());
+						
+						//mesh.push_back(Mesh(device, immediateContext, vertex, indices, next));
+						
+						//f_ID.clear();
+						//vertex.clear();
+						//indices.clear();
+						//indicesCounter = 0;
 					}
 					else
+					{
+						startLocation.push_back(indices.size());
 						sendToMesh = true;
+					}
 
 					iss >> readArea;
-					mtlReader(mtlFile, ambient, diffuse, specular, readArea, specularExponent);
+					//mtlReader(mtlFile, ambient, diffuse, specular, readArea, specularExponent);
 				}
 				if (word == "f")
 				{
@@ -146,6 +175,11 @@ bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, 
 		}
 	}
 
-	mesh.push_back(Mesh(device, immediateContext, vertex, indices));
+	indexCount.push_back(indices.size());
+	for (int i = 0; i < indexCount.size() - 1; i++)
+	{
+		indexCount[indexCount.size() - 1] -= indexCount[i];
+	}
+	mesh.push_back(Mesh(device, immediateContext, vertex, indices, startLocation, indexCount));
 	return true;
 }

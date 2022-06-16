@@ -4,10 +4,12 @@
 //#define STB_IMAGE_IMPLEMENTATION
 //#include "stb_image.h"
 
-Mesh::Mesh(ID3D11Device* device, ID3D11DeviceContext* immediateContext, std::vector<SimpleVertex> vertexTriangle, std::vector<DWORD> indexTriangle)
+Mesh::Mesh(ID3D11Device* device, ID3D11DeviceContext* immediateContext, std::vector<SimpleVertex> vertexTriangle, std::vector<DWORD> indexTriangle, std::vector<UINT> next, std::vector<UINT> size)
 {
 	this->device = device;
 	this->immediateContext = immediateContext;
+	this->next = next;
+	this->size = size;
 
 	HRESULT hr = CreateVertexBuffer(vertexTriangle);
 	if (FAILED(hr))
@@ -26,7 +28,11 @@ void Mesh::Draw()
 
 	immediateContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
 	immediateContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT::DXGI_FORMAT_R32_UINT, 0);
-	immediateContext->DrawIndexed(size, 0, 0);
+
+	for (int i = 0; i < next.size(); i++)
+	{
+		immediateContext->DrawIndexed(size[i], next[i], 0);
+	}
 }
 
 Mesh::Mesh(const Mesh& mesh)
@@ -36,6 +42,7 @@ Mesh::Mesh(const Mesh& mesh)
 	this->device = mesh.device;
 	this->immediateContext = mesh.immediateContext;
 	this->size = mesh.size;
+	this->next = mesh.next;
 }
 
 
@@ -74,7 +81,7 @@ HRESULT Mesh::CreateIndexBuffer(std::vector<DWORD> indexTriangle)
 	indexBufferDesc.MiscFlags = 0;
 	indexBufferDesc.StructureByteStride = 0;
 
-	size = indexTriangle.size();
+	/*size = indexTriangle.size();*/
 
 	D3D11_SUBRESOURCE_DATA indexBufferData;
 	indexBufferData.pSysMem = indexTriangle.data();
