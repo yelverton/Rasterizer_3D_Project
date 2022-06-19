@@ -6,7 +6,7 @@ bool mtlReader(std::string mtlFile, std::string& ambient, std::string& diffuse,
 	std::ifstream file("Scene/models/" + mtlFile);
 	if (!file.is_open())
 	{
-		ErrorLog::Log("Failed to open " + mtlFile);
+		//ErrorLog::Log("Failed to open " + mtlFile);
 		return false;
 	}
 

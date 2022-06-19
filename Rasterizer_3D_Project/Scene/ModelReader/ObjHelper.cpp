@@ -16,8 +16,6 @@ XMFLOAT2 extractFloat2(istringstream& iss)
 	iss >> input.x;
 	iss >> input.y;
 
-	//ErrorLog::Log(std::to_string(input.x) + " " + std::to_string(input.y));
-
 	return input;
 }
 
@@ -64,8 +62,6 @@ int checkIfVertexExist(vector<XMINT3>& input, XMINT3 check)
 	return found;
 }
 
-
-
 bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, ID3D11DeviceContext* immediateContext)
 {
 	string ambient = "";
@@ -96,11 +92,8 @@ bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, 
 	int indicesCounter = 0;
 	int getNr;
 
-	bool sendToMesh = false;
-	bool done = false;
-
 	istringstream iss;
-	while (!file.eof() && !done)
+	while (!file.eof())
 	{
 		getline(file, line);
 		if (file.is_open())
@@ -116,38 +109,18 @@ bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, 
 				if (word == "vt") vt.push_back(extractFloat2(iss));
 				if (word == "usemtl")
 				{
-					if (sendToMesh)
+					if (indices.size() > 0)
 					{
-						if (indexCount.size() == 0)
+						indexCount.push_back(indices.size());
+						for (int i = 0; i < indexCount.size() - 1; i++)
 						{
-							indexCount.push_back(indices.size());
+							indexCount[indexCount.size() - 1] -= indexCount[i];
 						}
-						else
-						{
-							indexCount.push_back(indices.size());
-							for (int i = 0; i < indexCount.size() - 1; i++)
-							{
-								indexCount[indexCount.size() - 1] -= indexCount[i];
-							}
-						}
-
-						startLocation.push_back(indices.size());
-						
-						//mesh.push_back(Mesh(device, immediateContext, vertex, indices, next));
-						
-						//f_ID.clear();
-						//vertex.clear();
-						//indices.clear();
-						//indicesCounter = 0;
-					}
-					else
-					{
-						startLocation.push_back(indices.size());
-						sendToMesh = true;
 					}
 
+					startLocation.push_back(indices.size());
 					iss >> readArea;
-					//mtlReader(mtlFile, ambient, diffuse, specular, readArea, specularExponent);
+					mtlReader(mtlFile, ambient, diffuse, specular, readArea, specularExponent);
 				}
 				if (word == "f")
 				{
