@@ -64,9 +64,10 @@ int checkIfVertexExist(vector<XMINT3>& input, XMINT3 check)
 
 bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, ID3D11DeviceContext* immediateContext)
 {
-	string ambient = "";
-	string diffuse = "";
-	string specular = "";
+	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> ambientVec;
+	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> diffuseVec;
+	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> specularVec;
+
 	vector<float> specularExponent;
 	std::vector<UINT> indexCount;
 	std::vector<UINT> startLocation;
@@ -109,6 +110,7 @@ bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, 
 				if (word == "vt") vt.push_back(extractFloat2(iss));
 				if (word == "usemtl")
 				{
+					startLocation.push_back(indices.size());
 					if (indices.size() > 0)
 					{
 						indexCount.push_back(indices.size());
@@ -118,9 +120,20 @@ bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, 
 						}
 					}
 
-					startLocation.push_back(indices.size());
+					ID3D11ShaderResourceView* ambient;
+					ID3D11ShaderResourceView* diffuse;
+					ID3D11ShaderResourceView* specular;
+					
 					iss >> readArea;
-					mtlReader(mtlFile, ambient, diffuse, specular, readArea, specularExponent);
+					mtlReader(mtlFile, ambient, diffuse, specular, readArea, specularExponent, device);
+
+					ambientVec.push_back(ambient);
+					diffuseVec.push_back(diffuse);
+					specularVec.push_back(specular);
+
+					ambient->Release();
+					diffuse->Release();
+					specular->Release();
 				}
 				if (word == "f")
 				{
@@ -153,6 +166,8 @@ bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, 
 	{
 		indexCount[indexCount.size() - 1] -= indexCount[i];
 	}
-	mesh.push_back(Mesh(device, immediateContext, vertex, indices, startLocation, indexCount));
+
+	mesh.push_back(Mesh(device, immediateContext, vertex, indices, startLocation, indexCount,
+		ambientVec, diffuseVec, specularVec));
 	return true;
 }

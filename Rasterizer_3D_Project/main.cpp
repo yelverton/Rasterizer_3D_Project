@@ -145,7 +145,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	swapChain->Release();
 	immediateContext->Release();
 	device->Release();
-	//camera.noMoreMemoryLeaks();
 
 	return 0;
 }
