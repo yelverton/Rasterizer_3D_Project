@@ -5,8 +5,10 @@
 #include <string>
 #include <iostream>
 
-bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, std::string& vShaderByteCode)
+bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, ID3D11ComputeShader*& cShader, std::string& vShaderByteCode)
 {
+	// VERTEX SHADER:
+
 	std::string shaderData;
 	std::ifstream reader;
 	reader.open("../x64/Debug/VertexShader.cso", std::ios::binary | std::ios::ate);
@@ -30,6 +32,9 @@ bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Pixel
 	}
 
 	vShaderByteCode = shaderData;
+
+	// PIXEL SHADER:
+
 	shaderData.clear();
 	reader.close();
 	reader.open("../x64/Debug/PixelShader.cso", std::ios::binary | std::ios::ate);
@@ -51,6 +56,32 @@ bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Pixel
 		ErrorLog::Log("Failed to create pixel shader!");
 		return false;
 	}
+
+	// COMPUTER SHADER:
+
+	shaderData.clear();
+	reader.close();
+
+	reader.open("../x64/Debug/ComputeShader.cso", std::ios::binary | std::ios::ate);
+	if (!reader.is_open()) {
+		ErrorLog::Log("Could not open CS file!");
+		return false;
+	}
+
+	reader.seekg(0, std::ios::end);
+	shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
+	reader.seekg(0, std::ios::beg);
+
+	shaderData.assign((std::istreambuf_iterator<char>(reader)),
+		std::istreambuf_iterator<char>());
+
+	if (FAILED(device->CreateComputeShader(shaderData.c_str(), shaderData.length(), nullptr, &cShader))) {
+		ErrorLog::Log("Failed to create computer shader!");
+		return false;
+	}
+
+	shaderData.clear();
+	reader.close();
 
 	return true;
 }
@@ -96,11 +127,11 @@ bool CreateSampleState(ID3D11Device* device, ID3D11SamplerState*& sampleState)
 	return true;
 }
 
-bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, ID3D11InputLayout*& inputLayout, ID3D11SamplerState*& sampleState)
+bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, ID3D11ComputeShader*& cShader, ID3D11InputLayout*& inputLayout, ID3D11SamplerState*& sampleState)
 {
 	std::string vShaderByteCode;
 
-	if (!LoadShaders(device, vShader, pShader, vShaderByteCode))
+	if (!LoadShaders(device, vShader, pShader, cShader, vShaderByteCode))
 		return false;
 
 	if (!CreateInputLayout(device, inputLayout, vShaderByteCode))

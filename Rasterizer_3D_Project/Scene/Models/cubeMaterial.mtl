@@ -9,6 +9,9 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
+map_Kd cont_texture
+map_Ks cont_texture
+map_Ka cont_texture
 illum 2
 
 newmtl Green
@@ -19,6 +22,9 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
+map_Kd cont_texture-def
+map_Ks cont_texture-def
+map_Ka cont_texture-def
 illum 2
 
 newmtl Purple
@@ -29,6 +35,9 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
+map_Kd cont_texture-spec
+map_Ks cont_texture-spec
+map_Ka cont_texture-spec
 illum 2
 
 newmtl Red

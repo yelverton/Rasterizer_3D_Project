@@ -35,7 +35,6 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, 
 
 	D3D11_MAPPED_SUBRESOURCE subCam = {};
 	camData.cameraPosition = camera.GetPositionFloat3();
-	//camData.cameraPosition = camera.GetPositionFloat3();
 	immediateContext->Map(camBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subCam);
 	memcpy(subCam.pData, &camData, sizeof(CamData));
 	immediateContext->Unmap(camBuffer, 0);
@@ -48,8 +47,6 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, 
 	memcpy(subData.pData, &matrixData, sizeof(BufferData));
 	immediateContext->Unmap(matrixBuffer, 0);
 	immediateContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
-
-	//camera.moveCamera(immediateContext, camera, dt);
 
 	for (int i = 0; i < mesh.size(); i++)
 	{
@@ -78,7 +75,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	D3D11_VIEWPORT viewport;
 
 	ID3D11VertexShader* vShader;
-	ID3D11PixelShader* pShader;
+	ID3D11PixelShader* pShader; 
+	ID3D11ComputeShader* cShader;
+
 	ID3D11InputLayout* inputLayout;
 	ID3D11SamplerState* sampleState;
 
@@ -98,7 +97,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, dsTexture, dsView, viewport))
 		return -1;
 
-	if (!SetupPipeline(device, vShader, pShader, inputLayout, sampleState))
+	if (!SetupPipeline(device, vShader, pShader, cShader, inputLayout, sampleState))
 		return -1;
 
 	if (!SetupBuffers(device, lightBuffer, camBuffer, lightData, camData))
@@ -139,6 +138,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	inputLayout->Release();
 	pShader->Release();
 	vShader->Release();
+	cShader->Release();
 	dsView->Release();
 	dsTexture->Release();
 	rtv->Release();

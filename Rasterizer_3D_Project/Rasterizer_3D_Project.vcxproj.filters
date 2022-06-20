@@ -89,6 +89,9 @@
     <FxCompile Include="VertexShader.hlsl">
       <Filter>Resource Files\HLSL</Filter>
     </FxCompile>
+    <FxCompile Include="ComputeShader.hlsl">
+      <Filter>Resource Files\HLSL</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Setup\PipelineHelper.h">

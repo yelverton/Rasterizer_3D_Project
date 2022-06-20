@@ -68,49 +68,49 @@ bool mtlReader(std::string mtlFile, ID3D11ShaderResourceView*& ambient, ID3D11Sh
 	string line, word;
 	bool okayRead = false;
 
-	//istringstream iss;
-	//while (!file.eof())
-	//{
-	//	getline(file, line);
-	//	if (file.is_open())
-	//	{
-	//		iss.clear();
-	//		iss.str(line);
-	//		if (iss.good())
-	//		{
-	//			iss >> word;
-	//			if (word == "newmtl")
-	//			{
-	//				iss >> word; 
-	//				if (word == readArea)
-	//					okayRead = true;
-	//				else
-	//					okayRead = false;
-	//			}
-	//			else if (okayRead)
-	//			{
-	//				if (word == "map_Kd") {
-	//					iss >> word;
-	//					ambientStr = word;
-	//				}
-	//				else if (word == "map_Ks") {
-	//					iss >> word;
-	//					diffuseStr = word;
-	//				}
-	//				else if (word == "map_Ka") {
-	//					iss >> word;
-	//					specularStr = word;
-	//				}
-	//				else if (word == "Ns")
-	//				{
-	//					iss >> word;
-	//					specularExponent.push_back(stof(word));
-	//				}
-	//			}
-	//		}
+	istringstream iss;
+	while (!file.eof())
+	{
+		getline(file, line);
+		if (file.is_open())
+		{
+			iss.clear();
+			iss.str(line);
+			if (iss.good())
+			{
+				iss >> word;
+				if (word == "newmtl")
+				{
+					iss >> word; 
+					if (word == readArea)
+						okayRead = true;
+					else
+						okayRead = false;
+				}
+				else if (okayRead)
+				{
+					if (word == "map_Kd") {
+						iss >> word;
+						ambientStr = word;
+					}
+					else if (word == "map_Ks") {
+						iss >> word;
+						diffuseStr = word;
+					}
+					else if (word == "map_Ka") {
+						iss >> word;
+						specularStr = word;
+					}
+					else if (word == "Ns")
+					{
+						iss >> word;
+						specularExponent.push_back(stof(word));
+					}
+				}
+			}
 
-	//	}
-	//}
+		}
+	}
 
 	if (ambientStr == "missingTexture" || diffuseStr == "missingTexture" || specularStr == "missingTexture")
 	{
