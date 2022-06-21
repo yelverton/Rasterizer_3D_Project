@@ -42,6 +42,11 @@ void Mesh::Draw()
 	}
 }
 
+int Mesh::NrOfSubMashes()
+{
+	return next.size();
+}
+
 Mesh::Mesh(const Mesh& mesh)
 {
 	this->indexBuffer = mesh.indexBuffer;

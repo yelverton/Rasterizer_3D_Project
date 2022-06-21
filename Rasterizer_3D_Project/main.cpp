@@ -70,8 +70,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	ID3D11DeviceContext* immediateContext;
 	IDXGISwapChain* swapChain;
 	ID3D11RenderTargetView* rtv;
+	ID3D11UnorderedAccessView* UAView;
 	ID3D11Texture2D* dsTexture;
 	ID3D11DepthStencilView* dsView;
+	ID3D11RenderTargetView* gBufferRTV[6];
+	ID3D11RenderTargetView* gBufferRTVNull[6] = { nullptr };
+	ID3D11ShaderResourceView* gBufferSRV[6];
+	ID3D11ShaderResourceView* gBufferSRVNull[6] = { nullptr };
 	D3D11_VIEWPORT viewport;
 
 	ID3D11VertexShader* vShader;
@@ -92,9 +97,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	std::vector<std::string> modelName;
 	std::vector<Mesh> mesh;
 
+
 	Camera camera;
 
-	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, dsTexture, dsView, viewport))
+	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, 
+		UAView, dsTexture, dsView, viewport, gBufferRTV, gBufferSRV))
 		return -1;
 
 	if (!SetupPipeline(device, vShader, pShader, cShader, inputLayout, sampleState))
@@ -145,6 +152,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	swapChain->Release();
 	immediateContext->Release();
 	device->Release();
+
+	//for (int i = 0; i < 6; i++)
+	//{
+	//	gBufferRTV[i]->Release();
+	//	gBufferSRV[i]->Release();
+	//}
 
 	return 0;
 }
