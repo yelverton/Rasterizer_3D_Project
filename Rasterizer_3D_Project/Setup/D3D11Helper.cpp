@@ -136,34 +136,28 @@ bool CreateGBuffers(ID3D11Device* device, UINT width, UINT height,
 	texDesc.CPUAccessFlags = 0;
 	texDesc.MiscFlags = 0;
 
-	ID3D11Texture2D* gBuffTex[6] = {};
+	ID3D11Texture2D* gBuffTex[6];
 
 	for (int i = 0; i < 6; i++)
 	{
-		HRESULT hr = device->CreateTexture2D(&texDesc, NULL, &gBuffTex[i]);
-		if (FAILED(hr))
+		if (FAILED(device->CreateTexture2D(&texDesc, NULL, &gBuffTex[i])))
 		{
-			ErrorLog::Log(hr, "Failed to setup TEXTURE2D for computer shader in CreateGBuffer");
+			ErrorLog::Log("Failed to setup TEXTURE2D for computer shader in CreateGBuffer");
 			return false;
 		}
 
-		hr = device->CreateRenderTargetView(gBuffTex[i], NULL, &gBufferRTV[i]);
-		if (FAILED(hr))
+		if (FAILED(device->CreateRenderTargetView(gBuffTex[i], NULL, &gBufferRTV[i])))
 		{
-			ErrorLog::Log(hr, "Failed to setup RenderTargetView for computer shader in CreateGBuffer");
+			ErrorLog::Log("Failed to setup RenderTargetView for computer shader in CreateGBuffer");
 			return false;
 		}
 
-		hr = device->CreateShaderResourceView(gBuffTex[i], NULL, &gBufferSRV[i]);
-		if (FAILED(hr))
+		if (FAILED(device->CreateShaderResourceView(gBuffTex[i], NULL, &gBufferSRV[i])))
 		{
-			ErrorLog::Log(hr, "Failed to setup ShaderResourceView for computer shader in CreateGBuffer");
+			ErrorLog::Log("Failed to setup ShaderResourceView for computer shader in CreateGBuffer");
 			return false;
 		}
-	}
 
-	for (int i = 0; i < 6; i++)
-	{
 		gBuffTex[i]->Release();
 	}
 
@@ -198,6 +192,7 @@ bool SetupD3D11(UINT width, UINT height, HWND window, ID3D11Device*& device, ID3
 	if (!CreateDepthStencil(device, width, height, dsTexture, dsView))
 		return false;
 
+	// Computer Shader:
 	if (!CreateGBuffers(device, width, height, gBufferRTV, gBufferSRV))
 		return false;
 

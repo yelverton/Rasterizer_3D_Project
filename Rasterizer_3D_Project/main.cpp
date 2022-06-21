@@ -52,6 +52,29 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, 
 	{
 		mesh[i].Draw();
 	}
+	
+}
+
+void RenderComputerShader(ID3D11DeviceContext* immediateContext ,ID3D11ComputeShader* cShader, ID3D11DepthStencilView* dsView,
+	ID3D11UnorderedAccessView* UAView, ID3D11RenderTargetView* gBufferRTV[6], ID3D11ShaderResourceView* gBufferSRV[6])
+{
+	float clearColour[4] = { 1.0f, 0.0f, 0.0f, 0.0f };
+	for (int i = 0; i < 6; i++)
+		immediateContext->ClearRenderTargetView(gBufferRTV[i], clearColour);
+
+	immediateContext->CSSetShader(cShader, nullptr, 0);
+	immediateContext->CSSetShaderResources(0, 6, gBufferSRV);
+	immediateContext->CSSetUnorderedAccessViews(0, 1, &UAView, nullptr);
+
+	immediateContext->OMSetRenderTargets(6, gBufferRTV, dsView);
+	
+	immediateContext->Dispatch(32, 32, 1);
+
+	ID3D11UnorderedAccessView* NullUAV = nullptr;
+	immediateContext->CSSetShader(nullptr, nullptr, 0);
+	immediateContext->CSSetUnorderedAccessViews(0, 1, &NullUAV, nullptr);
+	ID3D11ShaderResourceView* gBufferSRVNULL[6] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+	immediateContext->CSSetShaderResources(0, 6, gBufferSRVNULL);
 }
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -74,9 +97,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	ID3D11Texture2D* dsTexture;
 	ID3D11DepthStencilView* dsView;
 	ID3D11RenderTargetView* gBufferRTV[6];
-	ID3D11RenderTargetView* gBufferRTVNull[6] = { nullptr };
 	ID3D11ShaderResourceView* gBufferSRV[6];
-	ID3D11ShaderResourceView* gBufferSRVNull[6] = { nullptr };
 	D3D11_VIEWPORT viewport;
 
 	ID3D11VertexShader* vShader;
@@ -133,6 +154,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		auto start = std::chrono::system_clock::now();
 		Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, sampleState, 
 			lightBuffer, camBuffer, matrixBuffer, lightData, camData, matrixData, mesh, camera);
+		RenderComputerShader(immediateContext, cShader, dsView, UAView, gBufferRTV, gBufferSRV);
 		swapChain->Present(0, 0);
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> elapsed_seconds = end - start;
@@ -153,11 +175,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	immediateContext->Release();
 	device->Release();
 
-	//for (int i = 0; i < 6; i++)
-	//{
-	//	gBufferRTV[i]->Release();
-	//	gBufferSRV[i]->Release();
-	//}
+	for (int i = 0; i < 6; i++)
+	{
+		gBufferRTV[i]->Release();
+		gBufferSRV[i]->Release();
+	}
 
 	return 0;
 }
