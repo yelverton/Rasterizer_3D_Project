@@ -117,8 +117,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	
 	std::vector<std::string> modelName;
 	std::vector<Mesh> mesh;
-
-
 	Camera camera;
 
 	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, 
