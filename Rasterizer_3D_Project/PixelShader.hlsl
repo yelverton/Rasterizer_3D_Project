@@ -23,8 +23,26 @@ cbuffer cam : register(b1)
 	float padding;
 };
 
-float4 main(PixelShaderInput input) : SV_TARGET
+struct vsOutPut
 {
-	float3 ambient = Ambient.Sample(Sampler, input.uv);
-	return float4(ambient, 1.0f);
+	float4 posWS : SV_TARGET0;
+	float4 normal : SV_TARGET1;
+	float4 ambinetComponent : SV_TARGET2;
+	float4 diffuseComponent : SV_TARGET3;
+	float4 specularComponent : SV_TARGET4;
+	float4 lightPosition : SV_TARGET5;
+};
+
+vsOutPut main(PixelShaderInput input) : SV_TARGET
+{
+	vsOutPut output;
+	
+	output.posWS = float4(input.posWS, 1.0f);
+	output.normal = float4(input.normal, 1.0f);
+	output.ambinetComponent = Ambient.Sample(Sampler, input.uv).rgba;
+	output.diffuseComponent = Deffuse.Sample(Sampler, input.uv).rgba;
+	output.specularComponent = Specular.Sample(Sampler, input.uv).rgba;
+	output.lightPosition = float4(lightPosition, 0.0f);
+	
+	return output;
 }

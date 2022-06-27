@@ -11,20 +11,23 @@
 
 float dt = 0;
 
-void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView,
-	D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout,
+void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, 
+	ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout,
 	ID3D11SamplerState* sampleState, ID3D11Buffer* lightBuffer, ID3D11Buffer* camBuffer, ID3D11Buffer* matrixBuffer, 
-	struct LightData lightData, struct CamData camData, struct BufferData matrixData, vector<Mesh> mesh, Camera& camera)
+	struct LightData lightData, struct CamData camData, struct BufferData matrixData, vector<Mesh> mesh, Camera& camera, 
+	ID3D11RenderTargetView* gBufferRTV[])
 {
 	float clearColour[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	immediateContext->ClearRenderTargetView(rtv, clearColour);
+	for (int i = 0; i < 6; i++)
+		immediateContext->ClearRenderTargetView(gBufferRTV[i], clearColour);
+
 	immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	immediateContext->IASetInputLayout(inputLayout);
 	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	immediateContext->VSSetShader(vShader, nullptr, 0);
 	immediateContext->RSSetViewports(1, &viewport);
 	immediateContext->PSSetShader(pShader, nullptr, 0);
-	immediateContext->OMSetRenderTargets(1, &rtv, dsView);
+	immediateContext->OMSetRenderTargets(6, gBufferRTV, dsView);
 	immediateContext->PSSetSamplers(0, 1, &sampleState);
 
 	D3D11_MAPPED_SUBRESOURCE subLight = {};
@@ -52,28 +55,23 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, 
 	{
 		mesh[i].Draw();
 	}
-	
+
+	ID3D11RenderTargetView* nullRTV[6] = { nullptr };
+	immediateContext->OMSetRenderTargets(6, nullRTV, nullptr);
 }
 
 void RenderComputerShader(ID3D11DeviceContext* immediateContext ,ID3D11ComputeShader* cShader, ID3D11DepthStencilView* dsView,
-	ID3D11UnorderedAccessView* UAView, ID3D11RenderTargetView* gBufferRTV[6], ID3D11ShaderResourceView* gBufferSRV[6])
+	ID3D11UnorderedAccessView* UAView, ID3D11ShaderResourceView* gBufferSRV[])
 {
-	float clearColour[4] = { 1.0f, 0.0f, 0.0f, 0.0f };
-	for (int i = 0; i < 6; i++)
-		immediateContext->ClearRenderTargetView(gBufferRTV[i], clearColour);
-
 	immediateContext->CSSetShader(cShader, nullptr, 0);
 	immediateContext->CSSetShaderResources(0, 6, gBufferSRV);
 	immediateContext->CSSetUnorderedAccessViews(0, 1, &UAView, nullptr);
-
-	immediateContext->OMSetRenderTargets(6, gBufferRTV, dsView);
 	
 	immediateContext->Dispatch(32, 32, 1);
 
 	ID3D11UnorderedAccessView* NullUAV = nullptr;
-	immediateContext->CSSetShader(nullptr, nullptr, 0);
 	immediateContext->CSSetUnorderedAccessViews(0, 1, &NullUAV, nullptr);
-	ID3D11ShaderResourceView* gBufferSRVNULL[6] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+	ID3D11ShaderResourceView* gBufferSRVNULL[6] = { nullptr };
 	immediateContext->CSSetShaderResources(0, 6, gBufferSRVNULL);
 }
 
@@ -150,9 +148,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		}
 
 		auto start = std::chrono::system_clock::now();
-		Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, sampleState, 
-			lightBuffer, camBuffer, matrixBuffer, lightData, camData, matrixData, mesh, camera);
-		RenderComputerShader(immediateContext, cShader, dsView, UAView, gBufferRTV, gBufferSRV);
+		Render(immediateContext, dsView, viewport, vShader, pShader, inputLayout, sampleState, 
+			lightBuffer, camBuffer, matrixBuffer, lightData, camData, matrixData, mesh, camera, gBufferRTV);
+		RenderComputerShader(immediateContext, cShader, dsView, UAView, gBufferSRV);
 		swapChain->Present(0, 0);
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> elapsed_seconds = end - start;
