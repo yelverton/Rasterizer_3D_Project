@@ -15,13 +15,11 @@ Mesh::Mesh(ID3D11Device* device, ID3D11DeviceContext* immediateContext, std::vec
 	this->next = next;
 	this->size = size;
 
-	HRESULT hr = CreateVertexBuffer(vertexTriangle);
-	if (FAILED(hr))
-		ErrorLog::Log(hr, "Failed to create Vertex Buffer!");
+	if (FAILED(CreateVertexBuffer(vertexTriangle)))
+		ErrorLog::Log("Failed to create Vertex Buffer!");
 
-	hr = CreateIndexBuffer(indexTriangle);
-	if (FAILED(hr))
-		ErrorLog::Log(hr, "Failed to create IndexBuffer!");
+	if (FAILED(CreateIndexBuffer(indexTriangle)))
+		ErrorLog::Log("Failed to create IndexBuffer!");
 
 }
 

@@ -15,7 +15,7 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsVie
 	ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout,
 	ID3D11SamplerState* sampleState, ID3D11Buffer* lightBuffer, ID3D11Buffer* camBuffer, ID3D11Buffer* matrixBuffer, 
 	struct LightData lightData, struct CamData camData, struct BufferData matrixData, vector<Mesh> mesh, Camera& camera, 
-	ID3D11RenderTargetView* gBufferRTV[])
+	ID3D11RenderTargetView* gBufferRTV[], vector<XMFLOAT3> worldPos)
 {
 	float clearColour[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	for (int i = 0; i < 6; i++)
@@ -43,16 +43,21 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsVie
 	immediateContext->Unmap(camBuffer, 0);
 	immediateContext->PSSetConstantBuffers(1, 1, &camBuffer);
 
-	D3D11_MAPPED_SUBRESOURCE subData = {};
 	camera.moveCamera(camera, dt);
 	XMStoreFloat4x4(&matrixData.view, XMMatrixTranspose(camera.GetViewMatrix()));
-	immediateContext->Map(matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
-	memcpy(subData.pData, &matrixData, sizeof(BufferData));
-	immediateContext->Unmap(matrixBuffer, 0);
-	immediateContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
 
 	for (int i = 0; i < mesh.size(); i++)
 	{
+		DirectX::XMMATRIX Identity = XMMatrixIdentity();
+		Identity = XMMatrixTranslation(worldPos[i].x, worldPos[i].y, worldPos[i].z);
+		XMStoreFloat4x4(&matrixData.world, XMMatrixTranspose(Identity));
+
+		D3D11_MAPPED_SUBRESOURCE subData = {};
+		immediateContext->Map(matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
+		memcpy(subData.pData, &matrixData, sizeof(BufferData));
+		immediateContext->Unmap(matrixBuffer, 0);
+		immediateContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
+
 		mesh[i].Draw();
 	}
 
@@ -60,7 +65,7 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsVie
 	immediateContext->OMSetRenderTargets(6, nullRTV, nullptr);
 }
 
-void RenderComputerShader(ID3D11DeviceContext* immediateContext ,ID3D11ComputeShader* cShader, ID3D11DepthStencilView* dsView,
+void RenderComputerShader(ID3D11DeviceContext* immediateContext, ID3D11ComputeShader* cShader, ID3D11DepthStencilView* dsView,
 	ID3D11UnorderedAccessView* UAView, ID3D11ShaderResourceView* gBufferSRV[])
 {
 	immediateContext->CSSetShader(cShader, nullptr, 0);
@@ -82,7 +87,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
 	const UINT WIDTH = 1024;
 	const UINT HEIGHT = 576;
-	
+
 	HWND window;
 	if (!SetupWindow(hInstance, WIDTH, HEIGHT, nCmdShow, window))
 		return -1;
@@ -114,6 +119,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	struct BufferData matrixData;
 	
 	std::vector<std::string> modelName;
+	std::vector<XMFLOAT3> worldPos;
+
 	std::vector<Mesh> mesh;
 	Camera camera;
 
@@ -127,7 +134,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	if (!SetupBuffers(device, lightBuffer, camBuffer, lightData, camData))
 		return -1;
 
-	if (!SetupModels(modelName))
+	if (!SetupModels(modelName, worldPos))
 		return -1;
 		
 	for (int i = 0; i < modelName.size(); i++)
@@ -149,7 +156,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 		auto start = std::chrono::system_clock::now();
 		Render(immediateContext, dsView, viewport, vShader, pShader, inputLayout, sampleState, 
-			lightBuffer, camBuffer, matrixBuffer, lightData, camData, matrixData, mesh, camera, gBufferRTV);
+			lightBuffer, camBuffer, matrixBuffer, lightData, camData, matrixData, mesh, camera, gBufferRTV, worldPos);
 		RenderComputerShader(immediateContext, cShader, dsView, UAView, gBufferSRV);
 		swapChain->Present(0, 0);
 		auto end = std::chrono::system_clock::now();

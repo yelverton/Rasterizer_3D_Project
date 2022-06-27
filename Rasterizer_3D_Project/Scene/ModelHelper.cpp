@@ -3,8 +3,10 @@
 #include <fstream>
 #include <iostream>
 
-bool getModelInfo(std::vector<std::string>& fileName)
+bool getModelInfo(std::vector<std::string>& fileName, std::vector<XMFLOAT3>& world)
 {
+	std::vector<std::string> worldPos;
+
 	std::ifstream myfile("Scene/ModelInfo.txt");
 	if (!myfile.is_open())
 	{
@@ -13,17 +15,29 @@ bool getModelInfo(std::vector<std::string>& fileName)
 	}
 	else {
 		std::string line;
-		while (myfile >> line) {
+		std::string temp;
+		for (int i = 0; i < 2; i++) {
+			myfile >> line;
 			fileName.push_back(line);
+			worldPos.push_back("");
+			myfile >> line;
+			for (int i = 0; i < line.length(); i++)
+			{
+				if (line[i] != '|')
+					worldPos[worldPos.size() - 1] += line[i];
+				else
+					worldPos.push_back("");
+			}
+			world.push_back(XMFLOAT3{ stof(worldPos[0]), stof(worldPos[1]), stof(worldPos[2]) });
 		}
 	}
 
 	return true;
 }
 
-bool SetupModels(std::vector<std::string>& modelInfo)
+bool SetupModels(std::vector<std::string>& modelInfo, std::vector<XMFLOAT3>& world)
 {
-	if (!getModelInfo(modelInfo))
+	if (!getModelInfo(modelInfo, world))
 		return false;
 
 	return true;

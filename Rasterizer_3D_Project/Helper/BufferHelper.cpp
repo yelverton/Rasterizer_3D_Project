@@ -69,7 +69,7 @@ bool SetupBuffers(ID3D11Device* device, ID3D11Buffer*& lightBuffer, ID3D11Buffer
 
 bool setupModelBuffers(ID3D11Device* device, ID3D11Buffer*& matrixBuffer, struct BufferData& matrixData, float width, float height)
 {
-	XMMATRIX world = XMMatrixTranslation(2.0f, 2.0f, 2.0f);
+	XMMATRIX world = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
 	XMStoreFloat4x4(&matrixData.world, XMMatrixTranspose(world));
 
 	XMMATRIX View = XMMatrixLookAtLH({ 0,0,-2 }, { 0,0,-1 }, { 0,1,0 });
