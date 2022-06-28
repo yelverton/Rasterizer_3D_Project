@@ -11,6 +11,9 @@ RWTexture2D<unorm float4> backBuffer : register(u0);
 void main( uint3 DTid : SV_DispatchThreadID )
 {
 	int3 location = int3(DTid.x, DTid.y, DTid.z);
+	float3 Position = posWS.Load(location).xyz;
+	float specularExponent = posWS.Load(location).w;
+	
 	float3 Ambient = ambinetComponent.Load(location).xyz;
 	
 	backBuffer[DTid.xy] = float4(Ambient, 1.0f);

@@ -15,7 +15,7 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsVie
 	ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout,
 	ID3D11SamplerState* sampleState, ID3D11Buffer* lightBuffer, ID3D11Buffer* camBuffer, ID3D11Buffer* matrixBuffer, 
 	struct LightData lightData, struct CamData camData, struct BufferData matrixData, vector<Mesh> mesh, Camera& camera, 
-	ID3D11RenderTargetView* gBufferRTV[], vector<XMFLOAT3> worldPos)
+	ID3D11RenderTargetView* gBufferRTV[], vector<XMFLOAT3> worldPos, bool &playerPerspectiv, Camera &lightCamera)
 {
 	float clearColour[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	for (int i = 0; i < 6; i++)
@@ -30,25 +30,37 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsVie
 	immediateContext->OMSetRenderTargets(6, gBufferRTV, dsView);
 	immediateContext->PSSetSamplers(0, 1, &sampleState);
 
+	if (GetAsyncKeyState('X'))
+		playerPerspectiv = true;
+	else if (GetAsyncKeyState('C'))
+		playerPerspectiv = false;
+
+	if (playerPerspectiv) {
+		camera.moveCamera(camera, dt);
+		camData.cameraPosition = camera.GetPositionFloat3();
+		XMStoreFloat4x4(&matrixData.view, XMMatrixTranspose(camera.GetViewMatrix()));
+	} else {
+		lightCamera.moveCamera(lightCamera, dt);
+		lightData.lightPosition = lightCamera.GetPositionFloat3();
+		XMStoreFloat4x4(&matrixData.view, XMMatrixTranspose(lightCamera.GetViewMatrix()));
+	}
+
 	D3D11_MAPPED_SUBRESOURCE subLight = {};
 	immediateContext->Map(lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subLight);
 	memcpy(subLight.pData, &lightData, sizeof(LightData));
 	immediateContext->Unmap(lightBuffer, 0);
 	immediateContext->PSSetConstantBuffers(0, 1, &lightBuffer);
-
+	
 	D3D11_MAPPED_SUBRESOURCE subCam = {};
-	camData.cameraPosition = camera.GetPositionFloat3();
 	immediateContext->Map(camBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subCam);
 	memcpy(subCam.pData, &camData, sizeof(CamData));
 	immediateContext->Unmap(camBuffer, 0);
 	immediateContext->PSSetConstantBuffers(1, 1, &camBuffer);
 
-	camera.moveCamera(camera, dt);
-	XMStoreFloat4x4(&matrixData.view, XMMatrixTranspose(camera.GetViewMatrix()));
+	DirectX::XMMATRIX Identity = XMMatrixIdentity();
 
 	for (int i = 0; i < mesh.size(); i++)
 	{
-		DirectX::XMMATRIX Identity = XMMatrixIdentity();
 		Identity = XMMatrixTranslation(worldPos[i].x, worldPos[i].y, worldPos[i].z);
 		XMStoreFloat4x4(&matrixData.world, XMMatrixTranspose(Identity));
 
@@ -124,6 +136,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	std::vector<Mesh> mesh;
 	Camera camera;
 
+	Camera lightCamera;
+	bool playerPerspectiv = true;
+	lightCamera.SetPosition(0.0f, 20.0f, 0.0f);
+	lightCamera.SetLookAtPos(XMFLOAT3(0.0f, 1.0f, 0.0f));
+
 	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, 
 		UAView, dsTexture, dsView, viewport, gBufferRTV, gBufferSRV))
 		return -1;
@@ -156,7 +173,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 		auto start = std::chrono::system_clock::now();
 		Render(immediateContext, dsView, viewport, vShader, pShader, inputLayout, sampleState, 
-			lightBuffer, camBuffer, matrixBuffer, lightData, camData, matrixData, mesh, camera, gBufferRTV, worldPos);
+			lightBuffer, camBuffer, matrixBuffer, lightData, camData, matrixData, mesh, camera, 
+			gBufferRTV, worldPos, playerPerspectiv, lightCamera);
 		RenderComputerShader(immediateContext, cShader, dsView, UAView, gBufferSRV);
 		swapChain->Present(0, 0);
 		auto end = std::chrono::system_clock::now();

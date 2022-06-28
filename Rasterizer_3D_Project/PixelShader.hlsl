@@ -42,7 +42,7 @@ vsOutPut main(PixelShaderInput input) : SV_TARGET
 	output.ambinetComponent = Ambient.Sample(Sampler, input.uv).rgba;
 	output.diffuseComponent = Deffuse.Sample(Sampler, input.uv).rgba;
 	output.specularComponent = Specular.Sample(Sampler, input.uv).rgba;
-	output.lightPosition = float4(lightPosition, 0.0f);
+	output.lightPosition = float4(lightPosition, shininess);
 	
 	return output;
 }

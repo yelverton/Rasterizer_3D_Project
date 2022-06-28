@@ -29,6 +29,7 @@ bool getModelInfo(std::vector<std::string>& fileName, std::vector<XMFLOAT3>& wor
 					worldPos.push_back("");
 			}
 			world.push_back(XMFLOAT3{ stof(worldPos[0]), stof(worldPos[1]), stof(worldPos[2]) });
+			worldPos.clear();
 		}
 	}
 

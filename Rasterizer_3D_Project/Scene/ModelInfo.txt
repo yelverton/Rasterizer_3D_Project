@@ -1,2 +1,2 @@
-cubeMaterial 2.0|2.0|2.0
-ground 100.0|100.0|100.0
+cubeMaterial 0.0|0.5|2.0
+ground 0.0|-1.0|0.0
