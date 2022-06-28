@@ -39,7 +39,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 
 	// Specular
 	float3 reflectDir = normalize(reflect(lightPosition, Normal));
-	float specularConponent = pow(max(dot(camToPic, reflectDir), 0.0f), shininess);
+	float specularConponent = pow(max(dot(lightDir, reflectDir), 0.0f), shininess);
 	float3 Specular = specularComponent.Load(location).xyz * specularConponent * 10.0f;
 
 	// return
