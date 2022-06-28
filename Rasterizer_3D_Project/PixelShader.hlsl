@@ -17,12 +17,6 @@ cbuffer Light : register(b0)
 	float shininess;
 };
 
-cbuffer cam : register(b1)
-{
-	float3 cameraPosition;
-	float padding;
-};
-
 struct vsOutPut
 {
 	float4 posWS : SV_TARGET0;

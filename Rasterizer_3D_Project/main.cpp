@@ -55,7 +55,7 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsVie
 	immediateContext->Map(camBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subCam);
 	memcpy(subCam.pData, &camData, sizeof(CamData));
 	immediateContext->Unmap(camBuffer, 0);
-	immediateContext->PSSetConstantBuffers(1, 1, &camBuffer);
+	immediateContext->CSSetConstantBuffers(0, 1, &camBuffer);
 
 	DirectX::XMMATRIX Identity = XMMatrixIdentity();
 
