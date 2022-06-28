@@ -37,25 +37,26 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsVie
 
 	if (playerPerspectiv) {
 		camera.moveCamera(camera, dt);
-		camData.cameraPosition = camera.GetPositionFloat3();
 		XMStoreFloat4x4(&matrixData.view, XMMatrixTranspose(camera.GetViewMatrix()));
 	} else {
 		lightCamera.moveCamera(lightCamera, dt);
-		lightData.lightPosition = lightCamera.GetPositionFloat3();
 		XMStoreFloat4x4(&matrixData.view, XMMatrixTranspose(lightCamera.GetViewMatrix()));
 	}
+
+	camData.cameraPosition = camera.GetPositionFloat3();
+	lightData.lightPosition = lightCamera.GetPositionFloat3();
 
 	D3D11_MAPPED_SUBRESOURCE subLight = {};
 	immediateContext->Map(lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subLight);
 	memcpy(subLight.pData, &lightData, sizeof(LightData));
 	immediateContext->Unmap(lightBuffer, 0);
-	immediateContext->PSSetConstantBuffers(0, 1, &lightBuffer);
+	immediateContext->CSSetConstantBuffers(0, 1, &lightBuffer);
 	
 	D3D11_MAPPED_SUBRESOURCE subCam = {};
 	immediateContext->Map(camBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subCam);
 	memcpy(subCam.pData, &camData, sizeof(CamData));
 	immediateContext->Unmap(camBuffer, 0);
-	immediateContext->CSSetConstantBuffers(0, 1, &camBuffer);
+	immediateContext->CSSetConstantBuffers(1, 1, &camBuffer);
 
 	DirectX::XMMATRIX Identity = XMMatrixIdentity();
 
