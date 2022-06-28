@@ -31,7 +31,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	float3 lightDir = normalize(Pos - lightPosition);
 	
 	// Ambient
-	float3 Ambient = ambinetComponent.Load(location).xyz * 0.01f;
+	float3 Ambient = ambinetComponent.Load(location).xyz * 0.4f;
 	
 	// Diffuse
 	float3 diffuseLevel = dot(Normal, -lightDir);
@@ -40,7 +40,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	// Specular
 	float3 reflectDir = normalize(reflect(lightPosition, Normal));
 	float specularConponent = pow(max(dot(camToPic, reflectDir), 0.0f), shininess);
-	float3 Specular = specularComponent.Load(location).xyz * specularConponent;
+	float3 Specular = specularComponent.Load(location).xyz * specularConponent * 10.0f;
 
 	// return
 	backBuffer[DTid.xy] = float4(Ambient, 1.0f) + float4(Diffuse, 1.0f) + float4(Specular, 1.0f);
