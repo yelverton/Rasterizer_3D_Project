@@ -13,15 +13,21 @@ float dt = 0;
 
 void ShadowPrePass(ID3D11DeviceContext* immediateContext, ID3D11ShaderResourceView* SRVShadow,
 	ID3D11DepthStencilView* dsViewShadow, D3D11_VIEWPORT& viewport, struct BufferData matrixData, Camera& lightCamera,
-	vector<Mesh> mesh, vector<XMFLOAT3> worldPos, ID3D11Buffer* matrixBuffer, ID3D11VertexShader* vShaderDepth)
+	vector<Mesh> mesh, vector<XMFLOAT3> worldPos, ID3D11Buffer* matrixBuffer, ID3D11VertexShader* vShaderDepth,
+	ID3D11InputLayout* inputLayoutVSDepth)
 {
-	immediateContext->OMSetRenderTargets(0, nullptr, dsViewShadow);
+	immediateContext->ClearDepthStencilView(dsViewShadow, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	immediateContext->IASetInputLayout(inputLayoutVSDepth);
+
 	immediateContext->RSSetViewports(1, &viewport);
-	XMStoreFloat4x4(&matrixData.view, XMMatrixTranspose(lightCamera.GetViewMatrix()));
 	immediateContext->VSSetShader(vShaderDepth, nullptr, 0);
+
 	ID3D11PixelShader* pShader = nullptr;
 	immediateContext->PSSetShader(pShader, nullptr, 0);
 
+	immediateContext->OMSetRenderTargets(0, nullptr, dsViewShadow);
+
+	XMStoreFloat4x4(&matrixData.view, XMMatrixTranspose(lightCamera.GetViewMatrix()));
 	DirectX::XMMATRIX Identity = XMMatrixIdentity();
 	for (int i = 0; i < mesh.size(); i++)
 	{
@@ -37,7 +43,6 @@ void ShadowPrePass(ID3D11DeviceContext* immediateContext, ID3D11ShaderResourceVi
 		mesh[i].Draw();
 	}
 
-	immediateContext->ClearDepthStencilView(dsViewShadow, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
 void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, 
