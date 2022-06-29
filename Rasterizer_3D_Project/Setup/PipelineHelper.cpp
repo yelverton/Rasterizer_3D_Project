@@ -5,7 +5,9 @@
 #include <string>
 #include <iostream>
 
-bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, ID3D11ComputeShader*& cShader, std::string& vShaderByteCode)
+bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11VertexShader*& vShaderDepth,
+	ID3D11PixelShader*& pShader, ID3D11ComputeShader*& cShader, std::string& vShaderByteCode, 
+	std::string& vShaderByteCodeDepth)
 {
 	// VERTEX SHADER:
 
@@ -37,6 +39,7 @@ bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Pixel
 
 	shaderData.clear();
 	reader.close();
+
 	reader.open("../x64/Debug/PixelShader.cso", std::ios::binary | std::ios::ate);
 	if (!reader.is_open())
 	{
@@ -83,10 +86,37 @@ bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Pixel
 	shaderData.clear();
 	reader.close();
 
+	// ([Depth] for shadow) Vertex Shader 
+	reader.open("../x64/Debug/VertexShaderDepth.cso", std::ios::binary | std::ios::ate);
+	if (!reader.is_open())
+	{
+		ErrorLog::Log("Could not open VS Depth file!");
+		return false;
+	}
+
+	reader.seekg(0, std::ios::end);
+	shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
+	reader.seekg(0, std::ios::beg);
+
+	shaderData.assign((std::istreambuf_iterator<char>(reader)),
+		std::istreambuf_iterator<char>());
+
+	if (FAILED(device->CreateVertexShader(shaderData.c_str(), shaderData.length(), nullptr, &vShaderDepth)))
+	{
+		ErrorLog::Log("Failed to create vertex shader Depth!");
+		return false;
+	}
+
+	vShaderByteCodeDepth = shaderData;
+
+	shaderData.clear();
+	reader.close();
+
 	return true;
 }
 
-bool CreateInputLayout(ID3D11Device* device, ID3D11InputLayout*& inputLayout, const std::string& vShaderByteCode)
+bool CreateInputLayout(ID3D11Device* device, ID3D11InputLayout*& inputLayoutVs, ID3D11InputLayout*& inputLayoutVsDepth,
+	const std::string& vShaderByteCode, const std::string& vShaderByteCodeDepth)
 {
 	D3D11_INPUT_ELEMENT_DESC inputDesc[] =
 	{
@@ -95,10 +125,17 @@ bool CreateInputLayout(ID3D11Device* device, ID3D11InputLayout*& inputLayout, co
 		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
 	};
 
-	HRESULT hr = device->CreateInputLayout(inputDesc, _countof(inputDesc), vShaderByteCode.c_str(), vShaderByteCode.length(), &inputLayout);
-	if (FAILED(hr))
+	if (FAILED(device->CreateInputLayout(inputDesc, _countof(inputDesc), vShaderByteCode.c_str(), 
+		vShaderByteCode.length(), &inputLayoutVs)))
 	{
-		ErrorLog::Log(hr, "Failed to create Input Layout!");
+		ErrorLog::Log("Failed to create Input Layout vs");
+		return false;
+	}
+
+	if (FAILED(device->CreateInputLayout(inputDesc, _countof(inputDesc), vShaderByteCodeDepth.c_str(), 
+		vShaderByteCodeDepth.length(), &inputLayoutVsDepth)))
+	{
+		ErrorLog::Log("Failed to create Input Layout vs Depth");
 		return false;
 	}
 
@@ -127,14 +164,16 @@ bool CreateSampleState(ID3D11Device* device, ID3D11SamplerState*& sampleState)
 	return true;
 }
 
-bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, ID3D11ComputeShader*& cShader, ID3D11InputLayout*& inputLayout, ID3D11SamplerState*& sampleState)
+bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11VertexShader*& vShaderDepth,
+	ID3D11PixelShader*& pShader, ID3D11ComputeShader*& cShader, ID3D11InputLayout*& inputLayoutVS,
+	ID3D11InputLayout*& inputLayoutVSDepth, ID3D11SamplerState*& sampleState)
 {
-	std::string vShaderByteCode;
+	std::string vShaderByteCode, vShaderByteCodeDepth;
 
-	if (!LoadShaders(device, vShader, pShader, cShader, vShaderByteCode))
+	if (!LoadShaders(device, vShader, vShaderDepth, pShader, cShader, vShaderByteCode, vShaderByteCodeDepth))
 		return false;
 
-	if (!CreateInputLayout(device, inputLayout, vShaderByteCode))
+	if (!CreateInputLayout(device, inputLayoutVS, inputLayoutVSDepth, vShaderByteCode, vShaderByteCodeDepth))
 		return false;
 
 	if (!CreateSampleState(device, sampleState))

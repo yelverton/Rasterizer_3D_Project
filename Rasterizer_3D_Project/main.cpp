@@ -117,10 +117,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	D3D11_VIEWPORT viewport;
 
 	ID3D11VertexShader* vShader;
+	ID3D11VertexShader* vShaderDepth;
 	ID3D11PixelShader* pShader; 
 	ID3D11ComputeShader* cShader;
 
-	ID3D11InputLayout* inputLayout;
+	ID3D11InputLayout* inputLayoutVS;
+	ID3D11InputLayout* inputLayoutVSDepth;
+
 	ID3D11SamplerState* sampleState;
 
 	ID3D11Buffer* lightBuffer;
@@ -146,7 +149,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		UAView, dsTexture, dsView, viewport, gBufferRTV, gBufferSRV))
 		return -1;
 
-	if (!SetupPipeline(device, vShader, pShader, cShader, inputLayout, sampleState))
+	if (!SetupPipeline(device, vShader, vShaderDepth, pShader, cShader, inputLayoutVS, inputLayoutVSDepth, sampleState))
 		return -1;
 
 	if (!SetupBuffers(device, lightBuffer, camBuffer, lightData, camData))
@@ -173,7 +176,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		}
 
 		auto start = std::chrono::system_clock::now();
-		Render(immediateContext, dsView, viewport, vShader, pShader, inputLayout, sampleState, 
+		Render(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, 
 			lightBuffer, camBuffer, matrixBuffer, lightData, camData, matrixData, mesh, camera, 
 			gBufferRTV, worldPos, playerPerspectiv, lightCamera);
 		RenderComputerShader(immediateContext, cShader, dsView, UAView, gBufferSRV);
@@ -186,9 +189,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	lightBuffer->Release();
 	camBuffer->Release();
 	sampleState->Release();
-	inputLayout->Release();
+	inputLayoutVS->Release();
+	inputLayoutVSDepth->Release();
 	pShader->Release();
 	vShader->Release();
+	vShaderDepth->Release();
 	cShader->Release();
 	dsView->Release();
 	dsTexture->Release();
