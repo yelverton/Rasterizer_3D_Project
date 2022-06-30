@@ -2,10 +2,11 @@
 #include <directxmath.h>
 using namespace DirectX;
 
-struct MatrixData
+struct DepthBufferData
 {
-    XMMATRIX worldMatrix;
-    XMMATRIX wvpMatrix;
+    XMFLOAT4X4 world;
+    XMFLOAT4X4 view;
+    XMFLOAT4X4 projection;
 };
 
 struct BufferData
@@ -13,11 +14,6 @@ struct BufferData
     XMFLOAT4X4 world;
     XMFLOAT4X4 view;
     XMFLOAT4X4 projection;
-};
-
-struct VPmatrix
-{
-    XMFLOAT4X4 viewProj;
 };
 
 struct LightData

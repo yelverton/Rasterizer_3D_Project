@@ -12,12 +12,13 @@
 float dt = 0;
 
 void ShadowPrePass(ID3D11DeviceContext* immediateContext, ID3D11ShaderResourceView* SRVShadow,
-	ID3D11DepthStencilView* dsViewShadow, D3D11_VIEWPORT& viewport, struct BufferData matrixData, Camera& lightCamera,
-	vector<Mesh> mesh, vector<XMFLOAT3> worldPos, ID3D11Buffer* matrixBuffer, ID3D11VertexShader* vShaderDepth,
+	ID3D11DepthStencilView* dsViewShadow, D3D11_VIEWPORT& viewport, struct DepthBufferData DepthMatrixData, Camera& lightCamera,
+	vector<Mesh> mesh, vector<XMFLOAT3> worldPos, ID3D11VertexShader* vShaderDepth, ID3D11Buffer* DepthMatrixBuffer,
 	ID3D11InputLayout* inputLayoutVSDepth)
 {
 	immediateContext->ClearDepthStencilView(dsViewShadow, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	immediateContext->IASetInputLayout(inputLayoutVSDepth);
+	immediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	immediateContext->RSSetViewports(1, &viewport);
 	immediateContext->VSSetShader(vShaderDepth, nullptr, 0);
@@ -27,21 +28,24 @@ void ShadowPrePass(ID3D11DeviceContext* immediateContext, ID3D11ShaderResourceVi
 
 	immediateContext->OMSetRenderTargets(0, nullptr, dsViewShadow);
 
-	XMStoreFloat4x4(&matrixData.view, XMMatrixTranspose(lightCamera.GetViewMatrix()));
+	XMStoreFloat4x4(&DepthMatrixData.view, XMMatrixTranspose(lightCamera.GetViewMatrix()));
 	DirectX::XMMATRIX Identity = XMMatrixIdentity();
 	for (int i = 0; i < mesh.size(); i++)
 	{
 		Identity = XMMatrixTranslation(worldPos[i].x, worldPos[i].y, worldPos[i].z);
-		XMStoreFloat4x4(&matrixData.world, XMMatrixTranspose(Identity));
+		XMStoreFloat4x4(&DepthMatrixData.world, XMMatrixTranspose(Identity));
 
 		D3D11_MAPPED_SUBRESOURCE subData = {};
-		immediateContext->Map(matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
-		memcpy(subData.pData, &matrixData, sizeof(BufferData));
-		immediateContext->Unmap(matrixBuffer, 0);
-		immediateContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
+		immediateContext->Map(DepthMatrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
+		memcpy(subData.pData, &DepthMatrixData, sizeof(DepthBufferData));
+		immediateContext->Unmap(DepthMatrixBuffer, 0);
+		immediateContext->VSSetConstantBuffers(1, 1, &DepthMatrixBuffer);
 
 		mesh[i].Draw();
 	}
+
+	ID3D11RenderTargetView* nullRTV[6] = { nullptr };
+	immediateContext->OMSetRenderTargets(6, nullRTV, nullptr);
 
 }
 
@@ -164,10 +168,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	ID3D11Buffer* lightBuffer;
 	ID3D11Buffer* camBuffer;
 	ID3D11Buffer* matrixBuffer;
+	ID3D11Buffer* DepthMatrixBuffer;
 
 	struct LightData lightData;
 	struct CamData camData;
 	struct BufferData matrixData;
+	struct DepthBufferData depthBufferData;
 	
 	std::vector<std::string> modelName;
 	std::vector<XMFLOAT3> worldPos;
@@ -200,6 +206,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	if (!setupModelBuffers(device, matrixBuffer, matrixData, (float)WIDTH, (float)HEIGHT))
 		return -1;
 
+	if (!setupModelBuffersDepth(device, DepthMatrixBuffer, depthBufferData, (float)WIDTH, (float)HEIGHT))
+		return -1;
+
 
 	MSG msg = { };
 	while (!(GetKeyState(VK_ESCAPE) & 0x8000) && msg.message != WM_QUIT)
@@ -211,8 +220,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		}
 
 		auto start = std::chrono::system_clock::now();
-		ShadowPrePass(immediateContext, SRVShadow, dsViewShadow, viewport, matrixData, lightCamera,
-			mesh, worldPos, matrixBuffer, vShaderDepth);
+		/*ShadowPrePass(immediateContext, SRVShadow, dsViewShadow, viewport, depthBufferData, lightCamera,
+			mesh, worldPos, vShaderDepth, DepthMatrixBuffer, inputLayoutVSDepth);*/
 		Render(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, 
 			lightBuffer, camBuffer, matrixBuffer, lightData, camData, matrixData, mesh, camera, 
 			gBufferRTV, worldPos, playerPerspectiv, lightCamera);

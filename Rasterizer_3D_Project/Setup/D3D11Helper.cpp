@@ -168,8 +168,8 @@ bool CreateDepthStencilForShadow(ID3D11Device* device, UINT width, UINT height, 
 	ID3D11ShaderResourceView*& SRVShadow)
 {
 	D3D11_TEXTURE2D_DESC textureDesc = {};
-	textureDesc.Width = (width * 2);
-	textureDesc.Height = (width * 2);
+	textureDesc.Width = width;
+	textureDesc.Height = width;
 	textureDesc.MipLevels = 1;
 	textureDesc.ArraySize = 1;
 	textureDesc.Format = DXGI_FORMAT_R32_TYPELESS;

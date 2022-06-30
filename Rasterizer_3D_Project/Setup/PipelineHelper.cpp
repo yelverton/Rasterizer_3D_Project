@@ -151,13 +151,16 @@ bool CreateSampleState(ID3D11Device* device, ID3D11SamplerState*& sampleState)
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;	
+	samplerDesc.BorderColor[0] = 0.0f;
+	samplerDesc.BorderColor[1] = 0.0f;
+	samplerDesc.BorderColor[2] = 0.0f;
+	samplerDesc.BorderColor[3] = 0.0f;
 	samplerDesc.MinLOD = 0;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
-	HRESULT	hr = device->CreateSamplerState(&samplerDesc, &sampleState);
-	if (FAILED(hr)) {
-		ErrorLog::Log(hr, "Failed to create sampler state!");
+	if (FAILED(device->CreateSamplerState(&samplerDesc, &sampleState))) {
+		ErrorLog::Log("Failed to create sampler state!");
 		return false;
 	}
 
