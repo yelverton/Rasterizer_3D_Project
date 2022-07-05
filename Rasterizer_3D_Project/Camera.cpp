@@ -29,10 +29,16 @@ void Camera::moveCamera(float dt, Camera &camera)
 	}
 
 	if (GetAsyncKeyState('E')) {
-		AdjustRotation(2 * dt, 0.0f);
+		vec_up = XMVector3TransformCoord(DEFAULT_UP, rotationMatrix);
+		cameraPos += vec_up * 20 * dt;
+		lookAtPos += vec_up * 20 * dt;
+		/*AdjustRotation(2 * dt, 0.0f);*/
 	}
 	else if (GetAsyncKeyState('Q')) {
-		AdjustRotation(-(2 * dt), 0.0f);
+		vec_up = XMVector3TransformCoord(DEFAULT_UP, rotationMatrix);
+		cameraPos -= vec_up * 20 * dt;
+		lookAtPos -= vec_up * 20 * dt;
+		/*AdjustRotation(-(2 * dt), 0.0f);*/
 	}
 
 	/*if (GetAsyncKeyState('K')) {
