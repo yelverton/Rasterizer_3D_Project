@@ -46,8 +46,8 @@ float dt = 0;
 
 void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, 
 	ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout,
-	ID3D11SamplerState* sampleState, ID3D11Buffer* lightBuffer, ID3D11Buffer* camBuffer, ID3D11Buffer* matrixBuffer, 
-	struct LightData lightData, struct CamData camData, struct BufferData matrixData, vector<Mesh> mesh, Camera& camera, 
+	ID3D11SamplerState* sampleState, ID3D11Buffer* lightBuffer, ID3D11Buffer* camBuffer, ID3D11Buffer* theWorldBuffer, 
+	struct LightData lightData, struct CamData camData, struct TheWorld theWorld, vector<Mesh> mesh, Camera& camera,
 	ID3D11RenderTargetView* gBufferRTV[], vector<XMFLOAT3> worldPos, bool &playerPerspectiv, Camera &lightCamera)
 {
 	float clearColour[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -69,11 +69,11 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsVie
 		playerPerspectiv = false;
 
 	if (playerPerspectiv) {
-		camera.moveCamera(camera, dt);
-		XMStoreFloat4x4(&matrixData.view, XMMatrixTranspose(camera.GetViewMatrix()));
+		camera.moveCamera(dt, camera);
+		camera.sendViewProjection(1);
 	} else {
-		lightCamera.moveCamera(lightCamera, dt);
-		XMStoreFloat4x4(&matrixData.view, XMMatrixTranspose(lightCamera.GetViewMatrix()));
+		lightCamera.moveCamera(dt, camera);
+		lightCamera.sendViewProjection(1);
 	}
 
 	camData.cameraPosition = camera.GetPositionFloat3();
@@ -96,13 +96,13 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsVie
 	for (int i = 0; i < mesh.size(); i++)
 	{
 		Identity = XMMatrixTranslation(worldPos[i].x, worldPos[i].y, worldPos[i].z);
-		XMStoreFloat4x4(&matrixData.world, XMMatrixTranspose(Identity));
+		XMStoreFloat4x4(&theWorld.worldMatrix, XMMatrixTranspose(Identity));
 
 		D3D11_MAPPED_SUBRESOURCE subData = {};
-		immediateContext->Map(matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
-		memcpy(subData.pData, &matrixData, sizeof(BufferData));
-		immediateContext->Unmap(matrixBuffer, 0);
-		immediateContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
+		immediateContext->Map(theWorldBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
+		memcpy(subData.pData, &theWorld, sizeof(BufferData));
+		immediateContext->Unmap(theWorldBuffer, 0);
+		immediateContext->VSSetConstantBuffers(0, 1, &theWorldBuffer);
 
 		mesh[i].Draw();
 	}
@@ -149,6 +149,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	ID3D11RenderTargetView* gBufferRTV[6];
 	ID3D11ShaderResourceView* gBufferSRV[6];
 	D3D11_VIEWPORT viewport;
+	D3D11_VIEWPORT viewportShadow;
 
 	ID3D11VertexShader* vShader;
 	ID3D11VertexShader* vShaderDepth;
@@ -159,15 +160,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	ID3D11InputLayout* inputLayoutVSDepth;
 
 	ID3D11SamplerState* sampleState;
+	ID3D11SamplerState* sampleStateShadow;
 
 	ID3D11Buffer* lightBuffer;
 	ID3D11Buffer* camBuffer;
-	ID3D11Buffer* matrixBuffer;
-	ID3D11Buffer* DepthMatrixBuffer;
+	ID3D11Buffer* theWorldBuffer;
 
 	struct LightData lightData;
 	struct CamData camData;
-	struct BufferData matrixData;
+	struct TheWorld theWorld;
 	struct DepthBufferData depthBufferData;
 	
 	std::vector<std::string> modelName;
@@ -175,20 +176,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	std::vector<Mesh> mesh;
 	Camera camera;
-
 	Camera lightCamera;
+
 	bool playerPerspectiv = true;
-	lightCamera.SetPosition(0.0f, 20.0f, 0.0f);
-	lightCamera.SetLookAtPos(XMFLOAT3(0.0f, 1.0f, 0.0f));
 
 	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, UAView, dsView, dsViewShadow, viewport,
-		SRVShadow, gBufferRTV, gBufferSRV))
+		viewportShadow, SRVShadow, gBufferRTV, gBufferSRV))
 		return -1;
 
-	if (!SetupPipeline(device, vShader, vShaderDepth, pShader, cShader, inputLayoutVS, inputLayoutVSDepth, sampleState))
+	if (!SetupPipeline(device, vShader, vShaderDepth, pShader, cShader, inputLayoutVS, inputLayoutVSDepth, sampleState, 
+		sampleStateShadow))
 		return -1;
 
-	if (!SetupBuffers(device, lightBuffer, camBuffer, lightData, camData))
+	if (!SetupBuffers(device, lightBuffer, camBuffer, theWorldBuffer, lightData, camData, theWorld))
 		return -1;
 
 	if (!SetupModels(modelName, worldPos))
@@ -198,12 +198,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		if (!objReader(modelName[i], mesh, device, immediateContext))
 			return -1;
 
-	if (!setupModelBuffers(device, matrixBuffer, matrixData, (float)WIDTH, (float)HEIGHT))
-		return -1;
+	camera.createConstantBuffer(device, immediateContext);
+	lightCamera.createConstantBuffer(device, immediateContext);
 
-	if (!setupModelBuffersDepth(device, DepthMatrixBuffer, depthBufferData, (float)WIDTH, (float)HEIGHT))
-		return -1;
-
+	//camera.SetPosition(0.0f, 1.0f, 0.0f);
+	lightCamera.SetPosition(0.0f, 20.0f, 0.0f);
+	lightCamera.setLookAtPos(XMFLOAT3(0.0f, 1.0f, 0.0f));
 
 	MSG msg = { };
 	while (!(GetKeyState(VK_ESCAPE) & 0x8000) && msg.message != WM_QUIT)
@@ -218,7 +218,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		/*ShadowPrePass(immediateContext, SRVShadow, dsViewShadow, viewport, depthBufferData, lightCamera,
 			mesh, worldPos, vShaderDepth, DepthMatrixBuffer, inputLayoutVSDepth);*/
 		Render(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, 
-			lightBuffer, camBuffer, matrixBuffer, lightData, camData, matrixData, mesh, camera, 
+			lightBuffer, camBuffer, theWorldBuffer, lightData, camData, theWorld, mesh, camera, 
 			gBufferRTV, worldPos, playerPerspectiv, lightCamera);
 		RenderComputerShader(immediateContext, cShader, dsView, UAView, gBufferSRV);
 		swapChain->Present(0, 0);
@@ -229,6 +229,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	lightBuffer->Release();
 	camBuffer->Release();
+	sampleState->Release();
 	sampleState->Release();
 	inputLayoutVS->Release();
 	inputLayoutVSDepth->Release();

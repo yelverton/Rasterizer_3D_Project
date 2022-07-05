@@ -151,11 +151,7 @@ bool CreateSampleState(ID3D11Device* device, ID3D11SamplerState*& sampleState)
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;	
-	samplerDesc.BorderColor[0] = 0.0f;
-	samplerDesc.BorderColor[1] = 0.0f;
-	samplerDesc.BorderColor[2] = 0.0f;
-	samplerDesc.BorderColor[3] = 0.0f;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 	samplerDesc.MinLOD = 0;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
@@ -167,9 +163,35 @@ bool CreateSampleState(ID3D11Device* device, ID3D11SamplerState*& sampleState)
 	return true;
 }
 
+bool CreateSampleStateShadow(ID3D11Device* device, ID3D11SamplerState*& sampleStateShadow)
+{
+	D3D11_SAMPLER_DESC samplerDesc;
+	ZeroMemory(&samplerDesc, sizeof(D3D11_SAMPLER_DESC));
+
+	samplerDesc.Filter = D3D11_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	samplerDesc.BorderColor[0] = 0.0f;
+	samplerDesc.BorderColor[1] = 0.0f;
+	samplerDesc.BorderColor[2] = 0.0f;
+	samplerDesc.BorderColor[3] = 0.0f;
+	samplerDesc.MinLOD = 0;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	if (FAILED(device->CreateSamplerState(&samplerDesc, &sampleStateShadow)))
+	{
+		ErrorLog::Log("Failed to create Sample State Shadow");
+		return false;
+	}
+
+	return true;
+}
+
 bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11VertexShader*& vShaderDepth,
 	ID3D11PixelShader*& pShader, ID3D11ComputeShader*& cShader, ID3D11InputLayout*& inputLayoutVS,
-	ID3D11InputLayout*& inputLayoutVSDepth, ID3D11SamplerState*& sampleState)
+	ID3D11InputLayout*& inputLayoutVSDepth, ID3D11SamplerState*& sampleState, ID3D11SamplerState*& sampleStateShadow)
 {
 	std::string vShaderByteCode, vShaderByteCodeDepth;
 
@@ -181,6 +203,8 @@ bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Ver
 
 	if (!CreateSampleState(device, sampleState))
 		return false;
+
+	if (!CreateSampleStateShadow(device, sampleStateShadow))
 
 	return true;
 }

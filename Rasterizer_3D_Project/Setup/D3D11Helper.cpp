@@ -168,8 +168,8 @@ bool CreateDepthStencilForShadow(ID3D11Device* device, UINT width, UINT height, 
 	ID3D11ShaderResourceView*& SRVShadow)
 {
 	D3D11_TEXTURE2D_DESC textureDesc = {};
-	textureDesc.Width = width;
-	textureDesc.Height = width;
+	textureDesc.Width = (width * 2);
+	textureDesc.Height = (height * 2);
 	textureDesc.MipLevels = 1;
 	textureDesc.ArraySize = 1;
 	textureDesc.Format = DXGI_FORMAT_R32_TYPELESS;
@@ -225,10 +225,21 @@ void SetViewport(D3D11_VIEWPORT& viewport, UINT width, UINT height)
 	viewport.MaxDepth = 1;
 }
 
+void SetViewportShadow(D3D11_VIEWPORT& viewportShadow, UINT width, UINT height)
+{
+	viewportShadow.TopLeftX = 0;
+	viewportShadow.TopLeftY = 0;
+	viewportShadow.Width = static_cast<float>(width * 2);
+	viewportShadow.Height = static_cast<float>(width * 2);
+	viewportShadow.MinDepth = 0;
+	viewportShadow.MaxDepth = 1;
+}
+
 bool SetupD3D11(UINT width, UINT height, HWND window, ID3D11Device*& device, ID3D11DeviceContext*& immediateContext,
 	IDXGISwapChain*& swapChain, ID3D11RenderTargetView*& rtv, ID3D11UnorderedAccessView*& UAView,
 	ID3D11DepthStencilView*& dsView, ID3D11DepthStencilView*& dsViewShadow, D3D11_VIEWPORT& viewport, 
-	ID3D11ShaderResourceView*& SRVShadow, ID3D11RenderTargetView* gBufferRTV[6], ID3D11ShaderResourceView* gBufferSRV[6])
+	D3D11_VIEWPORT& viewportShadow, ID3D11ShaderResourceView*& SRVShadow, ID3D11RenderTargetView* gBufferRTV[6], 
+	ID3D11ShaderResourceView * gBufferSRV[6])
 {
 	if (!CreateInterfaces(device, immediateContext, swapChain, width, height, window))
 		return false;
@@ -252,6 +263,8 @@ bool SetupD3D11(UINT width, UINT height, HWND window, ID3D11Device*& device, ID3
 		return false;
 
 	SetViewport(viewport, width, height);
+
+	SetViewportShadow(viewportShadow, width, height);
 
 	return true;
 }

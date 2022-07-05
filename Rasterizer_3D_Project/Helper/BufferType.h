@@ -2,6 +2,16 @@
 #include <directxmath.h>
 using namespace DirectX;
 
+struct TheWorld
+{
+    XMFLOAT4X4 worldMatrix;
+};
+
+struct VPmatrix
+{
+    XMFLOAT4X4 viewProj;
+};
+
 struct DepthBufferData
 {
     XMFLOAT4X4 world;

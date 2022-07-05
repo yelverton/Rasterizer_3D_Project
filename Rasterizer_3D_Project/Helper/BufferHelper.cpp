@@ -56,28 +56,8 @@ bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamD
 	return true;
 }
 
-bool SetupBuffers(ID3D11Device* device, ID3D11Buffer*& lightBuffer, ID3D11Buffer*& camBuffer,struct LightData& lightData, struct CamData& camData)
+bool setupWorldMatrixs(ID3D11Device* device, ID3D11Buffer*& theWorldBuffer, struct TheWorld& theWorld)
 {
-	if (!createLightBuffer(device, lightBuffer, lightData))
-		return false;
-
-	if (!createCamBuffer(device, camBuffer, camData))
-		return false;
-
-	return true;
-}
-
-bool setupModelBuffers(ID3D11Device* device, ID3D11Buffer*& matrixBuffer, struct BufferData& matrixData, float width, float height)
-{
-	XMMATRIX world = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
-	XMStoreFloat4x4(&matrixData.world, XMMatrixTranspose(world));
-
-	XMMATRIX View = XMMatrixLookAtLH({ 0,0,-2 }, { 0,0,-1 }, { 0,1,0 });
-	XMStoreFloat4x4(&matrixData.view, XMMatrixTranspose(View));
-
-	XMMATRIX Projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PI / 2, width / height, 0.1f, 100.0f);
-	XMStoreFloat4x4(&matrixData.projection, XMMatrixTranspose(Projection));
-
 	D3D11_BUFFER_DESC desc;
 	desc.ByteWidth = sizeof(BufferData);
 	desc.Usage = D3D11_USAGE_DYNAMIC;
@@ -87,48 +67,30 @@ bool setupModelBuffers(ID3D11Device* device, ID3D11Buffer*& matrixBuffer, struct
 	desc.StructureByteStride = 0;
 
 	D3D11_SUBRESOURCE_DATA data;
-	data.pSysMem = (void*)&matrixData;
+	data.pSysMem = (void*)&theWorld;
 	data.SysMemPitch = data.SysMemPitch = 0; // 1D resource 
 
-	HRESULT hr = device->CreateBuffer(&desc, &data, &matrixBuffer);
-	if (FAILED(hr))
+	if (FAILED(device->CreateBuffer(&desc, &data, &theWorldBuffer)))
 	{
-		ErrorLog::Log(hr, "Failed to create matrixBuffer");
+		ErrorLog::Log("Failed to create world Buffer");
 		return false;
 	}
 
 	return true;
 }
 
-bool setupModelBuffersDepth(ID3D11Device* device, ID3D11Buffer*& matrixBuffer, struct DepthBufferData& depthMatrixData, float width, float height)
+bool SetupBuffers(ID3D11Device* device, ID3D11Buffer*& lightBuffer, ID3D11Buffer*& camBuffer,
+	ID3D11Buffer*& theWorldBuffer, struct LightData& lightData, struct CamData& camData,
+	struct TheWorld& theWorld)
 {
-	XMMATRIX world = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
-	XMStoreFloat4x4(&depthMatrixData.world, XMMatrixTranspose(world));
-
-	XMMATRIX View = XMMatrixLookAtLH({ 0,0,-2 }, { 0,0,-1 }, { 0,1,0 });
-	XMStoreFloat4x4(&depthMatrixData.view, XMMatrixTranspose(View));
-
-	XMMATRIX Projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PI / 2, width / height, 0.1f, 100.0f);
-	XMStoreFloat4x4(&depthMatrixData.projection, XMMatrixTranspose(Projection));
-
-	D3D11_BUFFER_DESC desc;
-	desc.ByteWidth = sizeof(DepthBufferData);
-	desc.Usage = D3D11_USAGE_DYNAMIC;
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	desc.MiscFlags = 0;
-	desc.StructureByteStride = 0;
-
-	D3D11_SUBRESOURCE_DATA data;
-	data.pSysMem = (void*)&depthMatrixData;
-	data.SysMemPitch = data.SysMemPitch = 0; // 1D resource 
-
-	HRESULT hr = device->CreateBuffer(&desc, &data, &matrixBuffer);
-	if (FAILED(hr))
-	{
-		ErrorLog::Log(hr, "Failed to create matrixBuffer");
+	if (!createLightBuffer(device, lightBuffer, lightData))
 		return false;
-	}
+
+	if (!createCamBuffer(device, camBuffer, camData))
+		return false;
+
+	if (!setupWorldMatrixs(device, theWorldBuffer, theWorld))
+		return false;
 
 	return true;
 }
