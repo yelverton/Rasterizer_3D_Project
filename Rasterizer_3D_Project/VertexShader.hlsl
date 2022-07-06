@@ -8,6 +8,12 @@ cbuffer Matrices : register(b1)
 	matrix viewProj;
 }
 
+cbuffer light : register(b2)
+{
+	float3 lightPosition;
+	float shininess;
+};
+
 struct VertexShaderInput
 {
 	float3 position : POSITION;
@@ -21,6 +27,7 @@ struct VertexShaderOutput
 	float2 uv : UV;
 	float3 normal : normal;
 	float3 posWS : WS_POSITION;
+	float4 posLight : LIGHTPOS;
 };
 
 VertexShaderOutput main(VertexShaderInput input)

@@ -1,7 +1,9 @@
 Texture2D Ambient : register(t0);
-Texture2D Deffuse : register(t2);
-Texture2D Specular : register(t1);
+Texture2D Deffuse : register(t1);
+Texture2D Specular : register(t2);
+Texture2D DepthTexture : register(t3);
 SamplerState Sampler : SAMPLER : register(s0);
+SamplerState SampleDepth : SAMPLER : register(s1);
 
 struct PixelShaderInput
 {

@@ -34,8 +34,8 @@ void Mesh::Draw()
 	for (int i = 0; i < next.size(); i++)
 	{
 		immediateContext->PSSetShaderResources(0, 1, ambient[i].GetAddressOf());
-		immediateContext->PSSetShaderResources(1, 1, specular[i].GetAddressOf());
-		immediateContext->PSSetShaderResources(2, 1, diffuse[i].GetAddressOf());
+		immediateContext->PSSetShaderResources(1, 1, diffuse[i].GetAddressOf());
+		immediateContext->PSSetShaderResources(2, 1, specular[i].GetAddressOf());
 		immediateContext->DrawIndexed(size[i], next[i], 0);
 	}
 }

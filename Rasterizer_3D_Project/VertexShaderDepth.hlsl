@@ -1,6 +1,11 @@
+cbuffer Matrices : register(b0)
+{
+	matrix world;
+}
+
 cbuffer Matrices : register(b1)
 {
-	matrix world, view, projection;
+	matrix viewProj;
 }
 
 struct VertexShaderInput
@@ -13,7 +18,7 @@ struct VertexShaderInput
 float4 main(VertexShaderInput input) : SV_POSITION
 {
 	float4 output;
-	float4x4 worldWiewProjection = mul(mul(world, view), projection);
+	float4x4 worldWiewProjection = mul(world, viewProj);
 	output = mul(float4(input.position, 1.0f), worldWiewProjection);
 	return output;
 }
