@@ -80,6 +80,7 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView*& dsVi
 		camera.sendViewProjection(1);
 	} else {
 		lightCamera.moveCamera(dt, lightCamera);
+		/*lightCamera.setLookAtPos(camera.GetPositionFloat3());*/
 		lightCamera.sendViewProjection(1);
 	}
 
@@ -216,9 +217,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	camera.createConstantBuffer(device, immediateContext);
 	lightCamera.createConstantBuffer(device, immediateContext);
 
-	lightCamera.SetPosition(0.0f, 30.0f, 0.0f);
+	lightCamera.AdjustPosition(0.0f, 30.0f, 0.0f);
 	lightCamera.setLookAtPos(XMFLOAT3(0.0f, 1.0f, 0.0f));
-	lightCamera.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);
+	//lightCamera.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);
 
 	MSG msg = { };
 	while (!(GetKeyState(VK_ESCAPE) & 0x8000) && msg.message != WM_QUIT)
