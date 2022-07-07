@@ -42,6 +42,8 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	float specularConponent = pow(max(dot(lightDir, reflectDir), 0.0f), shininess);
 	float3 Specular = specularComponent.Load(location).xyz * specularConponent * 10.0f;
 
-	// return
-	backBuffer[DTid.xy] = float4(Ambient, 1.0f) + float4(Diffuse, 1.0f) + float4(Specular, 1.0f);
+	// return;
+	backBuffer[DTid.xy] = (float4(Ambient, 1.0f) + float4(Diffuse, 1.0f) + float4(Specular, 1.0f)) * ambinetComponent.Load(location).w;
+	//backBuffer[DTid.xy] = float4(diffuseComponent.Load(location).xyz, 1.0f) * ambinetComponent.Load(location).w;
+
 }

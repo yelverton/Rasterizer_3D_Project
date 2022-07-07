@@ -17,8 +17,6 @@ struct VertexShaderInput
 
 float4 main(VertexShaderInput input) : SV_POSITION
 {
-	float4 output;
 	float4x4 worldWiewProjection = mul(world, viewProj);
-	output = mul(float4(input.position, 1.0f), worldWiewProjection);
-	return output;
+	return mul(float4(input.position, 1.0f), worldWiewProjection);
 }

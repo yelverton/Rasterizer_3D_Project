@@ -8,11 +8,10 @@ cbuffer Matrices : register(b1)
 	matrix viewProj;
 }
 
-cbuffer light : register(b2)
+cbuffer LightVP : register(b2)
 {
-	float3 lightPosition;
-	float shininess;
-};
+	float4x4 viewProjectionLight;
+}
 
 struct VertexShaderInput
 {
@@ -39,5 +38,6 @@ VertexShaderOutput main(VertexShaderInput input)
 	output.position = mul(float4(input.position, 1.0f), worldWiewProjection);
 	output.normal = mul(float4(input.normal, 0.0f), world).xyz;
 	output.posWS = mul(float4(input.position, 1.0f), world).xyz;
+	output.posLight = mul(mul(float4(input.position, 1.0f), world), viewProjectionLight);
 	return output;
 }
