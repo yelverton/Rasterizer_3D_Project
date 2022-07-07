@@ -12,7 +12,8 @@ class Camera
 {
 public:
 	Camera();
-	void moveCamera(float dt, Camera& camera);
+
+	void moveCamera(Camera& cam, float dt);
 
 	const XMMATRIX& GetViewMatrix() const;
 
@@ -21,20 +22,23 @@ public:
 	const XMVECTOR& GetRotationVector() const;
 	const XMFLOAT3& GetRotationFloat3() const;
 
+	void SetPosition(const XMVECTOR& pos);
 	void SetPosition(float x, float y, float z);
+	void AdjustPosition(XMVECTOR pos);
 	void AdjustPosition(float x, float y, float z);
-	void SetRotation(float x, float y);
-	void AdjustRotation(float x, float y);
+	void SetRotation(const XMVECTOR& rot);
+	void SetRotation(float x, float y, float z);
+	void AdjustRotation(const XMVECTOR rot);
+	void AdjustRotation(float x, float y, float z);
+	void SetLookAtPos(XMFLOAT3 lookAtPos);
 
 	const XMVECTOR& GetForwardVector();
 	const XMVECTOR& GetRightVector();
 	const XMVECTOR& GetBackwardVector();
 	const XMVECTOR& GetLeftVector();
 
-	void setLookAtPos(XMFLOAT3 lookAtPos);
 	bool createConstantBuffer(ID3D11Device* device, ID3D11DeviceContext* immediateContext);
 	void adjustProjectionMatrix(float FOV, float aspectRatio, float nearZ, float farZ);
-	void sendProjection(int vertexShaderPos);
 	void sendViewProjection(int vertexShaderPos);
 
 private:
@@ -42,32 +46,24 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> ConstantBuffer;
 	VPmatrix VP;
 
-	XMMATRIX worldToView;
+	void UpdateViewMatrix();
+	XMVECTOR posVector;
+	XMVECTOR rotVector;
+	XMFLOAT3 pos;
+	XMFLOAT3 rot;
+
 	XMMATRIX viewMatrix;
 	XMMATRIX projection;
 	XMMATRIX View;
 
-	XMVECTOR cameraPos = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	XMVECTOR lookAtPos = XMVectorSet(0.0f, 0.0f, 5.0f, 0.0f);
+	const XMVECTOR DEFAULT_FORWARD_VECTOR = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+	const XMVECTOR DEFAULT_UP_VECTOR = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	const XMVECTOR DEFAULT_BACKWARD_VECTOR = XMVectorSet(0.0f, 0.0f, -1.0f, 0.0f);
+	const XMVECTOR DEFAULT_LEFT_VECTOR = XMVectorSet(-1.0f, 0.0f, 0.0f, 0.0f);
+	const XMVECTOR DEFAULT_RIGHT_VECTOR = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
 
-	const XMVECTOR DEFAULT_FORWARD = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-	const XMVECTOR DEFAULT_BACK = XMVectorSet(0.0f, 0.0f, -1.0f, 0.0f);
-	const XMVECTOR DEFAULT_RIGHT = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
-	const XMVECTOR DEFAULT_LEFT = XMVectorSet(-1.0f, 0.0f, 0.0f, 0.0f);
-	const XMVECTOR DEFAULT_UP = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	const XMVECTOR DEFAULT_DOWN = XMVectorSet(0.0f, -1.0f, 0.0f, 0.0f);
-
-	XMVECTOR vec_forward = DEFAULT_FORWARD;
-	XMVECTOR vec_back = DEFAULT_BACK;
-	XMVECTOR vec_right = DEFAULT_RIGHT;
-	XMVECTOR vec_left = DEFAULT_LEFT;
-	XMVECTOR vec_up = DEFAULT_UP;
-	XMVECTOR vec_down = DEFAULT_DOWN;
-
-	XMFLOAT3 rotation;
-	XMVECTOR rotation_Vector = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	XMFLOAT3 rotationForward;
-	XMVECTOR rotation_Vector_Forward = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	XMMATRIX rotationMatrix;
-	XMMATRIX rotationForwardMatrix;
+	XMVECTOR vec_forward;
+	XMVECTOR vec_left;
+	XMVECTOR vec_right;
+	XMVECTOR vec_backward;
 };
