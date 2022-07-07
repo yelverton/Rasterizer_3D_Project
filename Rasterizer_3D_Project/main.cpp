@@ -103,25 +103,7 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView*& dsVi
 	immediateContext->PSSetShaderResources(3, 1, &SRVShadow);
 }
 
-void RenderComputerShader(ID3D11DeviceContext* immediateContext, ID3D11ComputeShader* cShader, ID3D11DepthStencilView* dsView,
-	ID3D11UnorderedAccessView* UAView, ID3D11ShaderResourceView* gBufferSRV[])
-{
-	ID3D11RenderTargetView* nullRTV[6] = { nullptr };
-	immediateContext->OMSetRenderTargets(6, nullRTV, nullptr);
-
-	immediateContext->CSSetShader(cShader, nullptr, 0);
-	immediateContext->CSSetShaderResources(0, 6, gBufferSRV);
-	immediateContext->CSSetUnorderedAccessViews(0, 1, &UAView, nullptr);
-	
-	immediateContext->Dispatch(32, 32, 1);
-
-	ID3D11UnorderedAccessView* NullUAV = nullptr;
-	immediateContext->CSSetUnorderedAccessViews(0, 1, &NullUAV, nullptr);
-	ID3D11ShaderResourceView* gBufferSRVNULL[6] = { nullptr };
-	immediateContext->CSSetShaderResources(0, 6, gBufferSRVNULL);
-}
-
-void draw(ID3D11DeviceContext* immediateContext, vector<Mesh> &mesh, vector<XMFLOAT3> worldPos, struct TheWorld theWorld, ID3D11Buffer* theWorldBuffer, 
+void draw(ID3D11DeviceContext* immediateContext, vector<Mesh>& mesh, vector<XMFLOAT3> worldPos, struct TheWorld theWorld, ID3D11Buffer* theWorldBuffer,
 	Camera& camera, bool& playerPerspectiv, Camera& lightCamera)
 {
 	DirectX::XMMATRIX Identity = XMMatrixIdentity();
@@ -139,6 +121,24 @@ void draw(ID3D11DeviceContext* immediateContext, vector<Mesh> &mesh, vector<XMFL
 
 		mesh[i].Draw();
 	}
+}
+
+void RenderComputerShader(ID3D11DeviceContext* immediateContext, ID3D11ComputeShader* cShader, ID3D11DepthStencilView* dsView,
+	ID3D11UnorderedAccessView* UAView, ID3D11ShaderResourceView* gBufferSRV[])
+{
+	ID3D11RenderTargetView* nullRTV[6] = { nullptr };
+	immediateContext->OMSetRenderTargets(6, nullRTV, nullptr);
+
+	immediateContext->CSSetShader(cShader, nullptr, 0);
+	immediateContext->CSSetShaderResources(0, 6, gBufferSRV);
+	immediateContext->CSSetUnorderedAccessViews(0, 1, &UAView, nullptr);
+	
+	immediateContext->Dispatch(32, 32, 1);
+
+	ID3D11UnorderedAccessView* NullUAV = nullptr;
+	immediateContext->CSSetUnorderedAccessViews(0, 1, &NullUAV, nullptr);
+	ID3D11ShaderResourceView* gBufferSRVNULL[6] = { nullptr };
+	immediateContext->CSSetShaderResources(0, 6, gBufferSRVNULL);
 }
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -216,7 +216,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	camera.createConstantBuffer(device, immediateContext);
 	lightCamera.createConstantBuffer(device, immediateContext);
 
-	lightCamera.SetPosition(0.0f, 20.0f, 0.0f);
+	lightCamera.SetPosition(0.0f, 5.0f, 0.0f);
 	lightCamera.setLookAtPos(XMFLOAT3(0.0f, 1.0f, 0.0f));
 	lightCamera.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);
 
