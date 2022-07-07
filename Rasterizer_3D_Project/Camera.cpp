@@ -168,9 +168,9 @@ bool Camera::createConstantBuffer(ID3D11Device* device, ID3D11DeviceContext* imm
 	rotation_Vector_Forward = XMLoadFloat3(&rotationForward);
 
 	vec_forward = DEFAULT_FORWARD;
-	vec_up = DEFAULT_UP;
-	vec_right = DEFAULT_RIGHT;
 	vec_back = DEFAULT_UP;
+	vec_right = DEFAULT_RIGHT;
+	vec_up = DEFAULT_UP;
 
 	rotationForwardMatrix = XMMatrixRotationRollPitchYawFromVector(rotation_Vector_Forward);
 	rotationMatrix = XMMatrixRotationRollPitchYawFromVector(rotation_Vector);
