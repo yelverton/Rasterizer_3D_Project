@@ -42,12 +42,8 @@ vsOutPut main(PixelShaderInput input) : SV_TARGET
 	float2 leps = frac(texelPosition);
     
 	float shadow = lerp(lerp(t0, t1, leps.x), lerp(t2, t3, leps.x), leps.y);
-	//float shadow = (t0 + t1 + t2 + t3) / 4;
-	if (shadow <= 0.3f)
-		shadow = 0.3f;
-	
-	//if (shadow < 0.0001)
-	//	shadow = 0.0f;
+	//if (shadow <= 0.3f)
+	//	shadow = 0.3f;
 	
 	vsOutPut output;
 	

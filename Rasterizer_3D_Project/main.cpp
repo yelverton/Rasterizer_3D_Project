@@ -216,7 +216,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	camera.createConstantBuffer(device, immediateContext);
 	lightCamera.createConstantBuffer(device, immediateContext);
 
-	lightCamera.SetPosition(0.0f, 5.0f, 0.0f);
+	lightCamera.SetPosition(0.0f, 30.0f, 0.0f);
 	lightCamera.setLookAtPos(XMFLOAT3(0.0f, 1.0f, 0.0f));
 	lightCamera.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);
 
