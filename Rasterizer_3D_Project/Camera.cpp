@@ -59,6 +59,11 @@ const XMMATRIX& Camera::GetViewMatrix() const
 	return this->viewMatrix;
 }
 
+const XMMATRIX& Camera::GetProjection() const
+{
+	return projection;
+}
+
 const XMVECTOR& Camera::GetPositionVector() const
 {
 	return this->posVector;
@@ -216,11 +221,10 @@ void Camera::adjustProjectionMatrix(float FOV, float aspectRatio, float nearZ, f
 	this->projection = DirectX::XMMatrixPerspectiveFovLH(FOV, aspectRatio, nearZ, farZ);
 }
 
-void Camera::sendViewProjection(int vertexShaderPos)
+void Camera::sendViewProjection(Camera& cam, int vertexShaderPos)
 {
-	XMMATRIX viewProjection = viewMatrix * projection;
+	XMMATRIX viewProjection = cam.GetViewMatrix() * cam.GetProjection();
 	viewProjection = XMMatrixTranspose(viewProjection);
-	XMStoreFloat4x4(&VP.viewProj, viewProjection);
 
 	XMStoreFloat4x4(&VP.viewProj, viewProjection);
 	D3D11_MAPPED_SUBRESOURCE subData = {};

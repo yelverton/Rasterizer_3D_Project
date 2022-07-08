@@ -35,7 +35,7 @@ void ShadowPrePass(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView
 	immediateContext->PSGetSamplers(1, 1, &sampleStateShadow);
 	immediateContext->OMSetRenderTargets(0, nullptr, dsViewShadow);
 
-	lightCamera.sendViewProjection(1);
+	lightCamera.sendViewProjection(lightCamera, 1);
 }
 
 void drawPrePass(ID3D11DeviceContext* immediateContext, vector<Mesh>& mesh, vector<XMFLOAT3> worldPos, struct TheWorld theWorld, ID3D11Buffer* theWorldBuffer)
@@ -77,15 +77,15 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView*& dsVi
 
 	if (playerPerspectiv) {
 		camera.moveCamera(camera, dt);
-		camera.sendViewProjection(1);
+		camera.sendViewProjection(camera, 1);
 	} else {
 		lightCamera.moveCamera(lightCamera, dt);
-		lightCamera.sendViewProjection(1);
+		lightCamera.sendViewProjection(lightCamera, 1);	
 	}
 
 	//lightCamera.SetLookAtPos(camera.GetPositionFloat3());
 	camData.cameraPosition = camera.GetPositionFloat3();
-	lightData.lightPosition = lightCamera.GetPositionFloat3();
+	lightData.lightPosition = lightCamera.GetPositionFloat3()/*XMFLOAT3(-lightCamera.GetPositionFloat3().x, lightCamera.GetPositionFloat3().y, -lightCamera.GetPositionFloat3().z)*/;
 
 	D3D11_MAPPED_SUBRESOURCE subLight = {};
 	immediateContext->Map(lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subLight);
@@ -99,7 +99,7 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView*& dsVi
 	immediateContext->Unmap(camBuffer, 0);
 	immediateContext->CSSetConstantBuffers(1, 1, &camBuffer);
 
-	lightCamera.sendViewProjection(2);
+	lightCamera.sendViewProjection(lightCamera, 2);
 
 	immediateContext->PSSetShaderResources(3, 1, &SRVShadow);
 }
@@ -219,6 +219,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	lightCamera.AdjustPosition(0.0f, 30.0f, 0.0f);
 	lightCamera.SetLookAtPos(XMFLOAT3(0.0f, 1.0f, 0.0f));
+	lightCamera.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);
 
 	MSG msg = { };
 	while (!(GetKeyState(VK_ESCAPE) & 0x8000) && msg.message != WM_QUIT)

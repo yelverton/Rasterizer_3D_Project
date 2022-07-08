@@ -16,6 +16,7 @@ public:
 	void moveCamera(Camera& cam, float dt);
 
 	const XMMATRIX& GetViewMatrix() const;
+	const XMMATRIX& GetProjection() const;
 
 	const XMVECTOR& GetPositionVector() const;
 	const XMFLOAT3& GetPositionFloat3() const;
@@ -39,7 +40,7 @@ public:
 
 	bool createConstantBuffer(ID3D11Device* device, ID3D11DeviceContext* immediateContext);
 	void adjustProjectionMatrix(float FOV, float aspectRatio, float nearZ, float farZ);
-	void sendViewProjection(int vertexShaderPos);
+	void sendViewProjection(Camera& cam, int vertexShaderPos);
 
 private:
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> immediateContext;
