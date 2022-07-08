@@ -80,10 +80,10 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView*& dsVi
 		camera.sendViewProjection(1);
 	} else {
 		lightCamera.moveCamera(lightCamera, dt);
-		/*lightCamera.setLookAtPos(camera.GetPositionFloat3());*/
 		lightCamera.sendViewProjection(1);
 	}
 
+	//lightCamera.SetLookAtPos(camera.GetPositionFloat3());
 	camData.cameraPosition = camera.GetPositionFloat3();
 	lightData.lightPosition = lightCamera.GetPositionFloat3();
 
