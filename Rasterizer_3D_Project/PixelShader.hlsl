@@ -26,7 +26,10 @@ struct vsOutPut
 
 vsOutPut main(PixelShaderInput input) : SV_TARGET
 {
-	input.posLight.xy /= input.posLight.w;
+	input.posLight.x /= input.posLight.w;
+	input.posLight.y /= -input.posLight.w;
+	
+	//input.posLight.xy /= input.posLight.w;
 	float2 smTex = float2(0.5f * input.posLight.x + 0.5f, -0.5f * input.posLight.y + 0.5f);
 	float depth = input.posLight.z / input.posLight.w;
 	float Epsilon = 0.000125f;
@@ -41,8 +44,8 @@ vsOutPut main(PixelShaderInput input) : SV_TARGET
 
 	float2 leps = frac(texelPosition);
     
-	//float shadow = lerp(lerp(t0, t1, leps.x), lerp(t2, t3, leps.x), leps.y);
-	float shadow = (t0 + t1 + t2 + t3) / 4;
+	float shadow = lerp(lerp(t0, t1, leps.x), lerp(t2, t3, leps.x), leps.y);
+	//float shadow = (t0 + t1 + t2 + t3) / 4;
 	if (shadow <= 0.3f)
 		shadow = 0.3f;
 	

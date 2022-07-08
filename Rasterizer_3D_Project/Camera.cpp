@@ -27,17 +27,17 @@ void Camera::moveCamera(Camera& cam, float dt)
 	}
 
 	if (GetAsyncKeyState('K')) {
-		cam.AdjustRotation(cam.GetRightVector() * dt * 50);
+		cam.AdjustRotation(cam.GetRightVector() * dt * 5);
 	}
 	else if (GetAsyncKeyState('I')) {
-		cam.AdjustRotation(cam.GetRightVector() * dt * -50);
+		cam.AdjustRotation(cam.GetRightVector() * dt * -5);
 	}
 
 	if (GetAsyncKeyState('J')) {
-		cam.AdjustRotation(0, -0.05, 0);
+		cam.AdjustRotation(0, -0.005, 0);
 	}
 	else if (GetAsyncKeyState('L')) {
-		cam.AdjustRotation(0, 0.005, 0);
+		cam.AdjustRotation(0, 0.0005, 0);
 	}
 
 	if (GetAsyncKeyState('Q')) {
