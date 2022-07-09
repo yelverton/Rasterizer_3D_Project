@@ -26,6 +26,8 @@ struct vsOutPut
 
 vsOutPut main(PixelShaderInput input) : SV_TARGET
 {
+	input.posLight = normalize(input.posLight);
+	
 	input.posLight.xy /= input.posLight.w;
 	
 	//input.posLight.xy /= input.posLight.w;
