@@ -99,8 +99,6 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView*& dsVi
 	immediateContext->Unmap(camBuffer, 0);
 	immediateContext->CSSetConstantBuffers(1, 1, &camBuffer);
 
-	lightCamera.sendViewProjection(lightCamera, 2);
-
 	immediateContext->PSSetShaderResources(3, 1, &SRVShadow);
 }
 
@@ -119,6 +117,8 @@ void draw(ID3D11DeviceContext* immediateContext, vector<Mesh>& mesh, vector<XMFL
 		std::memcpy(subData.pData, &theWorld, sizeof(BufferData));
 		immediateContext->Unmap(theWorldBuffer, 0);
 		immediateContext->VSSetConstantBuffers(0, 1, &theWorldBuffer);
+
+		lightCamera.sendViewProjection(lightCamera, 2);
 
 		mesh[i].Draw();
 	}
@@ -218,7 +218,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	lightCamera.createConstantBuffer(device, immediateContext);
 
 	lightCamera.AdjustPosition(0.0f, 30.0f, 0.0f);
-	lightCamera.SetLookAtPos(XMFLOAT3(0.0f, 1.0f, 0.0f));
+	//lightCamera.SetLookAtPos(XMFLOAT3(0.0f, 1.0f, 0.0f));
 	lightCamera.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);
 
 	MSG msg = { };

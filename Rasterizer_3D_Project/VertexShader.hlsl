@@ -36,6 +36,6 @@ VertexShaderOutput main(VertexShaderInput input)
 	output.position = mul(float4(input.position, 1.0f), mul(world, viewProj));
 	output.normal = mul(float4(input.normal, 0.0f), world).xyz;
 	output.posWS = mul(float4(input.position, 1.0f), world).xyz;
-	output.posLight = mul(mul(float4(input.position, 1.0f), world), mul(world, viewProjectionLight));
+	output.posLight = normalize(mul(mul(float4(input.position, 1.0f), world), mul(world, viewProjectionLight)));
 	return output;
 }

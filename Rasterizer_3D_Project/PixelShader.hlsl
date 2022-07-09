@@ -26,8 +26,7 @@ struct vsOutPut
 
 vsOutPut main(PixelShaderInput input) : SV_TARGET
 {
-	input.posLight.x /= input.posLight.w;
-	input.posLight.y /= -input.posLight.w;
+	input.posLight.xy = input.posLight.xy / input.posLight.w;
 	
 	//input.posLight.xy /= input.posLight.w;
 	float2 smTex = float2(0.5f * input.posLight.x + 0.5f, -0.5f * input.posLight.y + 0.5f);
