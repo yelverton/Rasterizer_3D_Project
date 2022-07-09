@@ -26,10 +26,10 @@ struct vsOutPut
 
 vsOutPut main(PixelShaderInput input) : SV_TARGET
 {
-	input.posLight.xy = input.posLight.xy / input.posLight.w;
+	input.posLight.xy /= input.posLight.w;
 	
 	//input.posLight.xy /= input.posLight.w;
-	float2 smTex = float2(0.5f * input.posLight.x + 0.5f, -0.5f * input.posLight.y + 0.5f);
+	float2 smTex = float2((0.5f * input.posLight.x) + 0.5f, (-0.5f * input.posLight.y) + 0.5f);
 	float depth = input.posLight.z / input.posLight.w;
 	float Epsilon = 0.000125f;
 	
@@ -43,8 +43,8 @@ vsOutPut main(PixelShaderInput input) : SV_TARGET
 
 	float2 leps = frac(texelPosition);
     
-	float shadow = lerp(lerp(t0, t1, leps.x), lerp(t2, t3, leps.x), leps.y);
-	//float shadow = (t0 + t1 + t2 + t3) / 4;
+	//float shadow = lerp(lerp(t0, t1, leps.x), lerp(t2, t3, leps.x), leps.y);
+	float shadow = (t0 + t1 + t2 + t3) / 4;
 	if (shadow <= 0.3f)
 		shadow = 0.3f;
 	
@@ -52,8 +52,7 @@ vsOutPut main(PixelShaderInput input) : SV_TARGET
 	
 	output.posWS = float4(input.posWS, shadow);
 	output.normal = float4(input.normal, 1.0f);
-	output.baseColour = input.posLight;
-	//output.baseColour = float4(1.0f, 0.0f, 0.0f, 0.0f); // Behöver lägga till specular exponent fråga om det är shiness kan vara ej :D
+	output.baseColour = float4(1.0f, 0.0f, 0.0f, 0.0f); // Behöver lägga till specular exponent fråga om det är shiness kan vara ej :D
 	output.ambinetComponent = Ambient.Sample(Sampler, input.uv).rgba;
 	output.diffuseComponent = Deffuse.Sample(Sampler, input.uv).rgba;
 	output.specularComponent = Specular.Sample(Sampler, input.uv).rgba;

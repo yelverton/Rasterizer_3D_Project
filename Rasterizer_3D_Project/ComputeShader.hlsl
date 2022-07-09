@@ -23,7 +23,7 @@ cbuffer cam : register(b1)
 void main( uint3 DTid : SV_DispatchThreadID )
 {
 	int3 location = int3(DTid.x, DTid.y, DTid.z);
-
+	
 	float3 Normal = normalize(normal.Load(location).xyz);
 	float3 Pos = posWS.Load(location).xyz;
 	
@@ -31,19 +31,26 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	float3 lightDir = normalize(Pos - lightPosition);
 	
 	// Ambient
-	float3 Ambient = ambinetComponent.Load(location).xyz * 0.4f;
+	float3 Ambient = ambinetComponent.Load(location).xyz;
 	
 	// Diffuse
 	float3 diffuseLevel = dot(Normal, -lightDir);
 	float3 Diffuse = diffuseComponent.Load(location).xyz /** diffuseLevel*/; 
 
+	// kan vara fel
+	float3 vecBetweenWPosLight = normalize(lightPosition - Pos);
+	float diffuselight = clamp(dot(Normal, vecBetweenWPosLight), 0.0f, 1.0f); // * lightColor;
+	float3 diffuselightClr = Ambient * diffuselight;
+	
 	// Specular
 	float3 reflectDir = normalize(reflect(lightPosition, Normal));
 	float specularConponent = pow(max(dot(-lightDir, reflectDir), 0.0f), shininess);
 	float3 Specular = specularComponent.Load(location).xyz * specularConponent * 10.0f;
 
+	float3 color = Ambient * diffuselightClr;
+	
 	// return;
-	backBuffer[DTid.xy] = /*(float4(Ambient, 1.0f) + */float4(Diffuse, 1.0f) * posWS.Load(location).w /*+ float4(Specular, 1.0f)) * posWS.Load(location).w*/;
+	backBuffer[DTid.xy] = /*(float4(Ambient, 1.0f) + */float4(color, 1.0f) * posWS.Load(location).w /*+ float4(Specular, 1.0f)) * posWS.Load(location).w*/;
 	//backBuffer[DTid.xy] = float4(diffuseComponent.Load(location).xyz, 1.0f) * ambinetComponent.Load(location).w;
 
 }

@@ -52,6 +52,8 @@ void Camera::moveCamera(Camera& cam, float dt)
 		cam.SetRotation(0, 0, 0);
 		cam.SetPosition(0, 0, -2);
 	}
+
+	cam.UpdateViewMatrix();
 }
 
 const XMMATRIX& Camera::GetViewMatrix() const
