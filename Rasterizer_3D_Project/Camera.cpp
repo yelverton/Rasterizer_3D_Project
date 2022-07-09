@@ -34,10 +34,10 @@ void Camera::moveCamera(Camera& cam, float dt)
 	}
 
 	if (GetAsyncKeyState('J')) {
-		cam.AdjustRotation(0, -0.005, 0);
+		cam.AdjustRotation(0, -0.05, 0);
 	}
 	else if (GetAsyncKeyState('L')) {
-		cam.AdjustRotation(0, 0.0005, 0);
+		cam.AdjustRotation(0, 0.005, 0);
 	}
 
 	if (GetAsyncKeyState('Q')) {
