@@ -4,6 +4,8 @@
 #include "Setup/WindowHelper.h"
 #include "Setup/D3D11Helper.h"
 #include "Setup/PipelineHelper.h"
+#include "Setup\ShadowHelper.h"
+#include "Setup\ParticleHelper.h"
 #include "Helper/BufferHelper.h"
 #include "Scene/modelHelper.h"
 #include "Scene/ModelReader/ObjHelper.h"
@@ -22,8 +24,8 @@ void clearRenderTargetView(ID3D11DeviceContext*& immediateContext, ID3D11DepthSt
 	immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
-void ShadowPrePass(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView*& dsViewShadow, D3D11_VIEWPORT& viewportShadow, Camera &lightCamera,
-	vector<Mesh> mesh, ID3D11VertexShader* vShaderDepth, ID3D11InputLayout* inputLayoutVSDepth, ID3D11SamplerState* sampleStateShadow)
+void ShadowPrePass(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView*& dsViewShadow, D3D11_VIEWPORT& viewportShadow, Camera lightCamera,
+	Camera camera, vector<Mesh> mesh, ID3D11VertexShader* vShaderDepth, ID3D11InputLayout* inputLayoutVSDepth, ID3D11SamplerState* sampleStateShadow)
 {
 	immediateContext->IASetInputLayout(inputLayoutVSDepth);
 	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -35,6 +37,7 @@ void ShadowPrePass(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView
 	immediateContext->PSGetSamplers(1, 1, &sampleStateShadow);
 	immediateContext->OMSetRenderTargets(0, nullptr, dsViewShadow);
 
+	//lightCamera.SetLookAtPos(camera.GetPositionFloat3());
 	lightCamera.sendViewProjection(lightCamera, 1);
 }
 
@@ -169,11 +172,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	ID3D11VertexShader* vShader;
 	ID3D11VertexShader* vShaderDepth;
+	ID3D11VertexShader* vShaderParticle;
+	ID3D11GeometryShader* gShaderParticle;
 	ID3D11PixelShader* pShader; 
+	ID3D11PixelShader* pShaderParticle;
 	ID3D11ComputeShader* cShader;
+	ID3D11ComputeShader* cShaderParticle;
 
 	ID3D11InputLayout* inputLayoutVS;
 	ID3D11InputLayout* inputLayoutVSDepth;
+	ID3D11InputLayout* inputLayoutVSParticle;
 
 	ID3D11SamplerState* sampleState;
 	ID3D11SamplerState* sampleStateShadow;
@@ -196,12 +204,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	bool playerPerspectiv = true;
 
-	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, UAView, dsView, dsViewShadow, viewport,
-		viewportShadow, SRVShadow, gBufferRTV, gBufferSRV))
+	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, dsView, viewport))
 		return -1;
 
-	if (!SetupPipeline(device, vShader, vShaderDepth, pShader, cShader, inputLayoutVS, inputLayoutVSDepth, sampleState, 
-		sampleStateShadow))
+	if (!SetupShadowHelper(device, immediateContext, viewportShadow, WIDTH, HEIGHT, dsViewShadow, SRVShadow,
+		gBufferRTV, gBufferSRV, swapChain, UAView))
+		return -1;
+
+	if (!SetupParticleHelper(device, immediateContext))
+		return -1;
+
+	if (!SetupPipeline(device, vShader, vShaderDepth, vShaderParticle, gShaderParticle, pShader, pShaderParticle, cShader,
+		cShaderParticle, inputLayoutVS, inputLayoutVSDepth, inputLayoutVSParticle, sampleState, sampleStateShadow))
 		return -1;
 
 	if (!SetupBuffers(device, lightBuffer, camBuffer, theWorldBuffer, lightData, camData, theWorld))
@@ -232,7 +246,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 		auto start = std::chrono::system_clock::now();
 		clearRenderTargetView(immediateContext, dsViewShadow, gBufferRTV, dsView);
-		ShadowPrePass(immediateContext, dsViewShadow, viewportShadow, lightCamera, mesh, vShaderDepth, inputLayoutVSDepth, sampleStateShadow);
+		ShadowPrePass(immediateContext, dsViewShadow, viewportShadow, lightCamera, camera, mesh, vShaderDepth, inputLayoutVSDepth, sampleStateShadow);
 		drawPrePass(immediateContext, mesh, worldPos, theWorld, theWorldBuffer);
 		Render(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, 
 			lightBuffer, camBuffer, lightData, camData, camera, gBufferRTV, playerPerspectiv, lightCamera, SRVShadow);
@@ -250,10 +264,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	sampleState->Release();
 	inputLayoutVS->Release();
 	inputLayoutVSDepth->Release();
+	inputLayoutVSParticle->Release();
 	pShader->Release();
 	vShader->Release();
 	vShaderDepth->Release();
+	vShaderParticle->Release();
+	gShaderParticle->Release();
 	cShader->Release();
+	cShaderParticle->Release();
 	dsView->Release();
 	dsViewShadow->Release();
 	SRVShadow->Release();

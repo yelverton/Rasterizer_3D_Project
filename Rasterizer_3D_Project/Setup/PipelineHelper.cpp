@@ -5,118 +5,227 @@
 #include <string>
 #include <iostream>
 
-bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11VertexShader*& vShaderDepth,
-	ID3D11PixelShader*& pShader, ID3D11ComputeShader*& cShader, std::string& vShaderByteCode, 
-	std::string& vShaderByteCodeDepth)
-{
-	// VERTEX SHADER:
 
+bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11VertexShader*& vShaderDepth, ID3D11VertexShader*& vShaderParticle,
+	ID3D11GeometryShader*& gShaderParticle, ID3D11PixelShader*& pShader, ID3D11PixelShader*& pShaderParticle, ID3D11ComputeShader*& cShader, 
+	ID3D11ComputeShader*& cShaderParticle, std::string& vShaderByteCode, std::string& vShaderByteCodeDepth, std::string& vShaderByteCodeParticle)
+{
 	std::string shaderData;
 	std::ifstream reader;
-	reader.open("../x64/Debug/VertexShader.cso", std::ios::binary | std::ios::ate);
-	if (!reader.is_open())
-	{
-		ErrorLog::Log("Could not open VS file!");
-		return false;
-	}
 
-	reader.seekg(0, std::ios::end);
-	shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
-	reader.seekg(0, std::ios::beg);
+	// VERTEX SHADER:
+	
+		// [PARTICLE]
+	
+		reader.open("../x64/Debug/VertexShaderParticle.cso", std::ios::binary | std::ios::ate);
+		if (!reader.is_open())
+		{
+			ErrorLog::Log("Could not open VS Depth file Particle!");
+			return false;
+		}
 
-	shaderData.assign((std::istreambuf_iterator<char>(reader)),
-		std::istreambuf_iterator<char>());
+		reader.seekg(0, std::ios::end);
+		shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
+		reader.seekg(0, std::ios::beg);
 
-	if (FAILED(device->CreateVertexShader(shaderData.c_str(), shaderData.length(), nullptr, &vShader)))
-	{
-		ErrorLog::Log("Failed to create vertex shader!");
-		return false;
-	}
+		shaderData.assign((std::istreambuf_iterator<char>(reader)),
+			std::istreambuf_iterator<char>());
 
-	vShaderByteCode = shaderData;
+		if (FAILED(device->CreateVertexShader(shaderData.c_str(), shaderData.length(), nullptr, &vShaderParticle)))
+		{
+			ErrorLog::Log("Failed to create vertex shader Particle!");
+			return false;
+		}
 
-	// PIXEL SHADER:
+		vShaderByteCodeParticle = shaderData;
+		shaderData.clear();
+		reader.close();
 
-	shaderData.clear();
-	reader.close();
+		// [SHADOW] PREPASS:
 
-	reader.open("../x64/Debug/PixelShader.cso", std::ios::binary | std::ios::ate);
-	if (!reader.is_open())
-	{
-		ErrorLog::Log("Could not open PS file!");
-		return false;
-	}
+		reader.open("../x64/Debug/VertexShaderDepth.cso", std::ios::binary | std::ios::ate);
+		if (!reader.is_open())
+		{
+			ErrorLog::Log("Could not open VS Depth file!");
+			return false;
+		}
 
-	reader.seekg(0, std::ios::end);
-	shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
-	reader.seekg(0, std::ios::beg);
+		reader.seekg(0, std::ios::end);
+		shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
+		reader.seekg(0, std::ios::beg);
 
-	shaderData.assign((std::istreambuf_iterator<char>(reader)),
-		std::istreambuf_iterator<char>());
+		shaderData.assign((std::istreambuf_iterator<char>(reader)),
+			std::istreambuf_iterator<char>());
 
-	if (FAILED(device->CreatePixelShader(shaderData.c_str(), shaderData.length(), nullptr, &pShader)))
-	{
-		ErrorLog::Log("Failed to create pixel shader!");
-		return false;
-	}
+		if (FAILED(device->CreateVertexShader(shaderData.c_str(), shaderData.length(), nullptr, &vShaderDepth)))
+		{
+			ErrorLog::Log("Failed to create vertex shader Depth!");
+			return false;
+		}
 
-	// COMPUTER SHADER:
+		vShaderByteCodeDepth = shaderData;
+		shaderData.clear();
+		reader.close();
 
-	shaderData.clear();
-	reader.close();
+		// [MAIN]:
 
-	reader.open("../x64/Debug/ComputeShader.cso", std::ios::binary | std::ios::ate);
-	if (!reader.is_open()) {
-		ErrorLog::Log("Could not open CS file!");
-		return false;
-	}
+		reader.open("../x64/Debug/VertexShader.cso", std::ios::binary | std::ios::ate);
+		if (!reader.is_open())
+		{
+			ErrorLog::Log("Could not open VS file!");
+			return false;
+		}
 
-	reader.seekg(0, std::ios::end);
-	shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
-	reader.seekg(0, std::ios::beg);
+		reader.seekg(0, std::ios::end);
+		shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
+		reader.seekg(0, std::ios::beg);
 
-	shaderData.assign((std::istreambuf_iterator<char>(reader)),
-		std::istreambuf_iterator<char>());
+		shaderData.assign((std::istreambuf_iterator<char>(reader)),
+			std::istreambuf_iterator<char>());
 
-	if (FAILED(device->CreateComputeShader(shaderData.c_str(), shaderData.length(), nullptr, &cShader))) {
-		ErrorLog::Log("Failed to create computer shader!");
-		return false;
-	}
+		if (FAILED(device->CreateVertexShader(shaderData.c_str(), shaderData.length(), nullptr, &vShader)))
+		{
+			ErrorLog::Log("Failed to create vertex shader!");
+			return false;
+		}
 
-	shaderData.clear();
-	reader.close();
+		vShaderByteCode = shaderData;
+		shaderData.clear();
+		reader.close();
 
-	// ([Depth] for shadow) Vertex Shader 
-	reader.open("../x64/Debug/VertexShaderDepth.cso", std::ios::binary | std::ios::ate);
-	if (!reader.is_open())
-	{
-		ErrorLog::Log("Could not open VS Depth file!");
-		return false;
-	}
+	// GEOMENTRYSHADER:
 
-	reader.seekg(0, std::ios::end);
-	shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
-	reader.seekg(0, std::ios::beg);
+		// [PARTICLE]:
 
-	shaderData.assign((std::istreambuf_iterator<char>(reader)),
-		std::istreambuf_iterator<char>());
+		reader.open("../x64/Debug/GeometryShaderParticle.cso", std::ios::binary | std::ios::ate);
+		if (!reader.is_open())
+		{
+			ErrorLog::Log("Could not open GS file Particle!");
+			return false;
+		}
 
-	if (FAILED(device->CreateVertexShader(shaderData.c_str(), shaderData.length(), nullptr, &vShaderDepth)))
-	{
-		ErrorLog::Log("Failed to create vertex shader Depth!");
-		return false;
-	}
+		reader.seekg(0, std::ios::end);
+		shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
+		reader.seekg(0, std::ios::beg);
 
-	vShaderByteCodeDepth = shaderData;
+		shaderData.assign((std::istreambuf_iterator<char>(reader)),
+			std::istreambuf_iterator<char>());
 
-	shaderData.clear();
-	reader.close();
+		if (FAILED(device->CreateGeometryShader(shaderData.c_str(), shaderData.length(), nullptr, &gShaderParticle)))
+		{
+			ErrorLog::Log("Failed to create geomentry shader Particle!");
+			return false;
+		}
+
+		shaderData.clear();
+		reader.close();
+
+	// PIXELSHADER:
+	
+		// [PARTICLE]:
+
+		reader.open("../x64/Debug/PixelShaderParticle.cso", std::ios::binary | std::ios::ate);
+		if (!reader.is_open())
+		{
+			ErrorLog::Log("Could not open PS file Particle!");
+			return false;
+		}
+
+		reader.seekg(0, std::ios::end);
+		shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
+		reader.seekg(0, std::ios::beg);
+
+		shaderData.assign((std::istreambuf_iterator<char>(reader)),
+			std::istreambuf_iterator<char>());
+
+		if (FAILED(device->CreatePixelShader(shaderData.c_str(), shaderData.length(), nullptr, &pShaderParticle)))
+		{
+			ErrorLog::Log("Failed to create pixel shader Particle!");
+			return false;
+		}
+
+		shaderData.clear();
+		reader.close();
+
+		// [MAIN]:
+
+		reader.open("../x64/Debug/PixelShader.cso", std::ios::binary | std::ios::ate);
+		if (!reader.is_open())
+		{
+			ErrorLog::Log("Could not open PS file!");
+			return false;
+		}
+
+		reader.seekg(0, std::ios::end);
+		shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
+		reader.seekg(0, std::ios::beg);
+
+		shaderData.assign((std::istreambuf_iterator<char>(reader)),
+			std::istreambuf_iterator<char>());
+
+		if (FAILED(device->CreatePixelShader(shaderData.c_str(), shaderData.length(), nullptr, &pShader)))
+		{
+			ErrorLog::Log("Failed to create pixel shader!");
+			return false;
+		}
+
+		shaderData.clear();
+		reader.close();
+
+	// COMPUTERSHADER:
+
+		// [PARTICLE]:
+
+		reader.open("../x64/Debug/ComputeShaderParticle.cso", std::ios::binary | std::ios::ate);
+		if (!reader.is_open()) {
+			ErrorLog::Log("Could not open CS Particle file!");
+			return false;
+		}
+
+		reader.seekg(0, std::ios::end);
+		shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
+		reader.seekg(0, std::ios::beg);
+
+		shaderData.assign((std::istreambuf_iterator<char>(reader)),
+			std::istreambuf_iterator<char>());
+
+		if (FAILED(device->CreateComputeShader(shaderData.c_str(), shaderData.length(), nullptr, &cShaderParticle))) {
+			ErrorLog::Log("Failed to create computer shader particle!");
+			return false;
+		}
+
+		shaderData.clear();
+		reader.close();
+
+		// [MAIN]
+
+		reader.open("../x64/Debug/ComputeShader.cso", std::ios::binary | std::ios::ate);
+		if (!reader.is_open()) {
+			ErrorLog::Log("Could not open CS file!");
+			return false;
+		}
+
+		reader.seekg(0, std::ios::end);
+		shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
+		reader.seekg(0, std::ios::beg);
+
+		shaderData.assign((std::istreambuf_iterator<char>(reader)),
+			std::istreambuf_iterator<char>());
+
+		if (FAILED(device->CreateComputeShader(shaderData.c_str(), shaderData.length(), nullptr, &cShader))) {
+			ErrorLog::Log("Failed to create computer shader!");
+			return false;
+		}
+
+		shaderData.clear();
+		reader.close();
 
 	return true;
 }
 
-bool CreateInputLayout(ID3D11Device* device, ID3D11InputLayout*& inputLayoutVs, ID3D11InputLayout*& inputLayoutVsDepth,
-	const std::string& vShaderByteCode, const std::string& vShaderByteCodeDepth)
+bool CreateInputLayout(ID3D11Device* device, ID3D11InputLayout*& inputLayoutVs, ID3D11InputLayout*& inputLayoutVsDepth, 
+	ID3D11InputLayout*& inputLayoutVsParticle, const std::string& vShaderByteCode, const std::string& vShaderByteCodeDepth, 
+	const std::string& vShaderByteCodeParticle)
 {
 	D3D11_INPUT_ELEMENT_DESC inputDesc[] =
 	{
@@ -136,6 +245,13 @@ bool CreateInputLayout(ID3D11Device* device, ID3D11InputLayout*& inputLayoutVs, 
 		vShaderByteCodeDepth.length(), &inputLayoutVsDepth)))
 	{
 		ErrorLog::Log("Failed to create Input Layout vs Depth");
+		return false;
+	}
+
+	if (FAILED(device->CreateInputLayout(inputDesc, _countof(inputDesc), vShaderByteCodeParticle.c_str(),
+		vShaderByteCodeParticle.length(), &inputLayoutVsParticle)))
+	{
+		ErrorLog::Log("Failed to create Input Layout vs Particle");
 		return false;
 	}
 
@@ -189,16 +305,19 @@ bool CreateSampleStateShadow(ID3D11Device* device, ID3D11SamplerState*& sampleSt
 	return true;
 }
 
-bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11VertexShader*& vShaderDepth,
-	ID3D11PixelShader*& pShader, ID3D11ComputeShader*& cShader, ID3D11InputLayout*& inputLayoutVS,
-	ID3D11InputLayout*& inputLayoutVSDepth, ID3D11SamplerState*& sampleState, ID3D11SamplerState*& sampleStateShadow)
+bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11VertexShader*& vShaderDepth, ID3D11VertexShader*& vShaderParticle,
+	ID3D11GeometryShader*& gShaderParticle, ID3D11PixelShader*& pShader, ID3D11PixelShader*& pShaderParticle, ID3D11ComputeShader*& cShader,
+	ID3D11ComputeShader*& cShaderParticle, ID3D11InputLayout*& inputLayoutVS, ID3D11InputLayout*& inputLayoutVSDepth, 
+	ID3D11InputLayout*& inputLayoutVSParticle, ID3D11SamplerState*& sampleState, ID3D11SamplerState*& sampleStateShadow)
 {
-	std::string vShaderByteCode, vShaderByteCodeDepth;
+	std::string vShaderByteCode, vShaderByteCodeDepth, vShaderByteCodeParticle;
 
-	if (!LoadShaders(device, vShader, vShaderDepth, pShader, cShader, vShaderByteCode, vShaderByteCodeDepth))
+	if (!LoadShaders(device, vShader, vShaderDepth, vShaderParticle, gShaderParticle, pShader, pShaderParticle, cShader, cShaderParticle,
+		vShaderByteCode, vShaderByteCodeDepth, vShaderByteCodeParticle))
 		return false;
 
-	if (!CreateInputLayout(device, inputLayoutVS, inputLayoutVSDepth, vShaderByteCode, vShaderByteCodeDepth))
+	if (!CreateInputLayout(device, inputLayoutVS, inputLayoutVSDepth, inputLayoutVSParticle, vShaderByteCode, vShaderByteCodeDepth,
+		vShaderByteCodeParticle))
 		return false;
 
 	if (!CreateSampleState(device, sampleState))

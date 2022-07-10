@@ -35,7 +35,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	
 	// Diffuse
 	float3 diffuseLevel = dot(Normal, -lightDir);
-	float3 Diffuse = diffuseComponent.Load(location).xyz /** diffuseLevel*/; 
+	float3 Diffuse = diffuseComponent.Load(location).xyz * diffuseLevel;
 
 	// kan vara fel
 	float3 vecBetweenWPosLight = normalize(lightPosition - Pos);
@@ -50,7 +50,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	float3 color = Ambient * diffuselightClr;
 	
 	// return;
-	backBuffer[DTid.xy] = /*(float4(Ambient, 1.0f) + */float4(color, 1.0f) * posWS.Load(location).w /*+ float4(Specular, 1.0f)) * posWS.Load(location).w*/;
+	backBuffer[DTid.xy] = float4(Ambient, 1.0f) /*(float4(Ambient, 1.0f) + */ /*float4(Diffuse, 1.0f) * posWS.Load(location).w */ /*+ float4(Specular, 1.0f)) * posWS.Load(location).w*/;
 	//backBuffer[DTid.xy] = float4(diffuseComponent.Load(location).xyz, 1.0f) * ambinetComponent.Load(location).w;
 
 }

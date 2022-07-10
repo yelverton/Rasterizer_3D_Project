@@ -46,6 +46,9 @@
     <Filter Include="Source Files\View">
       <UniqueIdentifier>{4ff17c87-bdc7-4865-8d85-05e8627f64f6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\HLSL\Particle">
+      <UniqueIdentifier>{633dbbe0-26f7-4ff1-89ac-f12b1cfae716}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -81,6 +84,15 @@
     <ClCompile Include="Scene\ModelHelper.cpp">
       <Filter>Source Files\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="Setup\ComputerHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Setup\ShadowHelper.cpp">
+      <Filter>Source Files\Setup</Filter>
+    </ClCompile>
+    <ClCompile Include="Setup\ParticleHelper.cpp">
+      <Filter>Source Files\Setup</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl">
@@ -94,6 +106,18 @@
     </FxCompile>
     <FxCompile Include="VertexShaderDepth.hlsl">
       <Filter>Resource Files\HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="VertexShaderParticle.hlsl">
+      <Filter>Resource Files\HLSL\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="GeometryShaderParticle.hlsl">
+      <Filter>Resource Files\HLSL\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="PixelShaderParticle.hlsl">
+      <Filter>Resource Files\HLSL\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="ComputeShaderParticle.hlsl">
+      <Filter>Resource Files\HLSL\Particle</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -132,6 +156,12 @@
     </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>Header Files\View</Filter>
+    </ClInclude>
+    <ClInclude Include="Setup\ShadowHelper.h">
+      <Filter>Header Files\Setup</Filter>
+    </ClInclude>
+    <ClInclude Include="Setup\ParticleHelper.h">
+      <Filter>Header Files\Setup</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
