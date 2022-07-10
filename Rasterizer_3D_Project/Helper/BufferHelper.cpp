@@ -59,7 +59,7 @@ bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamD
 bool setupWorldMatrixs(ID3D11Device* device, ID3D11Buffer*& theWorldBuffer, struct TheWorld& theWorld)
 {
 	D3D11_BUFFER_DESC desc;
-	desc.ByteWidth = sizeof(BufferData);
+	desc.ByteWidth = sizeof(TheWorld);
 	desc.Usage = D3D11_USAGE_DYNAMIC;
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;

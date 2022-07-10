@@ -7,6 +7,12 @@ struct TheWorld
     XMFLOAT4X4 worldMatrix;
 };
 
+struct ParticlePosition
+{
+    XMFLOAT3 pos;
+    float padding;
+};
+
 struct VPmatrix
 {
     XMFLOAT4X4 viewProj;

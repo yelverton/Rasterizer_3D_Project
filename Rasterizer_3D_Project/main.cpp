@@ -161,7 +161,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	ID3D11DeviceContext* immediateContext;
 	IDXGISwapChain* swapChain;
 	ID3D11RenderTargetView* rtv;
+
 	ID3D11UnorderedAccessView* UAView;
+	ID3D11UnorderedAccessView* UAViewP;
+
 	ID3D11DepthStencilView* dsView;
 	ID3D11DepthStencilView* dsViewShadow;
 	ID3D11ShaderResourceView* SRVShadow;
@@ -189,11 +192,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	ID3D11Buffer* lightBuffer;
 	ID3D11Buffer* camBuffer;
 	ID3D11Buffer* theWorldBuffer;
+	ID3D11Buffer* particleBuffer;
+
+	int particleSize = 10;
 
 	struct LightData lightData;
 	struct CamData camData;
 	struct TheWorld theWorld;
 	struct DepthBufferData depthBufferData;
+	struct ParticlePosition particlePosition;
 	
 	std::vector<std::string> modelName;
 	std::vector<XMFLOAT3> worldPos;
@@ -211,7 +218,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		gBufferRTV, gBufferSRV, swapChain, UAView))
 		return -1;
 
-	if (!SetupParticleHelper(device, immediateContext))
+	if (!SetupParticleHelper(device, immediateContext, UAViewP, swapChain, particleBuffer, particleSize, particlePosition))
 		return -1;
 
 	if (!SetupPipeline(device, vShader, vShaderDepth, vShaderParticle, gShaderParticle, pShader, pShaderParticle, cShader,
@@ -260,6 +267,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	lightBuffer->Release();
 	camBuffer->Release();
+	particleBuffer->Release();
 	sampleState->Release();
 	sampleState->Release();
 	inputLayoutVS->Release();
