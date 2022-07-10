@@ -24,6 +24,15 @@ void clearRenderTargetView(ID3D11DeviceContext*& immediateContext, ID3D11DepthSt
 	immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
+void particleSystem(ID3D11DeviceContext* immediateContext, ID3D11InputLayout* inputLayoutVSParticle, ID3D11VertexShader* vShaderParticle,
+	D3D11_VIEWPORT viewport)
+{
+	immediateContext->IASetInputLayout(inputLayoutVSParticle);
+	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	immediateContext->VSSetShader(vShaderParticle, nullptr, 0);
+	immediateContext->RSSetViewports(1, &viewport);
+}
+
 void ShadowPrePass(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView*& dsViewShadow, D3D11_VIEWPORT& viewportShadow, Camera lightCamera,
 	Camera camera, vector<Mesh> mesh, ID3D11VertexShader* vShaderDepth, ID3D11InputLayout* inputLayoutVSDepth, ID3D11SamplerState* sampleStateShadow)
 {
@@ -60,7 +69,7 @@ void drawPrePass(ID3D11DeviceContext* immediateContext, vector<Mesh>& mesh, vect
 	}
 }
 
-void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView*& dsView, D3D11_VIEWPORT& viewport, 
+void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView*& dsView, D3D11_VIEWPORT viewport, 
 	ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* sampleState, 
 	ID3D11Buffer* lightBuffer, ID3D11Buffer* camBuffer, struct LightData lightData, struct CamData camData, Camera& camera,
 	ID3D11RenderTargetView* gBufferRTV[], bool &playerPerspectiv, Camera &lightCamera, ID3D11ShaderResourceView*& SRVShadow)
@@ -194,8 +203,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	ID3D11Buffer* theWorldBuffer;
 	ID3D11Buffer* particleBuffer;
 
-	int particleSize = 10;
-
 	struct LightData lightData;
 	struct CamData camData;
 	struct TheWorld theWorld;
@@ -209,6 +216,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	Camera camera;
 	Camera lightCamera;
 
+	std::vector<XMFLOAT3> particels;
+
 	bool playerPerspectiv = true;
 
 	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, dsView, viewport))
@@ -218,7 +227,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		gBufferRTV, gBufferSRV, swapChain, UAView))
 		return -1;
 
-	if (!SetupParticleHelper(device, immediateContext, UAViewP, swapChain, particleBuffer, particleSize, particlePosition))
+	if (!SetupParticleHelper(device, immediateContext, UAViewP, swapChain, particleBuffer, particels, particlePosition))
 		return -1;
 
 	if (!SetupPipeline(device, vShader, vShaderDepth, vShaderParticle, gShaderParticle, pShader, pShaderParticle, cShader,

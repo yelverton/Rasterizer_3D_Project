@@ -1,4 +1,16 @@
-float4 main( float4 pos : POSITION ) : SV_POSITION
+
+cbuffer Matrices : register(b0)
 {
-	return pos;
+	float3 pos;
+	float padding;
+}
+
+struct VertexShaderInput
+{
+	float3 position : POSITION;
+};
+
+float4 main(VertexShaderInput input) : SV_POSITION
+{
+	return float4(1, 1, 1, 1);
 }
