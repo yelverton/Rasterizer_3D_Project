@@ -25,12 +25,16 @@ void clearRenderTargetView(ID3D11DeviceContext*& immediateContext, ID3D11DepthSt
 }
 
 void particleSystem(ID3D11DeviceContext* immediateContext, ID3D11InputLayout* inputLayoutVSParticle, ID3D11VertexShader* vShaderParticle,
-	D3D11_VIEWPORT viewport)
+	D3D11_VIEWPORT viewport, ID3D11GeometryShader* gShaderParticle, ID3D11PixelShader* pShaderParticle, ID3D11ComputeShader* cShaderParticle)
 {
 	immediateContext->IASetInputLayout(inputLayoutVSParticle);
 	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	immediateContext->VSSetShader(vShaderParticle, nullptr, 0);
 	immediateContext->RSSetViewports(1, &viewport);
+
+	immediateContext->GSSetShader(gShaderParticle, nullptr, 0);
+	immediateContext->PSSetShader(pShaderParticle, nullptr, 0);
+	immediateContext->CSSetShader(cShaderParticle, nullptr, 0);
 }
 
 void ShadowPrePass(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView*& dsViewShadow, D3D11_VIEWPORT& viewportShadow, Camera lightCamera,
