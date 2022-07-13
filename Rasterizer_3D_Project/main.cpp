@@ -37,6 +37,16 @@ void particleSystem(ID3D11DeviceContext* immediateContext, ID3D11InputLayout* in
 	immediateContext->CSSetShader(cShaderParticle, nullptr, 0);
 }
 
+void drawParticle(ID3D11DeviceContext* immediateContext, vector<XMFLOAT3>& particle, vector<XMFLOAT3> worldPos, struct TheWorld theWorld, ID3D11Buffer* theWorldBuffer,
+	ID3D11Buffer* particleBuffer)
+{
+	UINT stride = sizeof(ParticlePosition);
+	UINT offset = 0;
+
+	immediateContext->IASetVertexBuffers(0, 1, &particleBuffer, &stride, &offset);
+	immediateContext->Draw(particle.size(), 0);
+}
+
 void ShadowPrePass(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView*& dsViewShadow, D3D11_VIEWPORT& viewportShadow, Camera lightCamera,
 	Camera camera, vector<Mesh> mesh, ID3D11VertexShader* vShaderDepth, ID3D11InputLayout* inputLayoutVSDepth, ID3D11SamplerState* sampleStateShadow)
 {

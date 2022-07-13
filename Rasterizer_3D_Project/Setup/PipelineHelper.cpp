@@ -248,12 +248,12 @@ bool CreateInputLayout(ID3D11Device* device, ID3D11InputLayout*& inputLayoutVs, 
 		return false;
 	}
 
-	D3D11_INPUT_ELEMENT_DESC inputParticle[] =
+	D3D11_INPUT_ELEMENT_DESC particleDesc[] =
 	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 
-	if (FAILED(device->CreateInputLayout(inputParticle, _countof(inputParticle), vShaderByteCodeParticle.c_str(),
+	if (FAILED(device->CreateInputLayout(particleDesc, _countof(particleDesc), vShaderByteCodeParticle.c_str(),
 		vShaderByteCodeParticle.length(), &inputLayoutVsParticle)))
 	{
 		ErrorLog::Log("Failed to create Input Layout vs Particle");

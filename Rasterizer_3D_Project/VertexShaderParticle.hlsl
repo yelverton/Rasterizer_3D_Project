@@ -2,7 +2,7 @@
 cbuffer Matrices : register(b0)
 {
 	float3 pos;
-	float padding;
+	float direction;
 }
 
 struct VertexShaderInput

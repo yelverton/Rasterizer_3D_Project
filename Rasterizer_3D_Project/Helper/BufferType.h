@@ -10,7 +10,7 @@ struct TheWorld
 struct ParticlePosition
 {
     XMFLOAT3 pos;
-    float padding;
+    float direction;
 };
 
 struct VPmatrix
