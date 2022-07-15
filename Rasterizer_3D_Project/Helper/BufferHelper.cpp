@@ -79,9 +79,32 @@ bool setupWorldMatrixs(ID3D11Device* device, ID3D11Buffer*& theWorldBuffer, stru
 	return true;
 }
 
+bool setupForwardVector(ID3D11Device* device, ID3D11Buffer*& getDirectionBuffer, struct GetDirection& getDirection)
+{
+	D3D11_BUFFER_DESC desc;
+	desc.ByteWidth = sizeof(GetDirection);
+	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	desc.MiscFlags = 0;
+	desc.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA data;
+	data.pSysMem = (void*)&getDirection;
+	data.SysMemPitch = data.SysMemPitch = 0; // 1D resource 
+
+	if (FAILED(device->CreateBuffer(&desc, &data, &getDirectionBuffer)))
+	{
+		ErrorLog::Log("Failed to create world Buffer");
+		return false;
+	}
+
+	return true;
+}
+
 bool SetupBuffers(ID3D11Device* device, ID3D11Buffer*& lightBuffer, ID3D11Buffer*& camBuffer,
-	ID3D11Buffer*& theWorldBuffer, struct LightData& lightData, struct CamData& camData,
-	struct TheWorld& theWorld)
+	ID3D11Buffer*& theWorldBuffer, ID3D11Buffer*& getDirectionBuffer, struct LightData& lightData, struct CamData& camData,
+	struct TheWorld& theWorld, struct GetDirection& getDirection)
 {
 	if (!createLightBuffer(device, lightBuffer, lightData))
 		return false;
@@ -90,6 +113,9 @@ bool SetupBuffers(ID3D11Device* device, ID3D11Buffer*& lightBuffer, ID3D11Buffer
 		return false;
 
 	if (!setupWorldMatrixs(device, theWorldBuffer, theWorld))
+		return false;
+	
+	if (!setupForwardVector(device, getDirectionBuffer, getDirection))
 		return false;
 
 	return true;

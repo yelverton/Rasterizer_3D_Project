@@ -1,8 +1,7 @@
 
 cbuffer Matrices : register(b0)
 {
-	float3 pos;
-	float direction;
+	matrix world;
 }
 
 struct VertexShaderInput
@@ -12,5 +11,5 @@ struct VertexShaderInput
 
 float4 main(VertexShaderInput input) : SV_POSITION
 {
-	return float4(1, 1, 1, 1);
+	return mul(float4(input.position, 1.0f), world);
 }

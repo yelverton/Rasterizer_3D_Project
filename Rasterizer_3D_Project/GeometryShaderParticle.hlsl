@@ -1,18 +1,56 @@
+cbuffer Matrices : register(b0)
+{
+	float3 forwardVec;
+	float padding0;
+	float3 upVec;
+	float padding1;
+}
+
+cbuffer Matrices : register(b1)
+{
+	matrix view;
+	matrix projection;
+}
+
 struct GSOutput
 {
 	float4 pos : SV_POSITION;
 };
 
-[maxvertexcount(3)]
-void main(
-	triangle float4 input[3] : SV_POSITION, 
-	inout TriangleStream< GSOutput > output
-)
+struct VertexShaderOutput
 {
-	for (uint i = 0; i < 3; i++)
+	float4 pos : SV_Position;
+};
+
+struct GeometryShaderOutput
+{
+	float4 pos : SV_Position;
+};
+
+[maxvertexcount(4)] // create a triangle 
+void main(point float4 input[1] : SV_Position, inout TriangleStream<GeometryShaderOutput> outputStream)
+{
+	const static float SIZE = 0.25f;
+	
+	matrix viewProj = mul(view, projection);
+	
+	float3 right = cross(forwardVec, upVec);
+	
+	float3 topLeft = input[0].xyz - right * SIZE + upVec * SIZE;
+	float3 topRight = input[0].xyz + right * SIZE + upVec * SIZE;
+	float3 bottomRight = input[0].xyz + right * SIZE - upVec * SIZE;
+	float3 bottomLeft = input[0].xyz - right * SIZE - upVec * SIZE;
+	
+	GeometryShaderOutput outputs[4] =
 	{
-		GSOutput element;
-		element.pos = input[i];
-		output.Append(element);
-	}
-}
+		mul(viewProj, float4(bottomLeft, 1.0f))
+		, mul(viewProj, float4(bottomRight, 1.0f))
+		, mul(viewProj, float4(topLeft, 1.0f))
+		, mul(viewProj, float4(topRight, 1.0f))
+	};
+	
+	outputStream.Append(outputs[0]);
+	outputStream.Append(outputs[1]);
+	outputStream.Append(outputs[2]);
+	outputStream.Append(outputs[3]);
+};

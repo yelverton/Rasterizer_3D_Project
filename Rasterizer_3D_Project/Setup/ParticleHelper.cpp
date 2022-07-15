@@ -17,7 +17,7 @@ bool CreateUnorderedAccessView(ID3D11Device* device, IDXGISwapChain* swapChain, 
 	uavDesc.Format = DXGI_FORMAT_R32_FLOAT;
 	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
 	uavDesc.Buffer.FirstElement = 0;
-	uavDesc.Buffer.NumElements = sizeof(particle) * 3;
+	uavDesc.Buffer.NumElements = particle.size() * 3;
 	uavDesc.Buffer.Flags = 0;
 
 	// use the back buffer address to create the uordered access view
@@ -34,7 +34,7 @@ bool CreateParticleBuffer(ID3D11Device* device, ID3D11Buffer*& particleBuffer, s
 	std::vector<XMFLOAT3> particle)
 {
 	D3D11_BUFFER_DESC bufferDesc;
-	bufferDesc.ByteWidth = sizeof(ParticlePosition) * particle.size();
+	bufferDesc.ByteWidth = sizeof(XMFLOAT3) * particle.size();
 	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER | D3D11_BIND_UNORDERED_ACCESS;
 	bufferDesc.CPUAccessFlags = 0;
@@ -43,7 +43,7 @@ bool CreateParticleBuffer(ID3D11Device* device, ID3D11Buffer*& particleBuffer, s
 
 	D3D11_SUBRESOURCE_DATA data;
 	data.pSysMem = particle.data();
-	data.SysMemPitch = data.SysMemPitch = 0;
+	data.SysMemPitch = 0;
 
 	if (FAILED(device->CreateBuffer(&bufferDesc, &data, &particleBuffer)))
 	{
@@ -56,7 +56,7 @@ bool CreatePartices(std::vector<XMFLOAT3>& particle)
 {
 	for (int i = 0; i < 100; i++)
 	{
-		particle.push_back(XMFLOAT3(0, i * 0.3f, 0));
+		particle.push_back(XMFLOAT3(0, 1 + (i * 0.3f), 0));
 	}
 
 	return true;

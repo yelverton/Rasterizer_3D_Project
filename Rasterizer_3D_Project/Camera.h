@@ -34,13 +34,15 @@ public:
 	void SetLookAtPos(XMFLOAT3 lookAtPos);
 
 	const XMVECTOR& GetForwardVector();
+	const XMVECTOR& GetUpVector();
 	const XMVECTOR& GetRightVector();
 	const XMVECTOR& GetBackwardVector();
 	const XMVECTOR& GetLeftVector();
 
-	bool createConstantBuffer(ID3D11Device* device, ID3D11DeviceContext* immediateContext);
+	bool createConstantBuffer(Camera& cam, ID3D11Device* device, ID3D11DeviceContext* immediateContext);
 	void adjustProjectionMatrix(float FOV, float aspectRatio, float nearZ, float farZ);
 	void sendViewProjection(Camera& cam, int vertexShaderPos);
+	void sendViewProjectionGS(Camera& cam, int vertexShaderPos);
 
 private:
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> immediateContext;
@@ -64,6 +66,7 @@ private:
 	const XMVECTOR DEFAULT_RIGHT_VECTOR = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
 
 	XMVECTOR vec_forward;
+	XMVECTOR vec_up;
 	XMVECTOR vec_left;
 	XMVECTOR vec_right;
 	XMVECTOR vec_backward;

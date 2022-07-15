@@ -7,6 +7,14 @@ struct TheWorld
     XMFLOAT4X4 worldMatrix;
 };
 
+struct GetDirection
+{
+    XMFLOAT3 forwardVec;
+    float padding0;
+    XMFLOAT3 upVec;
+    float padding1;
+};
+
 struct ParticlePosition
 {
     XMFLOAT3 pos;
@@ -15,7 +23,8 @@ struct ParticlePosition
 
 struct VPmatrix
 {
-    XMFLOAT4X4 viewProj;
+    XMFLOAT4X4 view;
+    XMFLOAT4X4 projection;
 };
 
 struct DepthBufferData

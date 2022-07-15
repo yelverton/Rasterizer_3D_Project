@@ -178,6 +178,11 @@ const XMVECTOR& Camera::GetForwardVector()
 	return this->vec_forward;
 }
 
+const XMVECTOR& Camera::GetUpVector()
+{
+	return this->vec_up;
+}
+
 const XMVECTOR& Camera::GetRightVector()
 {
 	return this->vec_right;
@@ -193,13 +198,12 @@ const XMVECTOR& Camera::GetLeftVector()
 	return this->vec_left;
 }
 
-bool Camera::createConstantBuffer(ID3D11Device* device, ID3D11DeviceContext* immediateContext)
+bool Camera::createConstantBuffer(Camera& cam, ID3D11Device* device, ID3D11DeviceContext* immediateContext)
 {
 	this->immediateContext = immediateContext;
 
-	XMMATRIX viewProjection = viewMatrix * projection;
-	viewProjection = XMMatrixTranspose(viewProjection);
-	XMStoreFloat4x4(&VP.viewProj, viewProjection);
+	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(cam.GetViewMatrix()));
+	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(cam.GetProjection()));
 
 	D3D11_BUFFER_DESC bufferDesc = {};
 	bufferDesc.ByteWidth = sizeof(VP);
@@ -225,16 +229,28 @@ void Camera::adjustProjectionMatrix(float FOV, float aspectRatio, float nearZ, f
 
 void Camera::sendViewProjection(Camera& cam, int vertexShaderPos)
 {
-	XMMATRIX viewProjection = cam.GetViewMatrix() * cam.GetProjection();
-	viewProjection = XMMatrixTranspose(viewProjection);
+	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(cam.GetViewMatrix()));
+	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(cam.GetProjection()));
 
-	XMStoreFloat4x4(&VP.viewProj, viewProjection);
 	D3D11_MAPPED_SUBRESOURCE subData = {};
 	ZeroMemory(&subData, sizeof(D3D11_MAPPED_SUBRESOURCE));
 	immediateContext->Map(ConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
 	memcpy(subData.pData, &VP, sizeof(VP));
 	immediateContext->Unmap(ConstantBuffer.Get(), 0);
 	immediateContext->VSSetConstantBuffers(vertexShaderPos, 1, ConstantBuffer.GetAddressOf());
+}
+
+void Camera::sendViewProjectionGS(Camera& cam, int vertexShaderPos)
+{
+	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(cam.GetViewMatrix()));
+	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(cam.GetProjection()));
+
+	D3D11_MAPPED_SUBRESOURCE subData = {};
+	ZeroMemory(&subData, sizeof(D3D11_MAPPED_SUBRESOURCE));
+	immediateContext->Map(ConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
+	memcpy(subData.pData, &VP, sizeof(VP));
+	immediateContext->Unmap(ConstantBuffer.Get(), 0);
+	immediateContext->GSSetConstantBuffers(vertexShaderPos, 1, ConstantBuffer.GetAddressOf());
 }
 
 void Camera::UpdateViewMatrix()
@@ -252,6 +268,7 @@ void Camera::UpdateViewMatrix()
 
 	XMMATRIX vecRotationMatrix = XMMatrixRotationRollPitchYaw(0.0f, this->rot.y, 0.0f);
 	this->vec_forward = XMVector3TransformCoord(this->DEFAULT_FORWARD_VECTOR, vecRotationMatrix);
+	this->vec_up = XMVector3TransformCoord(this->DEFAULT_UP_VECTOR, vecRotationMatrix);
 	this->vec_backward = XMVector3TransformCoord(this->DEFAULT_BACKWARD_VECTOR, vecRotationMatrix);
 	this->vec_left = XMVector3TransformCoord(this->DEFAULT_LEFT_VECTOR, vecRotationMatrix);
 	this->vec_right = XMVector3TransformCoord(this->DEFAULT_RIGHT_VECTOR, vecRotationMatrix);
