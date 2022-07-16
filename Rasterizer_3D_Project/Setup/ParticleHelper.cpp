@@ -54,9 +54,9 @@ bool CreateParticleBuffer(ID3D11Device* device, ID3D11Buffer*& particleBuffer, s
 
 bool CreatePartices(std::vector<XMFLOAT3>& particle)
 {
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 10; i++)
 	{
-		particle.push_back(XMFLOAT3(0, 1 + (i * 0.3f), 0));
+		particle.push_back(XMFLOAT3(0, 1 + (i * 1.3f), 0));
 	}
 
 	return true;

@@ -229,8 +229,10 @@ void Camera::adjustProjectionMatrix(float FOV, float aspectRatio, float nearZ, f
 
 void Camera::sendViewProjection(Camera& cam, int vertexShaderPos)
 {
-	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(cam.GetViewMatrix()));
-	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(cam.GetProjection()));
+	XMMATRIX view = cam.GetViewMatrix();
+	XMMATRIX projection = cam.GetProjection();
+	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(view));
+	XMStoreFloat4x4(&VP.projection, XMMatrixTranspose(projection));
 
 	D3D11_MAPPED_SUBRESOURCE subData = {};
 	ZeroMemory(&subData, sizeof(D3D11_MAPPED_SUBRESOURCE));
@@ -242,8 +244,10 @@ void Camera::sendViewProjection(Camera& cam, int vertexShaderPos)
 
 void Camera::sendViewProjectionGS(Camera& cam, int vertexShaderPos)
 {
-	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(cam.GetViewMatrix()));
-	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(cam.GetProjection()));
+	XMMATRIX view = cam.GetViewMatrix();
+	XMMATRIX projection = cam.GetProjection();
+	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(view));
+	XMStoreFloat4x4(&VP.projection, XMMatrixTranspose(projection));
 
 	D3D11_MAPPED_SUBRESOURCE subData = {};
 	ZeroMemory(&subData, sizeof(D3D11_MAPPED_SUBRESOURCE));
