@@ -35,13 +35,13 @@ vsOutPut main(PixelShaderInput input) : SV_TARGET
 	float depth = input.posLight.z / input.posLight.w;
 	float Epsilon = 0.000125f;
 	
-	float dx = 1.0f / 2048.0f;
+	float dx = 1.0f / 1024.0f;
 	float t0 = (DepthTexture.Sample(SampleDepth, smTex + float2(0.0f, 0.0f)).r + Epsilon < depth) ? 0.0f : 1.0f;
 	float t1 = (DepthTexture.Sample(SampleDepth, smTex + float2(dx, 0.0f)).r + Epsilon < depth) ? 0.0f : 1.0f;
 	float t2 = (DepthTexture.Sample(SampleDepth, smTex + float2(0.0f, dx)).r + Epsilon < depth) ? 0.0f : 1.0f;
 	float t3 = (DepthTexture.Sample(SampleDepth, smTex + float2(dx, dx)).r + Epsilon < depth) ? 0.0f : 1.0f;
 	
-	float2 texelPosition = smTex * 2048.0f;
+	float2 texelPosition = smTex * 1024.0f;
 
 	float2 leps = frac(texelPosition);
     
@@ -55,8 +55,9 @@ vsOutPut main(PixelShaderInput input) : SV_TARGET
 	output.posWS = float4(input.posWS, shadow);
 	output.normal = float4(input.normal, 1.0f);
 	output.baseColour = float4(1.0f, 0.0f, 0.0f, 0.0f); // Behöver lägga till specular exponent fråga om det är shiness kan vara ej :D
-	output.ambinetComponent = Ambient.Sample(Sampler, input.uv).rgba * shadow;
+	output.ambinetComponent = Ambient.Sample(Sampler, input.uv).rgba;
 	output.diffuseComponent = Deffuse.Sample(Sampler, input.uv).rgba;
+	output.diffuseComponent.w = shadow;
 	output.specularComponent = Specular.Sample(Sampler, input.uv).rgba;
 	
 	return output;

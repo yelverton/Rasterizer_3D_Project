@@ -6,7 +6,7 @@ Camera::Camera()
 	this->posVector = XMLoadFloat3(&this->pos);
 	this->rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	this->rotVector = XMLoadFloat3(&this->rot);
-	this->projection = DirectX::XMMatrixPerspectiveFovLH(0.8f, 1024.f / 576, 0.1f, 800.0f);
+	this->projection = DirectX::XMMatrixPerspectiveFovLH(0.8f, 1024.f / 1024.f, 0.1f, 800.0f);
 	this->UpdateViewMatrix();
 }
 
@@ -203,7 +203,7 @@ bool Camera::createConstantBuffer(Camera& cam, ID3D11Device* device, ID3D11Devic
 	this->immediateContext = immediateContext;
 
 	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(cam.GetViewMatrix()));
-	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(cam.GetProjection()));
+	XMStoreFloat4x4(&VP.projection, XMMatrixTranspose(cam.GetProjection()));
 
 	D3D11_BUFFER_DESC bufferDesc = {};
 	bufferDesc.ByteWidth = sizeof(VP);
@@ -229,6 +229,8 @@ void Camera::adjustProjectionMatrix(float FOV, float aspectRatio, float nearZ, f
 
 void Camera::sendViewProjection(Camera& cam, int vertexShaderPos)
 {
+	cam.UpdateViewMatrix();
+
 	XMMATRIX view = cam.GetViewMatrix();
 	XMMATRIX projection = cam.GetProjection();
 	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(view));
@@ -244,6 +246,8 @@ void Camera::sendViewProjection(Camera& cam, int vertexShaderPos)
 
 void Camera::sendViewProjectionGS(Camera& cam, int vertexShaderPos)
 {
+	cam.UpdateViewMatrix();
+
 	XMMATRIX view = cam.GetViewMatrix();
 	XMMATRIX projection = cam.GetProjection();
 	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(view));
