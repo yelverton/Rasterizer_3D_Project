@@ -49,9 +49,6 @@ void main( uint3 DTid : SV_DispatchThreadID )
 
 	float3 color = Ambient * diffuselightClr;
 	
-	// return;
-	//(Ambient + (1.0 - diffuseComponent.Load(location).w) * (Diffuse + Specular));
-	backBuffer[DTid.xy] = float4(Diffuse, 1.0f) * diffuseComponent.Load(location).w /*float4(Ambient, 1.0f) + (1.0 - diffuseComponent.Load(location).w) * (float4(Diffuse, 1.0f) + float4(Specular, 1.0f))*/; /*(float4(Ambient, 1.0f) + */ /*float4(Diffuse, 1.0f) * posWS.Load(location).w */ /*+ float4(Specular, 1.0f)) * posWS.Load(location).w*/;
-	//backBuffer[DTid.xy] = float4(diffuseComponent.Load(location).xyz, 1.0f) * ambinetComponent.Load(location).w;
+	backBuffer[DTid.xy] = float4(Diffuse, 1.0f) * diffuseComponent.Load(location).w;
 
 }
