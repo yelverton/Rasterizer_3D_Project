@@ -324,7 +324,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		auto start = std::chrono::system_clock::now();
 		clearRenderTargetView(immediateContext, dsViewShadow, gBufferRTV, dsView);
 		moveAbility(playerPerspectiv, lightCamera, camera, shadow);
-		ShadowPrePass(immediateContext, dsView, viewport, lightCamera, vShaderDepth, inputLayoutVSDepth, sampleStateShadow, rtv);
+		ShadowPrePass(immediateContext, dsViewShadow, viewportShadow, lightCamera, vShaderDepth, inputLayoutVSDepth, sampleStateShadow, rtv);
 		drawPrePass(immediateContext, mesh, worldPos, theWorld, theWorldBuffer);
 		Render(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, 
 			lightBuffer, camBuffer, lightData, camData, camera, gBufferRTV, playerPerspectiv, lightCamera, SRVShadow, sampleStateShadow

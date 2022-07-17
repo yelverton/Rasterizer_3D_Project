@@ -33,7 +33,7 @@ vsOutPut main(PixelShaderInput input) : SV_TARGET
 	//input.posLight.xy /= input.posLight.w;
 	float2 smTex = float2((0.5f * input.posLight.x) + 0.5f, (-0.5f * input.posLight.y) + 0.5f);
 	float depth = input.posLight.z / input.posLight.w;
-	float Epsilon = 0.000125f;
+	float Epsilon = 0.00125f;
 	
 	float dx = 1.0f / 1024.0f;
 	float t0 = (DepthTexture.Sample(SampleDepth, smTex + float2(0.0f, 0.0f)).r + Epsilon < depth) ? 0.0f : 1.0f;
