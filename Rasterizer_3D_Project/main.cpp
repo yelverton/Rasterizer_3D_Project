@@ -24,17 +24,23 @@ void clearRenderTargetView(ID3D11DeviceContext*& immediateContext, ID3D11DepthSt
 	immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
-void moveAbility(bool& playerPerspectiv, Camera& lightCamera, Camera& camera)
+void moveAbility(bool& playerPerspectiv, Camera& lightCamera, Camera& camera, Camera& shadow)
 {
 	if (GetAsyncKeyState('X'))
 		playerPerspectiv = true;
 	else if (GetAsyncKeyState('C'))
 		playerPerspectiv = false;
 
-	playerPerspectiv ? camera.moveCamera(camera, dt) : lightCamera.moveCamera(lightCamera, dt);
+	if (playerPerspectiv) {
+		camera.moveCamera(camera, dt);
+		/*shadow.moveCamera(shadow, dt);*/
+	}
+	else {
+		lightCamera.moveCamera(lightCamera, dt);
+	}
 }
 
-void ShadowPrePass(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView*& dsViewShadow, D3D11_VIEWPORT viewportShadow, Camera shadowCamera,
+void ShadowPrePass(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView*& dsViewShadow, D3D11_VIEWPORT viewportShadow, Camera lightCamera,
 	ID3D11VertexShader*& vShaderDepth, ID3D11InputLayout* inputLayoutShadow, ID3D11SamplerState* sampleStateShadow, ID3D11RenderTargetView* rtv)
 {
 	immediateContext->IASetInputLayout(inputLayoutShadow);
@@ -44,7 +50,7 @@ void ShadowPrePass(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView
 	immediateContext->PSSetShader(nullptr, nullptr, 0);
 	immediateContext->OMSetRenderTargets(0, nullptr, dsViewShadow);
 
-	shadowCamera.sendViewProjection(shadowCamera, 1);
+	lightCamera.sendViewProjection(lightCamera, 1);
 }
 
 void drawPrePass(ID3D11DeviceContext* immediateContext, vector<Mesh> mesh, vector<XMFLOAT3> worldPos, struct TheWorld theWorld, ID3D11Buffer* theWorldBuffer)
@@ -71,7 +77,7 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsVie
 	ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* sampleState, 
 	ID3D11Buffer* lightBuffer, ID3D11Buffer* camBuffer, struct LightData lightData, struct CamData camData, Camera& camera,
 	ID3D11RenderTargetView* gBufferRTV[], bool &playerPerspectiv, Camera &lightCamera, ID3D11ShaderResourceView* SRVShadow,
-	ID3D11SamplerState* sampleStateShadow)
+	ID3D11SamplerState* sampleStateShadow, Camera &shadow)
 {
 	immediateContext->IASetInputLayout(inputLayout);
 	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -303,7 +309,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	lightCamera.SetLookAtPos(XMFLOAT3(0.0f, 1.0f, 0.0f));
 	lightCamera.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);
 
-	shadow.AdjustPosition(0, 190, -20);
+	shadow.AdjustPosition(0, 0, 0);
 	shadow.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);
 
 	MSG msg = { };
@@ -317,11 +323,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 		auto start = std::chrono::system_clock::now();
 		clearRenderTargetView(immediateContext, dsViewShadow, gBufferRTV, dsView);
-		moveAbility(playerPerspectiv, lightCamera, camera);
-		ShadowPrePass(immediateContext, dsView, viewport, lightCamera, vShaderDepth, inputLayoutVS, sampleState, rtv);
+		moveAbility(playerPerspectiv, lightCamera, camera, shadow);
+		ShadowPrePass(immediateContext, dsView, viewport, lightCamera, vShaderDepth, inputLayoutVSDepth, sampleState, rtv);
 		drawPrePass(immediateContext, mesh, worldPos, theWorld, theWorldBuffer);
 		Render(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, 
-			lightBuffer, camBuffer, lightData, camData, camera, gBufferRTV, playerPerspectiv, lightCamera, SRVShadow, sampleStateShadow);
+			lightBuffer, camBuffer, lightData, camData, camera, gBufferRTV, playerPerspectiv, lightCamera, SRVShadow, sampleStateShadow
+		, shadow);
 		draw(immediateContext, mesh, worldPos, theWorld, theWorldBuffer, camera, playerPerspectiv, lightCamera);
 		RenderComputerShader(immediateContext, cShader, dsView, UAView, gBufferSRV, camData, camera, lightData, lightCamera, 
 			lightBuffer, camBuffer);
