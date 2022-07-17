@@ -8,8 +8,8 @@ bool CreateDepthStencil(ID3D11Device* device, UINT width, UINT height, ID3D11Dep
 	ID3D11ShaderResourceView*& SRVShadow)
 {
 	D3D11_TEXTURE2D_DESC textureDesc = {};
-	textureDesc.Width = /*(width * 2)*/width;
-	textureDesc.Height = /*(height * 2)*/height;
+	textureDesc.Width = (width * 2);
+	textureDesc.Height = (height * 2);
 	textureDesc.MipLevels = 1;
 	textureDesc.ArraySize = 1;
 	textureDesc.Format = DXGI_FORMAT_R32_TYPELESS;
@@ -126,7 +126,7 @@ void SetViewportShadow(D3D11_VIEWPORT& viewportShadow, UINT width, UINT height)
 	viewportShadow.TopLeftX = 0;
 	viewportShadow.TopLeftY = 0;
 	viewportShadow.Width = static_cast<float>(width * 2);
-	viewportShadow.Height = static_cast<float>(width * 2);
+	viewportShadow.Height = static_cast<float>(height * 2);
 	viewportShadow.MinDepth = 0;
 	viewportShadow.MaxDepth = 1;
 }
@@ -139,11 +139,11 @@ bool SetupShadowHelper(ID3D11Device*& device, ID3D11DeviceContext*& immediateCon
 	if (!CreateDepthStencil(device, width, height, dsViewShadow, SRVShadow))
 		return false;
 
-	// [Shadow Stage] Unorderd access view:
+	// [Computer shader] Unorderd access view:
 	if (!CreateUnorderedAccessView(device, swapChain, UAView))
 		return false;
 
-	// [shadow Stage] Gbuffers:
+	// [Computer shader] Gbuffers:
 	if (!CreateGBuffers(device, width, height, gBufferRTV, gBufferSRV))
 		return false;
 

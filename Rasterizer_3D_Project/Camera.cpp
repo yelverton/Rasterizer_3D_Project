@@ -53,7 +53,7 @@ void Camera::moveCamera(Camera& cam, float dt)
 		cam.SetPosition(0, 0, -2);
 	}
 
-	cam.UpdateViewMatrix();
+	/*cam.UpdateViewMatrix();*/
 }
 
 const XMMATRIX& Camera::GetViewMatrix() const
@@ -231,10 +231,10 @@ void Camera::sendViewProjection(Camera& cam, int vertexShaderPos)
 {
 	cam.UpdateViewMatrix();
 
-	XMMATRIX view = cam.GetViewMatrix();
-	XMMATRIX projection = cam.GetProjection();
-	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(view));
-	XMStoreFloat4x4(&VP.projection, XMMatrixTranspose(projection));
+	XMMATRIX viewTemp = cam.GetViewMatrix();
+	XMMATRIX projectionTemp = cam.GetProjection();
+	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(viewTemp));
+	XMStoreFloat4x4(&VP.projection, XMMatrixTranspose(projectionTemp));
 
 	D3D11_MAPPED_SUBRESOURCE subData = {};
 	ZeroMemory(&subData, sizeof(D3D11_MAPPED_SUBRESOURCE));
@@ -248,10 +248,10 @@ void Camera::sendViewProjectionGS(Camera& cam, int vertexShaderPos)
 {
 	cam.UpdateViewMatrix();
 
-	XMMATRIX view = cam.GetViewMatrix();
-	XMMATRIX projection = cam.GetProjection();
-	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(view));
-	XMStoreFloat4x4(&VP.projection, XMMatrixTranspose(projection));
+	XMMATRIX viewTemp = cam.GetViewMatrix();
+	XMMATRIX projectionTemp = cam.GetProjection();
+	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(viewTemp));
+	XMStoreFloat4x4(&VP.projection, XMMatrixTranspose(projectionTemp));
 
 	D3D11_MAPPED_SUBRESOURCE subData = {};
 	ZeroMemory(&subData, sizeof(D3D11_MAPPED_SUBRESOURCE));

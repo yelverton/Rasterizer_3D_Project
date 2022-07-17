@@ -329,6 +329,7 @@ bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Ver
 		return false;
 
 	if (!CreateSampleStateShadow(device, sampleStateShadow))
+		return false;
 
 	return true;
 }
