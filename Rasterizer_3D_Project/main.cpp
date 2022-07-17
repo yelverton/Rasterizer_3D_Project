@@ -16,10 +16,10 @@ float dt = 0;
 void clearRenderTargetView(ID3D11DeviceContext*& immediateContext, ID3D11DepthStencilView*& dsViewShadow, ID3D11RenderTargetView* gBufferRTV[],
 	ID3D11DepthStencilView*& dsView)
 {
-	float clearColour[4] = { 0.0f, 0.0f, 1.0f, 0.0f };
+	float clearColour[4] = { 0.0f, 1.0f, 0.0f, 0.0f };
 	for (int i = 0; i < 6; i++)
 		immediateContext->ClearRenderTargetView(gBufferRTV[i], clearColour);
-
+	
 	immediateContext->ClearDepthStencilView(dsViewShadow, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
@@ -324,7 +324,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		auto start = std::chrono::system_clock::now();
 		clearRenderTargetView(immediateContext, dsViewShadow, gBufferRTV, dsView);
 		moveAbility(playerPerspectiv, lightCamera, camera, shadow);
-		ShadowPrePass(immediateContext, dsView, viewport, lightCamera, vShaderDepth, inputLayoutVSDepth, sampleState, rtv);
+		ShadowPrePass(immediateContext, dsView, viewport, lightCamera, vShaderDepth, inputLayoutVSDepth, sampleStateShadow, rtv);
 		drawPrePass(immediateContext, mesh, worldPos, theWorld, theWorldBuffer);
 		Render(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, 
 			lightBuffer, camBuffer, lightData, camData, camera, gBufferRTV, playerPerspectiv, lightCamera, SRVShadow, sampleStateShadow

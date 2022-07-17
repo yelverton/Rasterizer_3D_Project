@@ -35,18 +35,18 @@ vsOutPut main(PixelShaderInput input) : SV_TARGET
 	float depth = input.posLight.z / input.posLight.w;
 	float Epsilon = 0.000125f;
 	
-	float dx = 1.0f / 2048.0f;
+	float dx = 1.0f / 1024.0f;
 	float t0 = (DepthTexture.Sample(SampleDepth, smTex + float2(0.0f, 0.0f)).r + Epsilon < depth) ? 0.0f : 1.0f;
 	float t1 = (DepthTexture.Sample(SampleDepth, smTex + float2(dx, 0.0f)).r + Epsilon < depth) ? 0.0f : 1.0f;
 	float t2 = (DepthTexture.Sample(SampleDepth, smTex + float2(0.0f, dx)).r + Epsilon < depth) ? 0.0f : 1.0f;
 	float t3 = (DepthTexture.Sample(SampleDepth, smTex + float2(dx, dx)).r + Epsilon < depth) ? 0.0f : 1.0f;
 	
-	float2 texelPosition = smTex * 2048.0f;
+	float2 texelPosition = smTex * 1024.0f;
 
 	float2 leps = frac(texelPosition);
     
-	//float shadow = lerp(lerp(t0, t1, leps.x), lerp(t2, t3, leps.x), leps.y);
-	float shadow = (t0 + t1 + t2 + t3) / 4;
+	float shadow = lerp(lerp(t0, t1, leps.x), lerp(t2, t3, leps.x), leps.y);
+	//float shadow = (t0 + t1 + t2 + t3) / 4;
 	if (shadow <= 0.3f)
 		shadow = 0.3f;
 	
