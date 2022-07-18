@@ -94,6 +94,49 @@ bool CreateDepthStencilParticle(ID3D11Device* device, UINT width, UINT height, I
 	return true;
 }
 
+bool CreateGbufferParticle(ID3D11Device* device, UINT width, UINT height,
+	ID3D11RenderTargetView*& gBufferRTVParticle, ID3D11ShaderResourceView*& gBufferSRVParticle)
+{
+	D3D11_TEXTURE2D_DESC texDesc;
+	ZeroMemory(&texDesc, sizeof(D3D11_TEXTURE2D_DESC));
+
+	texDesc.Width = width;
+	texDesc.Height = height;
+	texDesc.MipLevels = 1;
+	texDesc.ArraySize = 1;
+	texDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+	texDesc.Usage = D3D11_USAGE_DEFAULT;
+	texDesc.SampleDesc.Count = 1;
+	texDesc.SampleDesc.Quality = 0;
+	texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	texDesc.CPUAccessFlags = 0;
+	texDesc.MiscFlags = 0;
+
+	ID3D11Texture2D* gBuffTex;
+
+	if (FAILED(device->CreateTexture2D(&texDesc, NULL, &gBuffTex)))
+	{
+		ErrorLog::Log("Failed to setup TEXTURE2D for computer shader in CreateGBuffer");
+		return false;
+	}
+
+	if (FAILED(device->CreateRenderTargetView(gBuffTex, NULL, &gBufferRTVParticle)))
+	{
+		ErrorLog::Log("Failed to setup RenderTargetView for computer shader in CreateGBuffer");
+		return false;
+	}
+
+	if (FAILED(device->CreateShaderResourceView(gBuffTex, NULL, &gBufferSRVParticle)))
+	{
+		ErrorLog::Log("Failed to setup ShaderResourceView for computer shader in CreateGBuffer");
+		return false;
+	}
+
+	gBuffTex->Release();
+
+	return true;
+}
+
 void SetViewportParticle(D3D11_VIEWPORT& viewPortParticle, UINT width, UINT height)
 {
 	viewPortParticle.TopLeftX = 0;
@@ -105,8 +148,9 @@ void SetViewportParticle(D3D11_VIEWPORT& viewPortParticle, UINT width, UINT heig
 }
 
 bool SetupParticleHelper(ID3D11Device*& device, ID3D11DeviceContext*& immediateContext, ID3D11UnorderedAccessView*& UAViewP,
-	IDXGISwapChain*& swapChain, ID3D11Buffer*& particleBuffer, std::vector<XMFLOAT3>& particle, struct ParticlePosition& particlePosition,
-	UINT width, UINT height, ID3D11DepthStencilView*& dsViewParticle, D3D11_VIEWPORT& viewPortParticle)
+	IDXGISwapChain*& swapChain, ID3D11Buffer*& particleBuffer, std::vector<XMFLOAT3>& particle, 
+	struct ParticlePosition& particlePosition,UINT width, UINT height, ID3D11DepthStencilView*& dsViewParticle, 
+	D3D11_VIEWPORT& viewPortParticle, ID3D11RenderTargetView*& gBufferRTVParticle, ID3D11ShaderResourceView*& gBufferSRVParticle)
 {
 	if (!CreatePartices(particle))
 		return false;
@@ -118,6 +162,9 @@ bool SetupParticleHelper(ID3D11Device*& device, ID3D11DeviceContext*& immediateC
 		return false;
 
 	if (!CreateDepthStencilParticle(device, width, height, dsViewParticle))
+		return false;
+
+	if (!CreateGbufferParticle(device, width, height, gBufferRTVParticle, gBufferSRVParticle))
 		return false;
 
 	SetViewportParticle(viewPortParticle, width, height);
