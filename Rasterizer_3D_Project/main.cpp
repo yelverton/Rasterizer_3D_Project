@@ -14,12 +14,15 @@
 float dt = 0;
 
 void clearRenderTargetView(ID3D11DeviceContext*& immediateContext, ID3D11DepthStencilView*& dsViewShadow, ID3D11RenderTargetView* gBufferRTV[],
-	ID3D11DepthStencilView*& dsView)
+	ID3D11DepthStencilView*& dsView, ID3D11DepthStencilView*& dsViewParticle, ID3D11RenderTargetView* rtv)
 {
 	float clearColour[4] = { 0.0f, 1.0f, 0.0f, 0.0f };
 	for (int i = 0; i < 6; i++)
 		immediateContext->ClearRenderTargetView(gBufferRTV[i], clearColour);
+
+	immediateContext->ClearRenderTargetView(rtv, clearColour);
 	
+	immediateContext->ClearDepthStencilView(dsViewParticle, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	immediateContext->ClearDepthStencilView(dsViewShadow, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
@@ -153,60 +156,55 @@ void RenderComputerShader(ID3D11DeviceContext* immediateContext, ID3D11ComputeSh
 	immediateContext->CSSetShader(nullptr, nullptr, 0);
 }
 
-//void particleSystem(ID3D11DeviceContext* immediateContext, ID3D11InputLayout* inputLayoutVSParticle, ID3D11VertexShader* vShaderParticle,
-//	D3D11_VIEWPORT viewport, ID3D11GeometryShader* gShaderParticle, ID3D11PixelShader* pShaderParticle, ID3D11ComputeShader* cShaderParticle,
-//	ID3D11Buffer* getDirectionBuffer, struct GetDirection getDirection, Camera& camera, ID3D11Buffer* camBuffer, struct CamData camData,
-//	ID3D11DepthStencilView* dsView, ID3D11RenderTargetView* rtv)
-//{
-//	immediateContext->IASetInputLayout(inputLayoutVSParticle);
-//	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-//	immediateContext->OMSetRenderTargets(1, nullptr, dsView);
-//	immediateContext->VSSetShader(vShaderParticle, nullptr, 0);
-//	immediateContext->RSSetViewports(1, &viewport);
-//
-//	immediateContext->GSSetShader(gShaderParticle, nullptr, 0);
-//	immediateContext->PSSetShader(pShaderParticle, nullptr, 0);
-//	/*immediateContext->CSSetShader(cShaderParticle, nullptr, 0);*/
-//
-//	XMFLOAT3 forwardVecTemp;
-//	XMStoreFloat3(&forwardVecTemp, camera.GetForwardVector());
-//	getDirection.forwardVec = forwardVecTemp;
-//
-//	XMFLOAT3 upVecTemp;
-//	XMStoreFloat3(&upVecTemp, camera.GetUpVector());
-//	getDirection.upVec = upVecTemp;
-//
-//	D3D11_MAPPED_SUBRESOURCE subData = {};
-//	immediateContext->Map(getDirectionBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
-//	std::memcpy(subData.pData, &getDirection, sizeof(getDirection));
-//	immediateContext->Unmap(getDirectionBuffer, 0);
-//
-//	immediateContext->GSSetConstantBuffers(0, 1, &getDirectionBuffer);
-//	camera.sendViewProjectionGS(camera, 1);
-//}
-//
-//void drawParticle(ID3D11DeviceContext* immediateContext, vector<XMFLOAT3>& particle, vector<XMFLOAT3> worldPos, struct TheWorld theWorld, ID3D11Buffer* theWorldBuffer,
-//	ID3D11Buffer* particleBuffer)
-//{
-//	UINT stride = sizeof(XMFLOAT3);
-//	UINT offset = 0;
-//
-//	DirectX::XMMATRIX Identity = XMMatrixIdentity();
-//	XMStoreFloat4x4(&theWorld.worldMatrix, XMMatrixTranspose(Identity));
-//
-//	D3D11_MAPPED_SUBRESOURCE subData = {};
-//	immediateContext->Map(theWorldBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
-//	std::memcpy(subData.pData, &theWorld, sizeof(BufferData));
-//	immediateContext->Unmap(theWorldBuffer, 0);
-//	immediateContext->VSSetConstantBuffers(0, 1, &theWorldBuffer);
-//
-//	immediateContext->IASetVertexBuffers(0, 1, &particleBuffer, &stride, &offset);
-//	immediateContext->Draw(particle.size(), 0);
-//
-//	immediateContext->GSSetShader(nullptr, nullptr, 0);
-//	immediateContext->PSSetShader(nullptr, nullptr, 0);
-//	immediateContext->CSSetShader(nullptr, nullptr, 0);
-//}
+void particleSystem(ID3D11DeviceContext* immediateContext, ID3D11InputLayout* inputLayoutVSParticle, ID3D11VertexShader* vShaderParticle,
+	ID3D11DepthStencilView* dsViewParticle, D3D11_VIEWPORT& viewportParticle, ID3D11GeometryShader* gShaderParticle, ID3D11PixelShader* pShaderParticle, ID3D11ComputeShader* cShaderParticle,
+	ID3D11Buffer* getDirectionBuffer, struct GetDirection getDirection, Camera& camera, ID3D11Buffer* camBuffer, struct CamData camData,
+	ID3D11RenderTargetView*& rtv)
+{
+	immediateContext->IASetInputLayout(inputLayoutVSParticle);
+	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+	immediateContext->VSSetShader(vShaderParticle, nullptr, 0);
+	immediateContext->OMSetRenderTargets(1, &rtv, dsViewParticle);
+	immediateContext->RSSetViewports(1, &viewportParticle);
+
+	immediateContext->GSSetShader(gShaderParticle, nullptr, 0);
+	immediateContext->PSSetShader(pShaderParticle, nullptr, 0);
+	/*immediateContext->CSSetShader(cShaderParticle, nullptr, 0);*/
+
+	XMStoreFloat3(&getDirection.forwardVec, camera.GetForwardVector());
+	XMStoreFloat3(&getDirection.upVec, camera.GetUpVector());;
+
+	D3D11_MAPPED_SUBRESOURCE subData = {};
+	immediateContext->Map(getDirectionBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
+	std::memcpy(subData.pData, &getDirection, sizeof(getDirection));
+	immediateContext->Unmap(getDirectionBuffer, 0);
+
+	immediateContext->GSSetConstantBuffers(0, 1, &getDirectionBuffer);
+	camera.sendViewProjectionGS(camera, 1);
+}
+
+void drawParticle(ID3D11DeviceContext* immediateContext, vector<XMFLOAT3>& particle, vector<XMFLOAT3> worldPos, struct TheWorld theWorld, ID3D11Buffer* theWorldBuffer,
+	ID3D11Buffer* particleBuffer, ID3D11DepthStencilView* dsView)
+{
+	UINT stride = sizeof(XMFLOAT3);
+	UINT offset = 0;
+
+	DirectX::XMMATRIX Identity = XMMatrixIdentity();
+	XMStoreFloat4x4(&theWorld.worldMatrix, XMMatrixTranspose(Identity));
+
+	D3D11_MAPPED_SUBRESOURCE subData = {};
+	immediateContext->Map(theWorldBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
+	std::memcpy(subData.pData, &theWorld, sizeof(BufferData));
+	immediateContext->Unmap(theWorldBuffer, 0);
+	immediateContext->VSSetConstantBuffers(0, 1, &theWorldBuffer);
+
+	immediateContext->IASetVertexBuffers(0, 1, &particleBuffer, &stride, &offset);
+	immediateContext->Draw(particle.size(), 0);
+
+	immediateContext->GSSetShader(nullptr, nullptr, 0);
+	immediateContext->PSSetShader(nullptr, nullptr, 0);
+	immediateContext->CSSetShader(nullptr, nullptr, 0);
+}
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
@@ -230,11 +228,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	ID3D11DepthStencilView* dsView;
 	ID3D11DepthStencilView* dsViewShadow;
+	ID3D11DepthStencilView* dsViewParticle;
 	ID3D11ShaderResourceView* SRVShadow;
 	ID3D11RenderTargetView* gBufferRTV[6];
 	ID3D11ShaderResourceView* gBufferSRV[6];
 	D3D11_VIEWPORT viewport;
 	D3D11_VIEWPORT viewportShadow;
+	D3D11_VIEWPORT viewportParticle;
 
 	ID3D11VertexShader* vShader;
 	ID3D11VertexShader* vShaderDepth;
@@ -251,6 +251,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	ID3D11SamplerState* sampleState;
 	ID3D11SamplerState* sampleStateShadow;
+	ID3D11SamplerState* sampleStateParticle;
 
 	ID3D11Buffer* lightBuffer;
 	ID3D11Buffer* camBuffer;
@@ -284,11 +285,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		gBufferRTV, gBufferSRV, swapChain, UAView))
 		return -1;
 
-	if (!SetupParticleHelper(device, immediateContext, UAViewP, swapChain, particleBuffer, particels, particlePosition))
+	if (!SetupParticleHelper(device, immediateContext, UAViewP, swapChain, particleBuffer, particels, particlePosition,
+		WIDTH, HEIGHT, dsViewParticle, viewportParticle))
 		return -1;
 
 	if (!SetupPipeline(device, vShader, vShaderDepth, vShaderParticle, gShaderParticle, pShader, pShaderParticle, cShader,
-		cShaderParticle, inputLayoutVS, inputLayoutVSDepth, inputLayoutVSParticle, sampleState, sampleStateShadow))
+		cShaderParticle, inputLayoutVS, inputLayoutVSDepth, inputLayoutVSParticle, sampleState, sampleStateShadow,
+		sampleStateParticle))
 		return -1;
 
 	if (!SetupBuffers(device, lightBuffer, camBuffer, theWorldBuffer, directionBuffer, lightData, camData, theWorld, getDirection))
@@ -322,19 +325,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		}
 
 		auto start = std::chrono::system_clock::now();
-		clearRenderTargetView(immediateContext, dsViewShadow, gBufferRTV, dsView);
+		clearRenderTargetView(immediateContext, dsViewShadow, gBufferRTV, dsView, dsViewParticle, rtv);
 		moveAbility(playerPerspectiv, lightCamera, camera, shadow);
 		ShadowPrePass(immediateContext, dsViewShadow, viewportShadow, lightCamera, vShaderDepth, inputLayoutVSDepth, sampleStateShadow, rtv);
 		drawPrePass(immediateContext, mesh, worldPos, theWorld, theWorldBuffer);
-		Render(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, 
-			lightBuffer, camBuffer, lightData, camData, camera, gBufferRTV, playerPerspectiv, lightCamera, SRVShadow, sampleStateShadow
-		, shadow);
+		Render(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, lightBuffer, camBuffer, lightData, camData, 
+			camera, gBufferRTV, playerPerspectiv, lightCamera, SRVShadow, sampleStateShadow, shadow);
 		draw(immediateContext, mesh, worldPos, theWorld, theWorldBuffer, camera, playerPerspectiv, lightCamera);
-		RenderComputerShader(immediateContext, cShader, dsView, UAView, gBufferSRV, camData, camera, lightData, lightCamera, 
-			lightBuffer, camBuffer);
-		/*particleSystem(immediateContext, inputLayoutVSParticle, vShaderParticle, viewport, gShaderParticle, pShaderParticle, cShaderParticle,
-		directionBuffer, getDirection, camera, camBuffer, camData, dsView, rtv);
-		drawParticle(immediateContext, particels, worldPos, theWorld, theWorldBuffer, particleBuffer);*/
+		RenderComputerShader(immediateContext, cShader, dsView, UAView, gBufferSRV, camData, camera, lightData, lightCamera, lightBuffer, 
+			camBuffer);
+		particleSystem(immediateContext, inputLayoutVSParticle, vShaderParticle, dsView, viewportParticle, gShaderParticle, pShaderParticle, 
+			cShaderParticle, directionBuffer, getDirection, camera, camBuffer, camData, rtv);
+		drawParticle(immediateContext, particels, worldPos, theWorld, theWorldBuffer, particleBuffer, dsView);
 		swapChain->Present(0, 0);
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> elapsed_seconds = end - start;
@@ -358,6 +360,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	cShaderParticle->Release();
 	dsView->Release();
 	dsViewShadow->Release();
+	inputLayoutVSParticle->Release();
 	SRVShadow->Release();
 	rtv->Release();
 	swapChain->Release();

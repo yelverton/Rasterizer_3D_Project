@@ -4,7 +4,17 @@
 #include <string>
 #include <iostream>
 
-bool CreateUnorderedAccessView(ID3D11Device* device, IDXGISwapChain* swapChain, ID3D11Buffer*& particleBuffer, ID3D11UnorderedAccessView*& UAView, std::vector<XMFLOAT3> particle)
+bool CreatePartices(std::vector<XMFLOAT3>& particle)
+{
+	for (int i = 0; i < 10; i++)
+	{
+		particle.push_back(XMFLOAT3(0, 1 + (i * 1.3f), 0));
+	}
+
+	return true;
+}
+
+bool CreateUnorderedAccessViewParticle(ID3D11Device* device, IDXGISwapChain* swapChain, ID3D11Buffer*& particleBuffer, ID3D11UnorderedAccessView*& UAViewP, std::vector<XMFLOAT3> particle)
 {
 	// get the address of the back buffer
 	//ID3D11Texture2D* backBuffer = nullptr;
@@ -22,7 +32,7 @@ bool CreateUnorderedAccessView(ID3D11Device* device, IDXGISwapChain* swapChain, 
 
 	// use the back buffer address to create the uordered access view
 	// null as description to base it on the backbuffers values
-	if (FAILED(device->CreateUnorderedAccessView(particleBuffer, &uavDesc, &UAView))) {
+	if (FAILED(device->CreateUnorderedAccessView(particleBuffer, &uavDesc, &UAViewP))) {
 		ErrorLog::Log("Failed to unoarded access view particle!");
 		return false;
 	}
@@ -52,18 +62,51 @@ bool CreateParticleBuffer(ID3D11Device* device, ID3D11Buffer*& particleBuffer, s
 	}
 }
 
-bool CreatePartices(std::vector<XMFLOAT3>& particle)
+bool CreateDepthStencilParticle(ID3D11Device* device, UINT width, UINT height, ID3D11DepthStencilView*& dsViewParticle)
 {
-	for (int i = 0; i < 10; i++)
+	D3D11_TEXTURE2D_DESC textureDesc;
+	textureDesc.Width = width;
+	textureDesc.Height = height;
+	textureDesc.MipLevels = 1;
+	textureDesc.ArraySize = 1;
+	textureDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+	textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.MiscFlags = 0;
+
+	ID3D11Texture2D* dsTexture;
+	if (FAILED(device->CreateTexture2D(&textureDesc, nullptr, &dsTexture)))
 	{
-		particle.push_back(XMFLOAT3(0, 1 + (i * 1.3f), 0));
+		ErrorLog::Log("Failed to create depth stencil texture!");
+		return false;
 	}
 
+	if (FAILED(device->CreateDepthStencilView(dsTexture, 0, &dsViewParticle)))
+	{
+		ErrorLog::Log("Failed to create depth stencil View!");
+		return false;
+	}
+
+	dsTexture->Release();
 	return true;
 }
 
+void SetViewportParticle(D3D11_VIEWPORT& viewPortParticle, UINT width, UINT height)
+{
+	viewPortParticle.TopLeftX = 0;
+	viewPortParticle.TopLeftY = 0;
+	viewPortParticle.Width = static_cast<float>(width);
+	viewPortParticle.Height = static_cast<float>(height);
+	viewPortParticle.MinDepth = 0;
+	viewPortParticle.MaxDepth = 1;
+}
+
 bool SetupParticleHelper(ID3D11Device*& device, ID3D11DeviceContext*& immediateContext, ID3D11UnorderedAccessView*& UAViewP,
-	IDXGISwapChain*& swapChain, ID3D11Buffer*& particleBuffer, std::vector<XMFLOAT3>& particle, struct ParticlePosition& particlePosition)
+	IDXGISwapChain*& swapChain, ID3D11Buffer*& particleBuffer, std::vector<XMFLOAT3>& particle, struct ParticlePosition& particlePosition,
+	UINT width, UINT height, ID3D11DepthStencilView*& dsViewParticle, D3D11_VIEWPORT& viewPortParticle)
 {
 	if (!CreatePartices(particle))
 		return false;
@@ -71,8 +114,13 @@ bool SetupParticleHelper(ID3D11Device*& device, ID3D11DeviceContext*& immediateC
 	if (!CreateParticleBuffer(device, particleBuffer, particlePosition, particle))
 		return false;
 
-	if (!CreateUnorderedAccessView(device, swapChain, particleBuffer, UAViewP, particle))
+	if (!CreateUnorderedAccessViewParticle(device, swapChain, particleBuffer, UAViewP, particle))
 		return false;
+
+	if (!CreateDepthStencilParticle(device, width, height, dsViewParticle))
+		return false;
+
+	SetViewportParticle(viewPortParticle, width, height);
 
 	return true;
 }

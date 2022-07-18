@@ -310,10 +310,32 @@ bool CreateSampleStateShadow(ID3D11Device* device, ID3D11SamplerState*& sampleSt
 	return true;
 }
 
+bool CreateSampleStateParticle(ID3D11Device* device, ID3D11SamplerState*& sampleStateParticle)
+{
+	D3D11_SAMPLER_DESC samplerDesc;
+	ZeroMemory(&samplerDesc, sizeof(D3D11_SAMPLER_DESC));
+
+	samplerDesc.Filter = D3D11_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	samplerDesc.MinLOD = 0;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	if (FAILED(device->CreateSamplerState(&samplerDesc, &sampleStateParticle))) {
+		ErrorLog::Log("Failed to create sampler state!");
+		return false;
+	}
+
+	return true;
+}
+
 bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11VertexShader*& vShaderDepth, ID3D11VertexShader*& vShaderParticle,
 	ID3D11GeometryShader*& gShaderParticle, ID3D11PixelShader*& pShader, ID3D11PixelShader*& pShaderParticle, ID3D11ComputeShader*& cShader,
 	ID3D11ComputeShader*& cShaderParticle, ID3D11InputLayout*& inputLayoutVS, ID3D11InputLayout*& inputLayoutVSDepth, 
-	ID3D11InputLayout*& inputLayoutVSParticle, ID3D11SamplerState*& sampleState, ID3D11SamplerState*& sampleStateShadow)
+	ID3D11InputLayout*& inputLayoutVSParticle, ID3D11SamplerState*& sampleState, ID3D11SamplerState*& sampleStateShadow,
+	ID3D11SamplerState*& sampleStateParticle)
 {
 	std::string vShaderByteCode, vShaderByteCodeDepth, vShaderByteCodeParticle;
 
@@ -329,6 +351,9 @@ bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Ver
 		return false;
 
 	if (!CreateSampleStateShadow(device, sampleStateShadow))
+		return false;
+
+	if (!CreateSampleStateParticle(device, sampleStateParticle))
 		return false;
 
 	return true;
