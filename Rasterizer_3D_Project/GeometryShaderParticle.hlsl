@@ -43,10 +43,10 @@ void main(point float4 input[1] : SV_Position, inout TriangleStream<GeometryShad
 	
 	GeometryShaderOutput outputs[4] =
 	{
-		mul(viewProj, float4(bottomLeft, 1.0f))
-		, mul(viewProj, float4(bottomRight, 1.0f))
-		, mul(viewProj, float4(topLeft, 1.0f))
-		, mul(viewProj, float4(topRight, 1.0f))
+		mul(float4(bottomLeft, 1.0f), viewProj)
+		, mul(float4(bottomRight, 1.0f), viewProj)
+		, mul(float4(topLeft, 1.0f), viewProj)
+		, mul(float4(topRight, 1.0f), viewProj)
 	};
 	
 	outputStream.Append(outputs[0]);

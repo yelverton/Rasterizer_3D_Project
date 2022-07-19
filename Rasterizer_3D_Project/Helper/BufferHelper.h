@@ -5,5 +5,6 @@
 #include <vector>
 
 bool SetupBuffers(ID3D11Device* device, ID3D11Buffer*& lightBuffer, ID3D11Buffer*& camBuffer,
-	ID3D11Buffer*& theWorldBuffer, ID3D11Buffer*& getDirectionBuffer, struct LightData& lightData, struct CamData& camData,
-	struct TheWorld& theWorld, struct GetDirection &getDirection);
+	ID3D11Buffer*& theWorldBuffer, ID3D11Buffer*& getDirectionBuffer, ID3D11Buffer*& getDTTimeBuffer,
+	struct LightData& lightData, struct CamData& camData, struct TheWorld& theWorld, struct GetDirection& getDirection,
+	struct GetDtTime& getDTTime);

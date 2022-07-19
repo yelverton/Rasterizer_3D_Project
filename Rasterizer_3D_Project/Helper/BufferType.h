@@ -7,6 +7,12 @@ struct TheWorld
     XMFLOAT4X4 worldMatrix;
 };
 
+struct GetDtTime
+{
+    XMFLOAT3 paddingDt;
+    float dt;
+};
+
 struct GetDirection
 {
     XMFLOAT3 forwardVec;

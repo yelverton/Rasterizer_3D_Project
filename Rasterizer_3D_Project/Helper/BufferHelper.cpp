@@ -102,9 +102,36 @@ bool setupForwardVector(ID3D11Device* device, ID3D11Buffer*& getDirectionBuffer,
 	return true;
 }
 
+bool setupGetDtTime(ID3D11Device* device, ID3D11Buffer*& getDTTimeBuffer, struct GetDtTime& getDTTime)
+{
+	getDTTime.dt = 0.0f;
+	getDTTime.paddingDt = XMFLOAT3(0.0f, 0.0f, 0.0f);
+
+	D3D11_BUFFER_DESC desc;
+	desc.ByteWidth = sizeof(GetDirection);
+	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	desc.MiscFlags = 0;
+	desc.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA data;
+	data.pSysMem = (void*)&getDTTime;
+	data.SysMemPitch = data.SysMemPitch = 0; // 1D resource 
+
+	if (FAILED(device->CreateBuffer(&desc, &data, &getDTTimeBuffer)))
+	{
+		ErrorLog::Log("Failed to create world Buffer");
+		return false;
+	}
+
+	return true;
+}
+
 bool SetupBuffers(ID3D11Device* device, ID3D11Buffer*& lightBuffer, ID3D11Buffer*& camBuffer,
-	ID3D11Buffer*& theWorldBuffer, ID3D11Buffer*& getDirectionBuffer, struct LightData& lightData, struct CamData& camData,
-	struct TheWorld& theWorld, struct GetDirection& getDirection)
+	ID3D11Buffer*& theWorldBuffer, ID3D11Buffer*& getDirectionBuffer, ID3D11Buffer*& getDTTimeBuffer, 
+	struct LightData& lightData, struct CamData& camData, struct TheWorld& theWorld, struct GetDirection& getDirection,
+	struct GetDtTime& getDtTime)
 {
 	if (!createLightBuffer(device, lightBuffer, lightData))
 		return false;
@@ -116,6 +143,9 @@ bool SetupBuffers(ID3D11Device* device, ID3D11Buffer*& lightBuffer, ID3D11Buffer
 		return false;
 	
 	if (!setupForwardVector(device, getDirectionBuffer, getDirection))
+		return false;
+	
+	if (!setupGetDtTime(device, getDTTimeBuffer, getDtTime))
 		return false;
 
 	return true;

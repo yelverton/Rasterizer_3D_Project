@@ -1,13 +1,14 @@
-Texture2D<float4> posWS : register(t0);
+RWBuffer<float> particles : register(u0);
 
-RWTexture2D<unorm float4> backBuffer : register(u0);
+cbuffer dtTime : register(b0)
+{
+	float3 paddingDt;
+	float dt;
+};
 
 [numthreads(1, 1, 1)]
-void main( uint3 DTid : SV_DispatchThreadID )
+void main(int3 threadId : SV_DispatchThreadID)
 {
-	int3 location = int3(DTid.x, DTid.y, DTid.z);
-	float3 pos = posWS.Load(location).xyz;
-	
-	backBuffer[DTid.xy] = float4(pos, 1.0f);
-
+	particles[threadId.x * 3] = cos(dt + threadId.x);
+	particles[threadId.x * 3 + 2] = sin(dt + threadId.x);
 }

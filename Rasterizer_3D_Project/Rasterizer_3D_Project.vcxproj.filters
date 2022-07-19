@@ -119,6 +119,9 @@
     <FxCompile Include="ComputeShaderParticle.hlsl">
       <Filter>Resource Files\HLSL\Particle</Filter>
     </FxCompile>
+    <FxCompile Include="PixelShader1.hlsl">
+      <Filter>Resource Files\HLSL\Particle</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Setup\PipelineHelper.h">

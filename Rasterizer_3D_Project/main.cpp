@@ -131,20 +131,20 @@ void RenderComputerShader(ID3D11DeviceContext* immediateContext, ID3D11ComputeSh
 	immediateContext->CSSetShaderResources(0, 6, gBufferSRV);
 	immediateContext->CSSetUnorderedAccessViews(0, 1, &UAView, nullptr);
 
-	camData.cameraPosition = camera.GetPositionFloat3();
-	lightData.lightPosition = lightCamera.GetPositionFloat3();
+	//camData.cameraPosition = camera.GetPositionFloat3();
+	//lightData.lightPosition = lightCamera.GetPositionFloat3();
 
-	D3D11_MAPPED_SUBRESOURCE subLight = {};
-	immediateContext->Map(lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subLight);
-	std::memcpy(subLight.pData, &lightData, sizeof(LightData));
-	immediateContext->Unmap(lightBuffer, 0);
-	immediateContext->CSSetConstantBuffers(0, 1, &lightBuffer);
+	//D3D11_MAPPED_SUBRESOURCE subLight = {};
+	//immediateContext->Map(lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subLight);
+	//std::memcpy(subLight.pData, &lightData, sizeof(LightData));
+	//immediateContext->Unmap(lightBuffer, 0);
+	//immediateContext->CSSetConstantBuffers(0, 1, &lightBuffer);
 
-	D3D11_MAPPED_SUBRESOURCE subCam = {};
-	immediateContext->Map(camBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subCam);
-	std::memcpy(subCam.pData, &camData, sizeof(CamData));
-	immediateContext->Unmap(camBuffer, 0);
-	immediateContext->CSSetConstantBuffers(1, 1, &camBuffer);
+	//D3D11_MAPPED_SUBRESOURCE subCam = {};
+	//immediateContext->Map(camBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subCam);
+	//std::memcpy(subCam.pData, &camData, sizeof(CamData));
+	//immediateContext->Unmap(camBuffer, 0);
+	//immediateContext->CSSetConstantBuffers(1, 1, &camBuffer);
 	
 	immediateContext->Dispatch(32, 32, 1);
 
@@ -202,11 +202,12 @@ void drawParticle(ID3D11DeviceContext* immediateContext, vector<XMFLOAT3>& parti
 
 	immediateContext->GSSetShader(nullptr, nullptr, 0);
 	immediateContext->PSSetShader(nullptr, nullptr, 0);
+	immediateContext->VSSetShader(nullptr, nullptr, 0);
 }
 
 void RenderComputerShaderParticle(ID3D11DeviceContext* immediateContext, ID3D11ComputeShader*& cShaderParticle, 
 	ID3D11RenderTargetView*& gBufferRTVParticle, ID3D11ShaderResourceView*& gBufferSRVParticle,
-	ID3D11UnorderedAccessView*& UAViewP)
+	ID3D11UnorderedAccessView*& UAViewP, vector<XMFLOAT3> particle, ID3D11Buffer*& getDtTimeBuffer, struct GetDtTime& getDtTime)
 {
 	ID3D11RenderTargetView* nullRTV = nullptr;
 	immediateContext->OMSetRenderTargets(1, &nullRTV, nullptr);
@@ -215,7 +216,17 @@ void RenderComputerShaderParticle(ID3D11DeviceContext* immediateContext, ID3D11C
 	immediateContext->CSSetShaderResources(0, 1, &gBufferSRVParticle);
 	immediateContext->CSSetUnorderedAccessViews(0, 1, &UAViewP, nullptr);
 
-	immediateContext->Dispatch(1, 1, 1);
+	getDtTime.dt += dt;
+	if (getDtTime.dt > 100.0f)
+		getDtTime.dt = 0.0f;
+
+	D3D11_MAPPED_SUBRESOURCE getDtTImeRes = {};
+	immediateContext->Map(getDtTimeBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &getDtTImeRes);
+	std::memcpy(getDtTImeRes.pData, &getDtTime, sizeof(GetDtTime));
+	immediateContext->Unmap(getDtTimeBuffer, 0);
+	immediateContext->CSSetConstantBuffers(0, 1, &getDtTimeBuffer);
+
+	immediateContext->Dispatch(particle.size(), 1, 1);
 
 	ID3D11UnorderedAccessView* NullUAV = nullptr;
 	immediateContext->CSSetUnorderedAccessViews(0, 1, &NullUAV, nullptr);
@@ -279,6 +290,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	ID3D11Buffer* theWorldBuffer;
 	ID3D11Buffer* particleBuffer;
 	ID3D11Buffer* directionBuffer;
+	ID3D11Buffer* getDTTimeBuffer;
 
 	struct LightData lightData;
 	struct CamData camData;
@@ -286,6 +298,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	struct DepthBufferData depthBufferData;
 	struct ParticlePosition particlePosition;
 	struct GetDirection getDirection;
+	struct GetDtTime getDTTime;
 	
 	std::vector<std::string> modelName;
 	std::vector<XMFLOAT3> worldPos;
@@ -315,7 +328,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		sampleStateParticle))
 		return -1;
 
-	if (!SetupBuffers(device, lightBuffer, camBuffer, theWorldBuffer, directionBuffer, lightData, camData, theWorld, getDirection))
+	if (!SetupBuffers(device, lightBuffer, camBuffer, theWorldBuffer, directionBuffer, getDTTimeBuffer, lightData, camData, 
+		theWorld, getDirection, getDTTime))
 		return -1;
 
 	if (!SetupModels(modelName, worldPos))
@@ -358,7 +372,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		particleSystem(immediateContext, inputLayoutVSParticle, vShaderParticle, dsView, viewportParticle, gShaderParticle, pShaderParticle, 
 			cShaderParticle, directionBuffer, getDirection, camera, camBuffer, camData, rtv);
 		drawParticle(immediateContext, particels, worldPos, theWorld, theWorldBuffer, particleBuffer, dsView);
-		RenderComputerShaderParticle(immediateContext, cShaderParticle, gBufferRTVParticle, gBufferSRVParticle, UAViewP);
+		RenderComputerShaderParticle(immediateContext, cShaderParticle, gBufferRTVParticle, gBufferSRVParticle, UAViewP,
+			particels, getDTTimeBuffer, getDTTime);
 		swapChain->Present(0, 0);
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> elapsed_seconds = end - start;
