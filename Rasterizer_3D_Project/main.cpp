@@ -369,11 +369,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		draw(immediateContext, mesh, worldPos, theWorld, theWorldBuffer, camera, playerPerspectiv, lightCamera);
 		RenderComputerShader(immediateContext, cShader, dsView, UAView, gBufferSRV, camData, camera, lightData, lightCamera, lightBuffer, 
 			camBuffer);
-		particleSystem(immediateContext, inputLayoutVSParticle, vShaderParticle, dsView, viewportParticle, gShaderParticle, pShaderParticle, 
-			cShaderParticle, directionBuffer, getDirection, camera, camBuffer, camData, rtv);
-		drawParticle(immediateContext, particels, worldPos, theWorld, theWorldBuffer, particleBuffer, dsView);
-		RenderComputerShaderParticle(immediateContext, cShaderParticle, gBufferRTVParticle, gBufferSRVParticle, UAViewP,
-			particels, getDTTimeBuffer, getDTTime);
+		if (playerPerspectiv)
+		{
+			particleSystem(immediateContext, inputLayoutVSParticle, vShaderParticle, dsView, viewportParticle, gShaderParticle, pShaderParticle, 
+				cShaderParticle, directionBuffer, getDirection, camera, camBuffer, camData, rtv);
+			drawParticle(immediateContext, particels, worldPos, theWorld, theWorldBuffer, particleBuffer, dsView);
+			RenderComputerShaderParticle(immediateContext, cShaderParticle, gBufferRTVParticle, gBufferSRVParticle, UAViewP,
+				particels, getDTTimeBuffer, getDTTime);
+		}
 		swapChain->Present(0, 0);
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> elapsed_seconds = end - start;
