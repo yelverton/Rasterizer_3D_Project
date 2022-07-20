@@ -8,7 +8,8 @@
 
 bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11VertexShader*& vShaderDepth, ID3D11VertexShader*& vShaderParticle,
 	ID3D11GeometryShader*& gShaderParticle, ID3D11PixelShader*& pShader, ID3D11PixelShader*& pShaderParticle, ID3D11ComputeShader*& cShader, 
-	ID3D11ComputeShader*& cShaderParticle, std::string& vShaderByteCode, std::string& vShaderByteCodeDepth, std::string& vShaderByteCodeParticle)
+	ID3D11ComputeShader*& cShaderParticle, std::string& vShaderByteCode, std::string& vShaderByteCodeDepth, std::string& vShaderByteCodeParticle,
+	ID3D11HullShader*& hShader, ID3D11DomainShader*& dShader)
 {
 	std::string shaderData;
 	std::ifstream reader;
@@ -90,6 +91,60 @@ bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Verte
 		}
 
 		vShaderByteCode = shaderData;
+		shaderData.clear();
+		reader.close();
+
+	// HULLSHADER:
+		
+		// [MAIN]:
+
+		reader.open("../x64/Debug/HullShader.cso", std::ios::binary | std::ios::ate);
+		if (!reader.is_open())
+		{
+			ErrorLog::Log("Could not open HS file!");
+			return false;
+		}
+
+		reader.seekg(0, std::ios::end);
+		shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
+		reader.seekg(0, std::ios::beg);
+
+		shaderData.assign((std::istreambuf_iterator<char>(reader)),
+			std::istreambuf_iterator<char>());
+
+		if (FAILED(device->CreateHullShader(shaderData.c_str(), shaderData.length(), nullptr, &hShader)))
+		{
+			ErrorLog::Log("Failed to create hull shader!");
+			return false;
+		}
+
+		shaderData.clear();
+		reader.close();
+
+	// DOMAINSHADER:
+
+		// [MAIN]:
+
+		reader.open("../x64/Debug/DomainShader.cso", std::ios::binary | std::ios::ate);
+		if (!reader.is_open())
+		{
+			ErrorLog::Log("Could not open DS file!");
+			return false;
+		}
+
+		reader.seekg(0, std::ios::end);
+		shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
+		reader.seekg(0, std::ios::beg);
+
+		shaderData.assign((std::istreambuf_iterator<char>(reader)),
+			std::istreambuf_iterator<char>());
+
+		if (FAILED(device->CreateDomainShader(shaderData.c_str(), shaderData.length(), nullptr, &dShader)))
+		{
+			ErrorLog::Log("Failed to create domain shader!");
+			return false;
+		}
+
 		shaderData.clear();
 		reader.close();
 
@@ -331,16 +386,40 @@ bool CreateSampleStateParticle(ID3D11Device* device, ID3D11SamplerState*& sample
 	return true;
 }
 
+bool CreateRasterizerState(ID3D11Device* device, ID3D11RasterizerState*& rasterizerState)
+{
+	D3D11_RASTERIZER_DESC desc;
+	desc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID; // för att se effekten : D3D11_FILL_WIREFRAME
+	desc.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
+	desc.FrontCounterClockwise = false;
+	desc.DepthBias = 0;
+	desc.DepthBiasClamp = 0.0f;
+	desc.SlopeScaledDepthBias = 0.0f;
+	desc.DepthClipEnable = true;
+	desc.ScissorEnable = false;
+	desc.MultisampleEnable = false;
+	desc.AntialiasedLineEnable = false;
+
+	if (FAILED(device->CreateRasterizerState(&desc, &rasterizerState)))
+	{
+		ErrorLog::Log("Failed to create rasterizer state");
+		return false;
+	}
+
+	return true;
+}
+
 bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11VertexShader*& vShaderDepth, ID3D11VertexShader*& vShaderParticle,
 	ID3D11GeometryShader*& gShaderParticle, ID3D11PixelShader*& pShader, ID3D11PixelShader*& pShaderParticle, ID3D11ComputeShader*& cShader,
 	ID3D11ComputeShader*& cShaderParticle, ID3D11InputLayout*& inputLayoutVS, ID3D11InputLayout*& inputLayoutVSDepth, 
 	ID3D11InputLayout*& inputLayoutVSParticle, ID3D11SamplerState*& sampleState, ID3D11SamplerState*& sampleStateShadow,
-	ID3D11SamplerState*& sampleStateParticle)
+	ID3D11SamplerState*& sampleStateParticle, ID3D11HullShader*& hShader, ID3D11DomainShader*& dShader, 
+	ID3D11RasterizerState*& rasterizerState)
 {
 	std::string vShaderByteCode, vShaderByteCodeDepth, vShaderByteCodeParticle;
 
 	if (!LoadShaders(device, vShader, vShaderDepth, vShaderParticle, gShaderParticle, pShader, pShaderParticle, cShader, cShaderParticle,
-		vShaderByteCode, vShaderByteCodeDepth, vShaderByteCodeParticle))
+		vShaderByteCode, vShaderByteCodeDepth, vShaderByteCodeParticle, hShader, dShader))
 		return false;
 
 	if (!CreateInputLayout(device, inputLayoutVS, inputLayoutVSDepth, inputLayoutVSParticle, vShaderByteCode, vShaderByteCodeDepth,
@@ -354,6 +433,9 @@ bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Ver
 		return false;
 
 	if (!CreateSampleStateParticle(device, sampleStateParticle))
+		return false;
+
+	if (!CreateRasterizerState(device, rasterizerState))
 		return false;
 
 	return true;

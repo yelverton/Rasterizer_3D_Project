@@ -16,7 +16,7 @@ float dt = 0;
 void clearRenderTargetView(ID3D11DeviceContext*& immediateContext, ID3D11DepthStencilView*& dsViewShadow, ID3D11RenderTargetView* gBufferRTV[],
 	ID3D11DepthStencilView*& dsView, ID3D11DepthStencilView*& dsViewParticle, ID3D11RenderTargetView* rtv)
 {
-	float clearColour[4] = { 0.0f, 1.0f, 0.0f, 0.0f };
+	float clearColour[4] = { 0.0f, 0.0f, 1.0f, 0.0f };
 	for (int i = 0; i < 6; i++)
 		immediateContext->ClearRenderTargetView(gBufferRTV[i], clearColour);
 
@@ -80,11 +80,25 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsVie
 	ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* sampleState, 
 	ID3D11Buffer* lightBuffer, ID3D11Buffer* camBuffer, struct LightData lightData, struct CamData camData, Camera& camera,
 	ID3D11RenderTargetView* gBufferRTV[], bool &playerPerspectiv, Camera &lightCamera, ID3D11ShaderResourceView* SRVShadow,
-	ID3D11SamplerState* sampleStateShadow, Camera &shadow)
+	ID3D11SamplerState* sampleStateShadow, Camera &shadow, ID3D11HullShader* hShader, ID3D11DomainShader* dShader,
+	ID3D11RasterizerState* rasterizerState)
 {
 	immediateContext->IASetInputLayout(inputLayout);
-	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
 	immediateContext->VSSetShader(vShader, nullptr, 0);
+
+	camData.cameraPosition = camera.GetPositionFloat3();
+
+	D3D11_MAPPED_SUBRESOURCE subCam = {};
+	immediateContext->Map(camBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subCam);
+	std::memcpy(subCam.pData, &camData, sizeof(CamData));
+	immediateContext->Unmap(camBuffer, 0);
+	immediateContext->HSSetConstantBuffers(0, 1, &camBuffer);
+
+	immediateContext->HSSetShader(hShader, nullptr, 0);
+	immediateContext->DSSetShader(dShader, nullptr, 0);
+	immediateContext->RSSetState(rasterizerState);
+
 	immediateContext->RSSetViewports(1, &viewport);
 	immediateContext->PSSetShader(pShader, nullptr, 0);
 	immediateContext->OMSetRenderTargets(6, gBufferRTV, dsView);
@@ -117,6 +131,8 @@ void draw(ID3D11DeviceContext* immediateContext, vector<Mesh>& mesh, vector<XMFL
 	}
 
 	immediateContext->VSSetShader(nullptr, nullptr, 0);
+	immediateContext->HSSetShader(nullptr, nullptr, 0);
+	immediateContext->DSSetShader(nullptr, nullptr, 0);
 	immediateContext->PSSetShader(nullptr, nullptr, 0);
 }
 
@@ -299,7 +315,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	struct ParticlePosition particlePosition;
 	struct GetDirection getDirection;
 	struct GetDtTime getDTTime;
-	
+
+	ID3D11HullShader* hShader;
+	ID3D11DomainShader* dShader;
+	ID3D11RasterizerState* rasterizerState;
+
 	std::vector<std::string> modelName;
 	std::vector<XMFLOAT3> worldPos;
 
@@ -325,7 +345,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	if (!SetupPipeline(device, vShader, vShaderDepth, vShaderParticle, gShaderParticle, pShader, pShaderParticle, cShader,
 		cShaderParticle, inputLayoutVS, inputLayoutVSDepth, inputLayoutVSParticle, sampleState, sampleStateShadow,
-		sampleStateParticle))
+		sampleStateParticle, hShader, dShader, rasterizerState))
 		return -1;
 
 	if (!SetupBuffers(device, lightBuffer, camBuffer, theWorldBuffer, directionBuffer, getDTTimeBuffer, lightData, camData, 
@@ -365,7 +385,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		ShadowPrePass(immediateContext, dsViewShadow, viewportShadow, lightCamera, vShaderDepth, inputLayoutVSDepth, sampleStateShadow, rtv);
 		drawPrePass(immediateContext, mesh, worldPos, theWorld, theWorldBuffer);
 		Render(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, lightBuffer, camBuffer, lightData, camData, 
-			camera, gBufferRTV, playerPerspectiv, lightCamera, SRVShadow, sampleStateShadow, shadow);
+			camera, gBufferRTV, playerPerspectiv, lightCamera, SRVShadow, sampleStateShadow, shadow,
+			hShader, dShader, rasterizerState);
 		draw(immediateContext, mesh, worldPos, theWorld, theWorldBuffer, camera, playerPerspectiv, lightCamera);
 		RenderComputerShader(immediateContext, cShader, dsView, UAView, gBufferSRV, camData, camera, lightData, lightCamera, lightBuffer, 
 			camBuffer);
@@ -406,6 +427,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	swapChain->Release();
 	immediateContext->Release();
 	device->Release();
+	hShader->Release();
+	dShader->Release();
+	/*resterizerState->Release();*/
 
 	for (int i = 0; i < 6; i++)
 	{

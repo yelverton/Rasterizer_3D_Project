@@ -49,6 +49,9 @@
     <Filter Include="Resource Files\HLSL\Particle">
       <UniqueIdentifier>{633dbbe0-26f7-4ff1-89ac-f12b1cfae716}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\HLSL\Tesselering">
+      <UniqueIdentifier>{c8d407fe-d9ec-47e8-a468-3e00ba9f49c9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -84,13 +87,13 @@
     <ClCompile Include="Scene\ModelHelper.cpp">
       <Filter>Source Files\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="Setup\ComputerHelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Setup\ShadowHelper.cpp">
       <Filter>Source Files\Setup</Filter>
     </ClCompile>
     <ClCompile Include="Setup\ParticleHelper.cpp">
+      <Filter>Source Files\Setup</Filter>
+    </ClCompile>
+    <ClCompile Include="Setup\TesseleringHelper.cpp">
       <Filter>Source Files\Setup</Filter>
     </ClCompile>
   </ItemGroup>
@@ -119,8 +122,11 @@
     <FxCompile Include="ComputeShaderParticle.hlsl">
       <Filter>Resource Files\HLSL\Particle</Filter>
     </FxCompile>
-    <FxCompile Include="PixelShader1.hlsl">
-      <Filter>Resource Files\HLSL\Particle</Filter>
+    <FxCompile Include="HullShader.hlsl">
+      <Filter>Resource Files\HLSL\Tesselering</Filter>
+    </FxCompile>
+    <FxCompile Include="DomainShader.hlsl">
+      <Filter>Resource Files\HLSL\Tesselering</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -164,6 +170,9 @@
       <Filter>Header Files\Setup</Filter>
     </ClInclude>
     <ClInclude Include="Setup\ParticleHelper.h">
+      <Filter>Header Files\Setup</Filter>
+    </ClInclude>
+    <ClInclude Include="Setup\TesseleringHelper.h">
       <Filter>Header Files\Setup</Filter>
     </ClInclude>
   </ItemGroup>
