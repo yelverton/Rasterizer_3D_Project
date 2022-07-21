@@ -52,6 +52,12 @@
     <Filter Include="Resource Files\HLSL\Tesselering">
       <UniqueIdentifier>{c8d407fe-d9ec-47e8-a468-3e00ba9f49c9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\HLSL\CubeMapping">
+      <UniqueIdentifier>{575d11df-bad9-4800-8346-796f0fee5f18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\HLSL\CubeMapping\First-stage">
+      <UniqueIdentifier>{57e3bdb7-52c9-49ee-b0e6-c01b91f1c839}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -93,7 +99,7 @@
     <ClCompile Include="Setup\ParticleHelper.cpp">
       <Filter>Source Files\Setup</Filter>
     </ClCompile>
-    <ClCompile Include="Setup\TesseleringHelper.cpp">
+    <ClCompile Include="Setup\CubeMappingHelper.cpp">
       <Filter>Source Files\Setup</Filter>
     </ClCompile>
   </ItemGroup>
@@ -127,6 +133,9 @@
     </FxCompile>
     <FxCompile Include="DomainShader.hlsl">
       <Filter>Resource Files\HLSL\Tesselering</Filter>
+    </FxCompile>
+    <FxCompile Include="VertexShaderCubeMapping.hlsl">
+      <Filter>Resource Files\HLSL\CubeMapping\First-stage</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -172,7 +181,7 @@
     <ClInclude Include="Setup\ParticleHelper.h">
       <Filter>Header Files\Setup</Filter>
     </ClInclude>
-    <ClInclude Include="Setup\TesseleringHelper.h">
+    <ClInclude Include="Setup\CubeMappingHelper.h">
       <Filter>Header Files\Setup</Filter>
     </ClInclude>
   </ItemGroup>
