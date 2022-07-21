@@ -68,7 +68,7 @@ void cubeMappingSystem(ID3D11DeviceContext* immediateContext, ID3D11DepthStencil
 	immediateContext->Map(camBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subCam);
 	std::memcpy(subCam.pData, &camData, sizeof(CamData));
 	immediateContext->Unmap(camBuffer, 0);
-	immediateContext->CSSetConstantBuffers(1, 1, &camBuffer);
+	immediateContext->CSSetConstantBuffers(2, 1, &camBuffer);
 }
 
 void drawPreCubeMapping(ID3D11DeviceContext* immediateContext, vector<Mesh> mesh, vector<XMFLOAT3> worldPos, struct TheWorld theWorld, ID3D11Buffer* theWorldBuffer)
