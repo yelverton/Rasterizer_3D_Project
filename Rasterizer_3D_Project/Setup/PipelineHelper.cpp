@@ -9,7 +9,8 @@
 bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11VertexShader*& vShaderDepth, ID3D11VertexShader*& vShaderParticle,
 	ID3D11GeometryShader*& gShaderParticle, ID3D11PixelShader*& pShader, ID3D11PixelShader*& pShaderParticle, ID3D11ComputeShader*& cShader, 
 	ID3D11ComputeShader*& cShaderParticle, std::string& vShaderByteCode, std::string& vShaderByteCodeDepth, std::string& vShaderByteCodeParticle,
-	ID3D11HullShader*& hShader, ID3D11DomainShader*& dShader, ID3D11VertexShader*& vShaderCubeMapping, std::string& vShaderByteCodeCubeMapping)
+	ID3D11HullShader*& hShader, ID3D11DomainShader*& dShader, ID3D11VertexShader*& vShaderCubeMapping, std::string& vShaderByteCodeCubeMapping,
+	ID3D11PixelShader*& pShaderCubeMapping)
 {
 	std::string shaderData;
 	std::ifstream reader;
@@ -203,6 +204,31 @@ bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Verte
 
 	// PIXELSHADER:
 	
+		// [CUBEMAPPING]:
+
+		reader.open("../x64/Debug/PixelShaderCubeMapping.cso", std::ios::binary | std::ios::ate);
+		if (!reader.is_open())
+		{
+			ErrorLog::Log("Could not open PS file cube mapping!");
+			return false;
+		}
+
+		reader.seekg(0, std::ios::end);
+		shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
+		reader.seekg(0, std::ios::beg);
+
+		shaderData.assign((std::istreambuf_iterator<char>(reader)),
+			std::istreambuf_iterator<char>());
+
+		if (FAILED(device->CreatePixelShader(shaderData.c_str(), shaderData.length(), nullptr, &pShaderCubeMapping)))
+		{
+			ErrorLog::Log("Failed to create pixel shader cubeMapping!");
+			return false;
+		}
+
+		shaderData.clear();
+		reader.close();
+
 		// [PARTICLE]:
 
 		reader.open("../x64/Debug/PixelShaderParticle.cso", std::ios::binary | std::ios::ate);
@@ -469,13 +495,14 @@ bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Ver
 	ID3D11InputLayout*& inputLayoutVSParticle, ID3D11SamplerState*& sampleState, ID3D11SamplerState*& sampleStateShadow,
 	ID3D11SamplerState*& sampleStateParticle, ID3D11HullShader*& hShader, ID3D11DomainShader*& dShader, 
 	ID3D11RasterizerState*& rasterizerState, ID3D11VertexShader*& vShaderCubeMapping, ID3D11InputLayout*& inputLayoutVSCubeMapping,
-	ID3D11SamplerState*& sampleStateCubeMapping)
+	ID3D11SamplerState*& sampleStateCubeMapping, ID3D11PixelShader*& pShaderCubeMapping)
 {
 	std::string vShaderByteCode, vShaderByteCodeDepth;
 	std::string vShaderByteCodeParticle, vShaderByteCodeCubeMapping;
 
 	if (!LoadShaders(device, vShader, vShaderDepth, vShaderParticle, gShaderParticle, pShader, pShaderParticle, cShader, cShaderParticle,
-		vShaderByteCode, vShaderByteCodeDepth, vShaderByteCodeParticle, hShader, dShader, vShaderCubeMapping, vShaderByteCodeCubeMapping))
+		vShaderByteCode, vShaderByteCodeDepth, vShaderByteCodeParticle, hShader, dShader, vShaderCubeMapping, vShaderByteCodeCubeMapping,
+		pShaderCubeMapping))
 		return false;
 
 	if (!CreateInputLayout(device, inputLayoutVS, inputLayoutVSDepth, inputLayoutVSParticle, vShaderByteCode, vShaderByteCodeDepth,

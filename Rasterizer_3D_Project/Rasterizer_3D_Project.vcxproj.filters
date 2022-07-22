@@ -137,6 +137,9 @@
     <FxCompile Include="VertexShaderCubeMapping.hlsl">
       <Filter>Resource Files\HLSL\CubeMapping\First-stage</Filter>
     </FxCompile>
+    <FxCompile Include="PixelShaderCubeMapping.hlsl">
+      <Filter>Resource Files\HLSL\CubeMapping\First-stage</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Setup\PipelineHelper.h">
