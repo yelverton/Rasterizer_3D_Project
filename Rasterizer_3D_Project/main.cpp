@@ -14,27 +14,23 @@
 
 float dt = 0;
 
-void clearRenderTargetView(ID3D11DeviceContext*& immediateContext, ID3D11DepthStencilView*& dsViewShadow, 
+void clearRenderTargetView(ID3D11DeviceContext*& immediateContext, ID3D11DepthStencilView*& dsViewShadow,
 	ID3D11RenderTargetView* gBufferRTV[], ID3D11DepthStencilView*& dsView, ID3D11DepthStencilView*& dsViewParticle,
-	ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsViewCubeMapping[])
+	ID3D11RenderTargetView* rtv, ID3D11RenderTargetView* rtvCubeMapping[], ID3D11DepthStencilView* dsViewCubeMapping[])
 {
 	float clearColour[4] = { 0.0f, 0.0f, 1.0f, 0.0f };
-	for (int i = 0; i < 6; i++)
-		immediateContext->ClearRenderTargetView(gBufferRTV[i], clearColour);
-
-	//for (int i = 0; i < 6; i++)
-	//	immediateContext->ClearUnorderedAccessViewFloat(uavCubeMapping[i], clearColour);
-
-	immediateContext->ClearRenderTargetView(rtv, clearColour);
-	
-	immediateContext->ClearDepthStencilView(dsViewParticle, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-	immediateContext->ClearDepthStencilView(dsViewShadow, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-	immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	for (int i = 0; i < 6; i++)
 	{
-		immediateContext->ClearDepthStencilView(dsViewCubeMapping[i], D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+		immediateContext->ClearRenderTargetView(gBufferRTV[i], clearColour);
+		/*immediateContext->ClearRenderTargetView(rtvCubeMapping[i], clearColour);*/
+		/*immediateContext->ClearDepthStencilView(dsViewCubeMapping[i], D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);*/
 	}
+	immediateContext->ClearRenderTargetView(rtv, clearColour);
+
+	immediateContext->ClearDepthStencilView(dsViewParticle, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	immediateContext->ClearDepthStencilView(dsViewShadow, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
 void moveAbility(bool& playerPerspectiv, Camera& lightCamera, Camera& camera, Camera& shadow)
@@ -53,17 +49,16 @@ void moveAbility(bool& playerPerspectiv, Camera& lightCamera, Camera& camera, Ca
 	}
 }
 
-void cubeMappingSystem(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView*& dsViewCubeMapping,
-	D3D11_VIEWPORT viewportCubeMapping, Camera camera, ID3D11VertexShader*& vShaderCubeMapping, ID3D11PixelShader*& pShaderCubeMapping,
-	ID3D11InputLayout* inputLayoutCubeMapping, ID3D11SamplerState* sampleStateCubeMapping, ID3D11RenderTargetView* rtv[],
-	CamData& camData, ID3D11Buffer* camBuffer, int number)
+void cubeMappingSystem(ID3D11DeviceContext* immediateContext, ID3D11InputLayout* inputLayoutCubeMapping, 
+	ID3D11VertexShader*& vShaderCubeMapping, D3D11_VIEWPORT& viewportCubeMapping, ID3D11DepthStencilView* dsViewCubeMapping[],
+	Camera camera, CamData& camData, ID3D11Buffer* camBuffer, int number)
 {
 	immediateContext->IASetInputLayout(inputLayoutCubeMapping);
 	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	immediateContext->VSSetShader(vShaderCubeMapping, nullptr, 0);
 	immediateContext->RSSetViewports(1, &viewportCubeMapping);
-	immediateContext->PSSetShader(pShaderCubeMapping, nullptr, 0);
-	immediateContext->OMSetRenderTargets(0, nullptr, dsViewCubeMapping);
+	immediateContext->PSSetShader(nullptr, nullptr, 0);
+	immediateContext->OMSetRenderTargets(0, nullptr, dsViewCubeMapping[number]);
 
 	camera.sendViewProjection(camera, 1);
 
@@ -380,8 +375,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	ID3D11RasterizerState* rasterizerState;
 
 	ID3D11ShaderResourceView* srvCubeMapping;
+	ID3D11RenderTargetView* rtvCubeMapping[6];
 	ID3D11UnorderedAccessView* uavCubeMapping[6];
-	ID3D11DepthStencilView* dsViewCubeMapping[6];
+	ID3D11DepthStencilView* dsViewCubeMapping[6]; // Bäst hade det varit och sätta om det till 6 senare.
 
 	std::vector<std::string> modelName;
 	std::vector<XMFLOAT3> worldPos;
@@ -406,7 +402,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		WIDTH, HEIGHT, dsViewParticle, viewportParticle, gBufferRTVParticle, gBufferSRVParticle))
 		return -1;
 
-	if (!SetupCubeMapping(device, WIDTH, HEIGHT, srvCubeMapping, uavCubeMapping, dsViewCubeMapping, viewportCubeMapping))
+	if (!SetupCubeMapping(device, WIDTH, HEIGHT, srvCubeMapping, dsViewCubeMapping, uavCubeMapping, viewportCubeMapping))
 		return -1;
 
 	if (!SetupPipeline(device, vShader, vShaderDepth, vShaderParticle, gShaderParticle, pShader, pShaderParticle, cShader,
@@ -447,7 +443,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		}
 
 		auto start = std::chrono::system_clock::now();
-		clearRenderTargetView(immediateContext, dsViewShadow, gBufferRTV, dsView, dsViewParticle, rtv, dsViewCubeMapping);
+		clearRenderTargetView(immediateContext, dsViewShadow, gBufferRTV, dsView, dsViewParticle, rtv, rtvCubeMapping, dsViewCubeMapping);
 		moveAbility(playerPerspectiv, lightCamera, camera, shadow);
 		ShadowPrePass(immediateContext, dsViewShadow, viewportShadow, lightCamera, vShaderDepth, inputLayoutVSDepth, sampleStateShadow, rtv);
 		drawPrePass(immediateContext, mesh, worldPos, theWorld, theWorldBuffer);
