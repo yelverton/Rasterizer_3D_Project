@@ -17,7 +17,6 @@ float4 main(PixelShaderInput input) : SV_TARGET
 	float3 diffuse = Diffuse.Sample(Sampler, input.uv);
 	float3 specular = Specular.Sample(Sampler, input.uv);
 
-	//return float4(ambient + diffuse + specular, 1.0f);
-	return float4(1.0f, 1.0f, 1.0f, 1.0f);
-
+	return float4(ambient, 1.0f);
+	//return float4(1.0f, 1.0f, 1.0f, 1.0f);
 }

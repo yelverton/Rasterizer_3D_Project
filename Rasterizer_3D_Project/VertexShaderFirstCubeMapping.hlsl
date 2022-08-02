@@ -3,7 +3,7 @@ cbuffer Matrices : register(b0)
 	matrix world;
 }
 
-cbuffer cam : register(b1)
+cbuffer camera : register(b1)
 {
 	matrix view;
 	matrix projection;

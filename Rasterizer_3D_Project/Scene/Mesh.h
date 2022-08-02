@@ -31,6 +31,7 @@ public:
         std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> diffuse,
         std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> specular);
     void Draw();
+    void DrawCubeCapping();
     void DrawPrePass();
     int NrOfSubMashes();
     Mesh(const Mesh& mesh);

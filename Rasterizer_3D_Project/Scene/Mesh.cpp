@@ -40,6 +40,21 @@ void Mesh::Draw()
 	}
 }
 
+void Mesh::DrawCubeCapping()
+{
+	UINT stride = sizeof(SimpleVertex);
+	UINT offset = 0;
+
+	immediateContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+	immediateContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT::DXGI_FORMAT_R32_UINT, 0);
+
+	for (int i = 0; i < next.size(); i++)
+	{
+		immediateContext->PSSetShaderResources(0, 1, ambient[i].GetAddressOf());
+		immediateContext->DrawIndexed(size[i], next[i], 0);
+	}
+}
+
 void Mesh::DrawPrePass()
 {
 	UINT stride = sizeof(SimpleVertex);

@@ -21,7 +21,7 @@ float4 main(PixelShaderInput input) : SV_TARGET
 	float3 normal = normalize(input.normal);
 	float3 location = normalize(reflect(normal, vecObject));
 	
-	//return float4(texCube.Sample(Sampler, location).rgb, 1.0f);
-	return float4(1.0f, 1.0f, 1.0f, 1.0f);
+	return float4(texCube.Sample(Sampler, location).rgb, 1.0f);
+	//return float4(1.0f, 0.0f, 1.0f, 1.0f);
 
 }
