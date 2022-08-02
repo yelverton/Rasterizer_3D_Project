@@ -58,6 +58,9 @@
     <Filter Include="Resource Files\HLSL\CubeMapping\First-stage">
       <UniqueIdentifier>{57e3bdb7-52c9-49ee-b0e6-c01b91f1c839}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\HLSL\CubeMapping\Second-stage">
+      <UniqueIdentifier>{5032eb83-424b-445f-b30a-1a5b601c9ae2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -134,11 +137,17 @@
     <FxCompile Include="DomainShader.hlsl">
       <Filter>Resource Files\HLSL\Tesselering</Filter>
     </FxCompile>
-    <FxCompile Include="VertexShaderCubeMapping.hlsl">
+    <FxCompile Include="VertexShaderFirstCubeMapping.hlsl">
       <Filter>Resource Files\HLSL\CubeMapping\First-stage</Filter>
     </FxCompile>
-    <FxCompile Include="PixelShaderCubeMapping.hlsl">
+    <FxCompile Include="PixelShaderFirstCubeMapping.hlsl">
       <Filter>Resource Files\HLSL\CubeMapping\First-stage</Filter>
+    </FxCompile>
+    <FxCompile Include="VertexShaderSecondCubeMapping.hlsl">
+      <Filter>Resource Files\HLSL\CubeMapping\Second-stage</Filter>
+    </FxCompile>
+    <FxCompile Include="PixelShaderSecondCubeMapping.hlsl">
+      <Filter>Resource Files\HLSL\CubeMapping\Second-stage</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

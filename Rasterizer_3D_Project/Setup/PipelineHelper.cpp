@@ -10,16 +10,17 @@ bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Verte
 	ID3D11GeometryShader*& gShaderParticle, ID3D11PixelShader*& pShader, ID3D11PixelShader*& pShaderParticle, ID3D11ComputeShader*& cShader, 
 	ID3D11ComputeShader*& cShaderParticle, std::string& vShaderByteCode, std::string& vShaderByteCodeDepth, std::string& vShaderByteCodeParticle,
 	ID3D11HullShader*& hShader, ID3D11DomainShader*& dShader, ID3D11VertexShader*& vShaderCubeMapping, std::string& vShaderByteCodeCubeMapping,
-	ID3D11PixelShader*& pShaderCubeMapping)
+	ID3D11PixelShader*& pShaderCubeMapping, ID3D11VertexShader*& vShaderSecCubeMapping, std::string& vShaderByteCodeSecCubeMapping,
+	ID3D11PixelShader*& pShaderSecCubeMapping)
 {
 	std::string shaderData;
 	std::ifstream reader;
 
 	// VERTEX SHADER:
 	
-		// [CUBEMAPPING]
+		// [CUBEMAPPING] First stage:
 
-		reader.open("../x64/Debug/VertexShaderCubeMapping.cso", std::ios::binary | std::ios::ate);
+		reader.open("../x64/Debug/VertexShaderFirstCubeMapping.cso", std::ios::binary | std::ios::ate);
 		if (!reader.is_open())
 		{
 			ErrorLog::Log("Could not open VS file cube mapping!");
@@ -40,6 +41,32 @@ bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Verte
 		}
 
 		vShaderByteCodeCubeMapping = shaderData;
+		shaderData.clear();
+		reader.close();
+
+		// [CUBEMAPPING] Second stage:
+
+		reader.open("../x64/Debug/VertexShaderSecondCubeMapping.cso", std::ios::binary | std::ios::ate);
+		if (!reader.is_open())
+		{
+			ErrorLog::Log("Could not open VS file cube mapping!");
+			return false;
+		}
+
+		reader.seekg(0, std::ios::end);
+		shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
+		reader.seekg(0, std::ios::beg);
+
+		shaderData.assign((std::istreambuf_iterator<char>(reader)),
+			std::istreambuf_iterator<char>());
+
+		if (FAILED(device->CreateVertexShader(shaderData.c_str(), shaderData.length(), nullptr, &vShaderSecCubeMapping)))
+		{
+			ErrorLog::Log("Failed to create vertex shader Particle!");
+			return false;
+		}
+
+		vShaderByteCodeSecCubeMapping = shaderData;
 		shaderData.clear();
 		reader.close();
 
@@ -204,9 +231,9 @@ bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Verte
 
 	// PIXELSHADER:
 	
-		// [CUBEMAPPING]:
+		// [CUBEMAPPING] first stage:
 
-		reader.open("../x64/Debug/PixelShaderCubeMapping.cso", std::ios::binary | std::ios::ate);
+		reader.open("../x64/Debug/PixelShaderFirstCubeMapping.cso", std::ios::binary | std::ios::ate);
 		if (!reader.is_open())
 		{
 			ErrorLog::Log("Could not open PS file cube mapping!");
@@ -221,6 +248,31 @@ bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Verte
 			std::istreambuf_iterator<char>());
 
 		if (FAILED(device->CreatePixelShader(shaderData.c_str(), shaderData.length(), nullptr, &pShaderCubeMapping)))
+		{
+			ErrorLog::Log("Failed to create pixel shader cubeMapping!");
+			return false;
+		}
+
+		shaderData.clear();
+		reader.close();
+
+		// [CUBEMAPPING] second stage:
+
+		reader.open("../x64/Debug/PixelShaderSecondCubeMapping.cso", std::ios::binary | std::ios::ate);
+		if (!reader.is_open())
+		{
+			ErrorLog::Log("Could not open PS file cube mapping!");
+			return false;
+		}
+
+		reader.seekg(0, std::ios::end);
+		shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
+		reader.seekg(0, std::ios::beg);
+
+		shaderData.assign((std::istreambuf_iterator<char>(reader)),
+			std::istreambuf_iterator<char>());
+
+		if (FAILED(device->CreatePixelShader(shaderData.c_str(), shaderData.length(), nullptr, &pShaderSecCubeMapping)))
 		{
 			ErrorLog::Log("Failed to create pixel shader cubeMapping!");
 			return false;
@@ -332,7 +384,8 @@ bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Verte
 
 bool CreateInputLayout(ID3D11Device* device, ID3D11InputLayout*& inputLayoutVs, ID3D11InputLayout*& inputLayoutVsDepth, 
 	ID3D11InputLayout*& inputLayoutVsParticle, const std::string& vShaderByteCode, const std::string& vShaderByteCodeDepth, 
-	const std::string& vShaderByteCodeParticle, ID3D11InputLayout*& inputLayoutVSCubeMapping, const std::string& vShaderByteCodeCubeMapping)
+	const std::string& vShaderByteCodeParticle, ID3D11InputLayout*& inputLayoutVSCubeMapping, const std::string& vShaderByteCodeCubeMapping,
+	ID3D11InputLayout*& inputLayoutVSSecCubeMapping, const std::string& vShaderByteCodeSecCubeMapping)
 {
 	D3D11_INPUT_ELEMENT_DESC inputDesc[] =
 	{
@@ -355,6 +408,20 @@ bool CreateInputLayout(ID3D11Device* device, ID3D11InputLayout*& inputLayoutVs, 
 		return false;
 	}
 
+	if (FAILED(device->CreateInputLayout(inputDesc, _countof(inputDesc), vShaderByteCodeCubeMapping.c_str(),
+		vShaderByteCodeCubeMapping.length(), &inputLayoutVSCubeMapping)))
+	{
+		ErrorLog::Log("Failed to create Input Layout vs cube mapping");
+		return false;
+	}
+
+	if (FAILED(device->CreateInputLayout(inputDesc, _countof(inputDesc), vShaderByteCodeSecCubeMapping.c_str(),
+		vShaderByteCodeSecCubeMapping.length(), &inputLayoutVSSecCubeMapping)))
+	{
+		ErrorLog::Log("Failed to create Input Layout vs cube mapping");
+		return false;
+	}
+
 	D3D11_INPUT_ELEMENT_DESC onlyPosDesc[] =
 	{
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
@@ -364,13 +431,6 @@ bool CreateInputLayout(ID3D11Device* device, ID3D11InputLayout*& inputLayoutVs, 
 		vShaderByteCodeParticle.length(), &inputLayoutVsParticle)))
 	{
 		ErrorLog::Log("Failed to create Input Layout vs Particle");
-		return false;
-	}
-
-	if (FAILED(device->CreateInputLayout(onlyPosDesc, _countof(onlyPosDesc), vShaderByteCodeCubeMapping.c_str(),
-		vShaderByteCodeCubeMapping.length(), &inputLayoutVSCubeMapping)))
-	{
-		ErrorLog::Log("Failed to create Input Layout vs cube mapping");
 		return false;
 	}
 
@@ -495,18 +555,20 @@ bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Ver
 	ID3D11InputLayout*& inputLayoutVSParticle, ID3D11SamplerState*& sampleState, ID3D11SamplerState*& sampleStateShadow,
 	ID3D11SamplerState*& sampleStateParticle, ID3D11HullShader*& hShader, ID3D11DomainShader*& dShader, 
 	ID3D11RasterizerState*& rasterizerState, ID3D11VertexShader*& vShaderCubeMapping, ID3D11InputLayout*& inputLayoutVSCubeMapping,
-	ID3D11SamplerState*& sampleStateCubeMapping, ID3D11PixelShader*& pShaderCubeMapping)
+	ID3D11SamplerState*& sampleStateCubeMapping, ID3D11PixelShader*& pShaderCubeMapping, ID3D11VertexShader*& vShaderSecCubeMapping, 
+	ID3D11InputLayout*& inputLayoutVSSecCubeMapping, ID3D11PixelShader*& pShaderSecCubeMapping)
 {
 	std::string vShaderByteCode, vShaderByteCodeDepth;
-	std::string vShaderByteCodeParticle, vShaderByteCodeCubeMapping;
+	std::string vShaderByteCodeParticle, vShaderByteCodeCubeMapping, vShaderByteCodeCubeSecMapping;
 
 	if (!LoadShaders(device, vShader, vShaderDepth, vShaderParticle, gShaderParticle, pShader, pShaderParticle, cShader, cShaderParticle,
 		vShaderByteCode, vShaderByteCodeDepth, vShaderByteCodeParticle, hShader, dShader, vShaderCubeMapping, vShaderByteCodeCubeMapping,
-		pShaderCubeMapping))
+		pShaderCubeMapping, vShaderSecCubeMapping, vShaderByteCodeCubeSecMapping, pShaderSecCubeMapping))
 		return false;
 
 	if (!CreateInputLayout(device, inputLayoutVS, inputLayoutVSDepth, inputLayoutVSParticle, vShaderByteCode, vShaderByteCodeDepth,
-		vShaderByteCodeParticle, inputLayoutVSCubeMapping, vShaderByteCodeCubeMapping))
+		vShaderByteCodeParticle, inputLayoutVSCubeMapping, vShaderByteCodeCubeMapping, inputLayoutVSSecCubeMapping, 
+		vShaderByteCodeCubeSecMapping))
 		return false;
 
 	if (!CreateSampleState(device, sampleState))

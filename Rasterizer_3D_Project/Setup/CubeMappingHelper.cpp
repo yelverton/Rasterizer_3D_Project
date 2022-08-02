@@ -1,8 +1,8 @@
 #include "CubeMappingHelper.h"
 #include "../Helper/ErrorLog.h"
 
-bool CreateCubeMapping(ID3D11Device* device, UINT width, UINT height, ID3D11ShaderResourceView*& srvCubeMapping, 
-	ID3D11DepthStencilView* dsViewCubeMapping[], ID3D11UnorderedAccessView* uavCubeMapping[])
+bool CreateCubeMapping(ID3D11Device* device, UINT width, UINT height, ID3D11ShaderResourceView*& srvCubeMapping,
+	ID3D11RenderTargetView* rtvCubeMapping[])
 {
 	int numberOfSides = 6;
 
@@ -15,8 +15,7 @@ bool CreateCubeMapping(ID3D11Device* device, UINT width, UINT height, ID3D11Shad
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.SampleDesc.Count = 1;
 	desc.SampleDesc.Quality = 0;
-	/*desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;*/
-	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_UNORDERED_ACCESS;
+	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
 	desc.CPUAccessFlags = 0;
 	desc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
 
@@ -41,41 +40,25 @@ bool CreateCubeMapping(ID3D11Device* device, UINT width, UINT height, ID3D11Shad
 		return false;
 	}
 
-	D3D11_DEPTH_STENCIL_VIEW_DESC dsViewDesc = {};
-	dsViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	dsViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
-	dsViewDesc.Texture2DArray.ArraySize = 1;
-	dsViewDesc.Texture2DArray.MipSlice = 0;
+	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
+	rtvDesc.Texture2DArray.ArraySize = 1;
+	rtvDesc.Texture2DArray.MipSlice = 0;
 
 	for (int i = 0; i < numberOfSides; i++)
 	{
-		dsViewDesc.Texture2DArray.FirstArraySlice = (UINT)i;
-		if (FAILED(device->CreateDepthStencilView(texture2Dtemp, &dsViewDesc, &dsViewCubeMapping[i])))
+		rtvDesc.Texture2DArray.FirstArraySlice = (UINT)i;
+		if (FAILED(device->CreateRenderTargetView(texture2Dtemp, &rtvDesc, &rtvCubeMapping[i])))
 		{
-			ErrorLog::Log("Failed to setup dsViewCubeMapping");
+			ErrorLog::Log("Failed to setup rtvArray");
 			return false;
 		}
 	}
 
-	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-	uavDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2DARRAY;
-	uavDesc.Texture2DArray.ArraySize = 1;
-	uavDesc.Texture2DArray.MipSlice = 0;
-
-	for (int i = 0; i < numberOfSides; i++)
-	{
-		uavDesc.Texture2DArray.FirstArraySlice = (UINT)i;
-		if (FAILED(device->CreateUnorderedAccessView(texture2Dtemp, &uavDesc, &uavCubeMapping[i])))
-		{
-			ErrorLog::Log("Failed to setup rtvArray");
-			return false;
-		}	
-	}
-
 	texture2Dtemp->Release();
 
-	return true;	
+	return true;
 }
 
 bool CreateDepthStencilCubeMapping(ID3D11Device* device, UINT width, UINT height, ID3D11DepthStencilView*& dsViewCubeMapping)
@@ -122,9 +105,13 @@ void SetViewportCubeMapping(D3D11_VIEWPORT& viewPortCubeMapping, UINT width, UIN
 
 
 bool SetupCubeMapping(ID3D11Device* device, UINT width, UINT height, ID3D11ShaderResourceView*& srvCubeMapping,
-	ID3D11DepthStencilView* dsViewCubeMapping[], ID3D11UnorderedAccessView* uavCubeMapping[], D3D11_VIEWPORT& viewPortCubeMapping)
+	ID3D11RenderTargetView* rtvCubeMapping[], ID3D11DepthStencilView*& dsViewCubeMapping, 
+	D3D11_VIEWPORT& viewPortCubeMapping)
 {
-	if (!CreateCubeMapping(device, width, height, srvCubeMapping, dsViewCubeMapping,  uavCubeMapping))
+	if (!CreateCubeMapping(device, width, height, srvCubeMapping, rtvCubeMapping))
+		return false;
+
+	if (!CreateDepthStencilCubeMapping(device, width, height, dsViewCubeMapping))
 		return false;
 
 	SetViewportCubeMapping(viewPortCubeMapping, width, height);
