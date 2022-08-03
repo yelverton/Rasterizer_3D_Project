@@ -11,7 +11,7 @@ bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Verte
 	ID3D11ComputeShader*& cShaderParticle, std::string& vShaderByteCode, std::string& vShaderByteCodeDepth, std::string& vShaderByteCodeParticle,
 	ID3D11HullShader*& hShader, ID3D11DomainShader*& dShader, ID3D11VertexShader*& vShaderCubeMapping, std::string& vShaderByteCodeCubeMapping,
 	ID3D11PixelShader*& pShaderCubeMapping, ID3D11VertexShader*& vShaderSecCubeMapping, std::string& vShaderByteCodeSecCubeMapping,
-	ID3D11PixelShader*& pShaderSecCubeMapping)
+	ID3D11PixelShader*& pShaderSecCubeMapping, ID3D11ComputeShader*& cShaderCubeMapping)
 {
 	std::string shaderData;
 	std::ifstream reader;
@@ -333,6 +333,29 @@ bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Verte
 
 	// COMPUTERSHADER:
 
+		// [CUBEMAPPING] prepass: 
+
+		reader.open("../x64/Debug/ComputeShaderFirstCubeMapping.cso", std::ios::binary | std::ios::ate);
+		if (!reader.is_open()) {
+			ErrorLog::Log("Could not open CS Particle file!");
+			return false;
+		}
+
+		reader.seekg(0, std::ios::end);
+		shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
+		reader.seekg(0, std::ios::beg);
+
+		shaderData.assign((std::istreambuf_iterator<char>(reader)),
+			std::istreambuf_iterator<char>());
+
+		if (FAILED(device->CreateComputeShader(shaderData.c_str(), shaderData.length(), nullptr, &cShaderCubeMapping))) {
+			ErrorLog::Log("Failed to create computer shader for cubemapping!");
+			return false;
+		}
+
+		shaderData.clear();
+		reader.close();
+
 		// [PARTICLE]:
 
 		reader.open("../x64/Debug/ComputeShaderParticle.cso", std::ios::binary | std::ios::ate);
@@ -556,14 +579,14 @@ bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Ver
 	ID3D11SamplerState*& sampleStateParticle, ID3D11HullShader*& hShader, ID3D11DomainShader*& dShader, 
 	ID3D11RasterizerState*& rasterizerState, ID3D11VertexShader*& vShaderCubeMapping, ID3D11InputLayout*& inputLayoutVSCubeMapping,
 	ID3D11SamplerState*& sampleStateCubeMapping, ID3D11PixelShader*& pShaderCubeMapping, ID3D11VertexShader*& vShaderSecCubeMapping, 
-	ID3D11InputLayout*& inputLayoutVSSecCubeMapping, ID3D11PixelShader*& pShaderSecCubeMapping)
+	ID3D11InputLayout*& inputLayoutVSSecCubeMapping, ID3D11PixelShader*& pShaderSecCubeMapping, ID3D11ComputeShader*& cShaderCubeMapping)
 {
 	std::string vShaderByteCode, vShaderByteCodeDepth;
 	std::string vShaderByteCodeParticle, vShaderByteCodeCubeMapping, vShaderByteCodeCubeSecMapping;
 
 	if (!LoadShaders(device, vShader, vShaderDepth, vShaderParticle, gShaderParticle, pShader, pShaderParticle, cShader, cShaderParticle,
 		vShaderByteCode, vShaderByteCodeDepth, vShaderByteCodeParticle, hShader, dShader, vShaderCubeMapping, vShaderByteCodeCubeMapping,
-		pShaderCubeMapping, vShaderSecCubeMapping, vShaderByteCodeCubeSecMapping, pShaderSecCubeMapping))
+		pShaderCubeMapping, vShaderSecCubeMapping, vShaderByteCodeCubeSecMapping, pShaderSecCubeMapping, cShaderCubeMapping))
 		return false;
 
 	if (!CreateInputLayout(device, inputLayoutVS, inputLayoutVSDepth, inputLayoutVSParticle, vShaderByteCode, vShaderByteCodeDepth,
@@ -588,3 +611,4 @@ bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Ver
 
 	return true;
 }
+

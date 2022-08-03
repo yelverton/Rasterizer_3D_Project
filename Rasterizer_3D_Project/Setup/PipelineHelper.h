@@ -13,4 +13,4 @@ bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Ver
 	ID3D11SamplerState*& sampleStateParticle, ID3D11HullShader*& hShader, ID3D11DomainShader*& dShader,
 	ID3D11RasterizerState*& rasterizerState, ID3D11VertexShader*& vShaderCubeMapping, ID3D11InputLayout*& inputLayoutVSCubeMapping,
 	ID3D11SamplerState*& sampleStateCubeMapping, ID3D11PixelShader*& pShaderCubeMapping, ID3D11VertexShader*& vShaderSecCubeMapping,
-	ID3D11InputLayout*& inputLayoutVSSecCubeMapping, ID3D11PixelShader*& pShaderSecCubeMapping);
+	ID3D11InputLayout*& inputLayoutVSSecCubeMapping, ID3D11PixelShader*& pShaderSecCubeMapping, ID3D11ComputeShader*& cShaderCubeMapping);

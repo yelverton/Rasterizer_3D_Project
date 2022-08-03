@@ -93,6 +93,26 @@ bool CreateDepthStencilCubeMapping(ID3D11Device* device, UINT width, UINT height
 	return true;
 }
 
+bool CreateUnorderedAccessViewCubeMapping(ID3D11Device* device, IDXGISwapChain* swapChain, ID3D11UnorderedAccessView*& UAView)
+{
+	// get the address of the back buffer
+	ID3D11Texture2D* backBuffer = nullptr;
+	if (FAILED(swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer)))) {
+		ErrorLog::Log("Failed to get back buffer for unorded access view!");
+		return false;
+	}
+
+	// use the back buffer address to create the uordered access view
+	// null as description to base it on the backbuffers values
+	if (FAILED(device->CreateUnorderedAccessView(backBuffer, NULL, &UAView))) {
+		ErrorLog::Log("Failed to unoarded access view!");
+		return false;
+	}
+
+	backBuffer->Release();
+	return true;
+}
+
 void SetViewportCubeMapping(D3D11_VIEWPORT& viewPortCubeMapping, UINT width, UINT height)
 {
 	viewPortCubeMapping.TopLeftX = 0;
@@ -106,12 +126,15 @@ void SetViewportCubeMapping(D3D11_VIEWPORT& viewPortCubeMapping, UINT width, UIN
 
 bool SetupCubeMapping(ID3D11Device* device, UINT width, UINT height, ID3D11ShaderResourceView*& srvCubeMapping,
 	ID3D11RenderTargetView* rtvCubeMapping[], ID3D11DepthStencilView*& dsViewCubeMapping, 
-	D3D11_VIEWPORT& viewPortCubeMapping)
+	D3D11_VIEWPORT& viewPortCubeMapping, IDXGISwapChain*& swapChain, ID3D11UnorderedAccessView*& uavCubeMapping)
 {
 	if (!CreateCubeMapping(device, width, height, srvCubeMapping, rtvCubeMapping))
 		return false;
 
 	if (!CreateDepthStencilCubeMapping(device, width, height, dsViewCubeMapping))
+		return false;
+
+	if (!CreateUnorderedAccessViewCubeMapping(device, swapChain, uavCubeMapping))
 		return false;
 
 	SetViewportCubeMapping(viewPortCubeMapping, width, height);
