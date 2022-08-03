@@ -32,9 +32,9 @@ bool CreateCubeMapping(ID3D11Device* device, UINT width, UINT height, ID3D11Shad
 	srvDesc.Texture2DArray.FirstArraySlice = 0;
 	srvDesc.Texture2DArray.MostDetailedMip = 0;
 	srvDesc.Texture2DArray.MipLevels = 1;
-	srvDesc.Texture2DArray.ArraySize = numberOfSides;
+	srvDesc.Texture2DArray.ArraySize = numberOfSides; // 6 
 
-	if (FAILED(device->CreateShaderResourceView(texture2Dtemp, &srvDesc, &srvCubeMapping)))
+	if (FAILED(device->CreateShaderResourceView(texture2Dtemp, &srvDesc, &srvCubeMapping))) // är bara en srv, inte array
 	{
 		ErrorLog::Log("Failed to setup srvCubeMapping!");
 		return false;
