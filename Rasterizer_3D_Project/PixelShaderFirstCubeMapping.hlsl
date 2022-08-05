@@ -11,5 +11,5 @@ struct PixelShaderInput
 
 float4 main(PixelShaderInput input) : SV_TARGET
 {
-	return float4(Ambient.Sample(Sampler, input.uv).xyz, 1.0f);
+	return float4(Ambient.Sample(Sampler, input.uv).rgba);
 }
