@@ -4,5 +4,5 @@
 #include <iostream>
 
 bool SetupCubeMapping(ID3D11Device* device, UINT width, UINT height, ID3D11ShaderResourceView*& srvCubeMapping,
-	ID3D11RenderTargetView* rtvCubeMapping[], ID3D11DepthStencilView*& dsViewCubeMapping,
-	D3D11_VIEWPORT& viewPortCubeMapping, IDXGISwapChain*& swapChain, ID3D11UnorderedAccessView*& uavCubeMapping);
+	ID3D11UnorderedAccessView* uavCubeMapping[], D3D11_VIEWPORT& viewPortCubeMapping, ID3D11DepthStencilView*& dsView,
+	ID3D11RenderTargetView* gBufferRTV[], ID3D11ShaderResourceView* gBufferSRV[]);

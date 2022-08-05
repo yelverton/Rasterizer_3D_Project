@@ -16,20 +16,43 @@ float dt = 0;
 
 void clearBig(ID3D11DeviceContext*& immediateContext, ID3D11DepthStencilView*& dsViewShadow,
 	ID3D11RenderTargetView* gBufferRTV[], ID3D11DepthStencilView*& dsView, ID3D11DepthStencilView*& dsViewParticle,
-	ID3D11RenderTargetView* rtv, ID3D11RenderTargetView* rtvCubeMapping[])
+	ID3D11RenderTargetView* rtv, ID3D11RenderTargetView* gBufferRTVPreCube[])
 {
 	float clearColour[4] = { 0.0f, 0.0f, 1.0f, 0.0f };
 
 	for (int i = 0; i < 6; i++)
 	{
 		immediateContext->ClearRenderTargetView(gBufferRTV[i], clearColour);
-		immediateContext->ClearRenderTargetView(rtvCubeMapping[i], clearColour);
 	}
+	immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	immediateContext->ClearDepthStencilView(dsViewParticle, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	immediateContext->ClearDepthStencilView(dsViewShadow, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+}
+
+void smallClear(ID3D11DeviceContext*& immediateContext, ID3D11DepthStencilView*& dsView,
+	ID3D11RenderTargetView* gBufferRTV[])
+{
+	float clearColour[4] = { 0.0f, 0.0f, 1.0f, 0.0f };
+
+	for (int i = 0; i < 6; i++)
+	{
+		immediateContext->ClearRenderTargetView(gBufferRTV[i], clearColour);
+	}
+
 	immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
+
+void setCubeMappingRotation(Camera& cubeMappingCamera, int index)
+{
+	if (index == 0) cubeMappingCamera.SetRotation(0.0f, XM_PIDIV2, 0.0f);
+	if (index == 1) cubeMappingCamera.SetRotation(0.0f, -XM_PIDIV2, 0.0f);
+	if (index == 2) cubeMappingCamera.SetRotation(-XM_PIDIV2, 0.0f, 0.0f);
+	if (index == 3) cubeMappingCamera.SetRotation(XM_PIDIV2, 0.0f, 0.0f);
+	if (index == 4) cubeMappingCamera.SetRotation(0.0f, 0.0f, 0.0f);
+	if (index == 5) cubeMappingCamera.SetRotation(0.0f, -XM_PI, 0.0f);
+}
+
 
 void moveAbility(int& playerPerspectiv, Camera& camera, Camera& lightCamera, Camera& cubeMappingCamera,
 	vector<XMFLOAT3>& worldPos)
@@ -54,7 +77,7 @@ void moveAbility(int& playerPerspectiv, Camera& camera, Camera& lightCamera, Cam
 } 
 
 void ShadowPrePass(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView*& dsViewShadow, D3D11_VIEWPORT viewportShadow, Camera lightCamera,
-	ID3D11VertexShader*& vShaderDepth, ID3D11InputLayout* inputLayoutShadow, ID3D11SamplerState* sampleStateShadow, ID3D11RenderTargetView* rtv)
+	ID3D11VertexShader*& vShaderDepth, ID3D11InputLayout* inputLayoutShadow)
 {
 	immediateContext->IASetInputLayout(inputLayoutShadow);
 	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -80,18 +103,39 @@ void drawPrePass(ID3D11DeviceContext* immediateContext, vector<Mesh> mesh, vecto
 		immediateContext->Unmap(theWorldBuffer, 0);
 		immediateContext->VSSetConstantBuffers(0, 1, &theWorldBuffer);
 
-		mesh[i].DrawPrePass();
+		mesh[i].Draw();
 	}
 
 	immediateContext->VSSetShader(nullptr, nullptr, 0);
 }
 
+void RenderPreCube(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT viewport,
+	ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* sampleState,
+	ID3D11Buffer* camBuffer, struct CamData camData, Camera camera, ID3D11RenderTargetView* gBufferRTV[], Camera lightCamera, 
+	ID3D11ShaderResourceView* SRVShadow, ID3D11SamplerState* sampleStateShadow, int index)
+{
+	setCubeMappingRotation(camera, index);
+	immediateContext->IASetInputLayout(inputLayout);
+	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	immediateContext->VSSetShader(vShader, nullptr, 0);
+
+	immediateContext->RSSetViewports(1, &viewport);
+	immediateContext->PSSetShader(pShader, nullptr, 0);
+	immediateContext->OMSetRenderTargets(6, gBufferRTV, dsView);
+	immediateContext->PSSetSamplers(0, 1, &sampleState);
+	immediateContext->PSSetSamplers(1, 1, &sampleStateShadow);
+
+	camera.sendViewProjection(camera, 1);
+	lightCamera.sendViewProjection(lightCamera, 2);
+	immediateContext->PSSetShaderResources(3, 1, &SRVShadow);
+}
+
 void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT viewport, 
 	ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* sampleState, 
-	ID3D11Buffer* lightBuffer, ID3D11Buffer* camBuffer, struct LightData lightData, struct CamData camData, Camera& camera,
-	ID3D11RenderTargetView* gBufferRTV[], int playerPerspectiv, Camera &lightCamera, ID3D11ShaderResourceView* SRVShadow,
+	ID3D11Buffer* lightBuffer, ID3D11Buffer* camBuffer, struct LightData lightData, struct CamData camData, Camera camera,
+	ID3D11RenderTargetView* gBufferRTV[], int playerPerspectiv, Camera lightCamera, ID3D11ShaderResourceView* SRVShadow,
 	ID3D11SamplerState* sampleStateShadow, ID3D11HullShader* hShader, ID3D11DomainShader* dShader,
-	ID3D11RasterizerState* rasterizerState, Camera& cubeMappingCamera)
+	ID3D11RasterizerState* rasterizerState, Camera cubeMappingCamera)
 {
 	immediateContext->IASetInputLayout(inputLayout);
 	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
@@ -150,9 +194,30 @@ void draw(ID3D11DeviceContext* immediateContext, vector<Mesh>& mesh, vector<XMFL
 	immediateContext->PSSetShader(nullptr, nullptr, 0);
 }
 
-void RenderComputerShader(ID3D11DeviceContext* immediateContext, ID3D11ComputeShader* cShader,
-	ID3D11UnorderedAccessView* UAView, ID3D11ShaderResourceView* gBufferSRV[], CamData& camData, 
-	Camera& camera, LightData lightData, Camera& lightCamera, ID3D11Buffer* lightBuffer, ID3D11Buffer* camBuffer)
+void drawPreCube(ID3D11DeviceContext* immediateContext, vector<Mesh>& mesh, vector<XMFLOAT3> worldPos, struct TheWorld theWorld, ID3D11Buffer* theWorldBuffer)
+{
+	for (int i = 1; i < mesh.size(); i++)
+	{
+		DirectX::XMMATRIX Identity = XMMatrixIdentity();
+		Identity = XMMatrixTranslation(worldPos[i].x, worldPos[i].y, worldPos[i].z);
+		XMStoreFloat4x4(&theWorld.worldMatrix, XMMatrixTranspose(Identity));
+
+		D3D11_MAPPED_SUBRESOURCE subData = {};
+		immediateContext->Map(theWorldBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
+		std::memcpy(subData.pData, &theWorld, sizeof(TheWorld));
+		immediateContext->Unmap(theWorldBuffer, 0);
+		immediateContext->VSSetConstantBuffers(0, 1, &theWorldBuffer);
+
+		mesh[i].Draw();
+	}
+
+	immediateContext->VSSetShader(nullptr, nullptr, 0);
+	immediateContext->PSSetShader(nullptr, nullptr, 0);
+}
+
+void RenderComputerShader(ID3D11DeviceContext*& immediateContext, ID3D11ComputeShader* cShader,
+	ID3D11UnorderedAccessView* UAView, ID3D11ShaderResourceView* gBufferSRV[], CamData camData, 
+	Camera camera, LightData lightData, Camera lightCamera, ID3D11Buffer* lightBuffer, ID3D11Buffer* camBuffer)
 {
 	ID3D11RenderTargetView* nullRTV[6] = { nullptr };
 	immediateContext->OMSetRenderTargets(6, nullRTV, nullptr);
@@ -186,44 +251,65 @@ void RenderComputerShader(ID3D11DeviceContext* immediateContext, ID3D11ComputeSh
 	immediateContext->CSSetShader(nullptr, nullptr, 0);
 }
 
-void setCubeMappingRotation(Camera& cubeMappingCamera, int index)
+void RenderComputerShaderCube(ID3D11DeviceContext*& immediateContext, ID3D11ComputeShader* cShader,
+	ID3D11UnorderedAccessView* UAView, ID3D11ShaderResourceView* gBufferSRV[], CamData camData,
+	Camera camera, LightData lightData, Camera lightCamera, ID3D11Buffer* lightBuffer, ID3D11Buffer* camBuffer)
 {
-	if (index == 0) cubeMappingCamera.SetRotation(0.0f, XM_PIDIV2, 0.0f);
-	if (index == 1) cubeMappingCamera.SetRotation(0.0f, -XM_PIDIV2, 0.0f);
-	if (index == 2) cubeMappingCamera.SetRotation(-XM_PIDIV2, 0.0f, 0.0f);
-	if (index == 3) cubeMappingCamera.SetRotation(XM_PIDIV2, 0.0f, 0.0f);
-	if (index == 4) cubeMappingCamera.SetRotation(0.0f, 0.0f, 0.0f);
-	if (index == 5) cubeMappingCamera.SetRotation(0.0f, -XM_PI, 0.0f);
+	ID3D11RenderTargetView* nullRTV[6] = { nullptr };
+	immediateContext->OMSetRenderTargets(6, nullRTV, nullptr);
+
+	immediateContext->CSSetShader(cShader, nullptr, 0);
+	immediateContext->CSSetShaderResources(0, 6, gBufferSRV);
+	immediateContext->CSSetUnorderedAccessViews(0, 1, &UAView, nullptr);
+
+	camData.cameraPosition = camera.GetPositionFloat3();
+	lightData.lightPosition = lightCamera.GetPositionFloat3();
+
+	D3D11_MAPPED_SUBRESOURCE subLight = {};
+	immediateContext->Map(lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subLight);
+	std::memcpy(subLight.pData, &lightData, sizeof(LightData));
+	immediateContext->Unmap(lightBuffer, 0);
+	immediateContext->CSSetConstantBuffers(0, 1, &lightBuffer);
+
+	D3D11_MAPPED_SUBRESOURCE subCam = {};
+	immediateContext->Map(camBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subCam);
+	std::memcpy(subCam.pData, &camData, sizeof(CamData));
+	immediateContext->Unmap(camBuffer, 0);
+	immediateContext->CSSetConstantBuffers(1, 1, &camBuffer);
+
+	immediateContext->Dispatch(32, 32, 1);
+
+	ID3D11UnorderedAccessView* NullUAV = nullptr;
+	immediateContext->CSSetUnorderedAccessViews(0, 1, &NullUAV, nullptr);
+	ID3D11ShaderResourceView* gBufferSRVNULL[6] = { nullptr };
+	immediateContext->CSSetShaderResources(0, 6, gBufferSRVNULL);
+
+	immediateContext->CSSetShader(nullptr, nullptr, 0);
 }
 
-void cubePreMappingSystem(ID3D11DeviceContext* immediateContext, ID3D11InputLayout* inputLayoutCubeMapping,
-	ID3D11VertexShader* vShaderCubeMapping, D3D11_VIEWPORT viewportCubeMapping,
-	ID3D11PixelShader* pShaderCubeMapping, ID3D11SamplerState* sampleCubaMapping,
-	ID3D11RenderTargetView*& rtvCubeMapping, ID3D11DepthStencilView*& dsViewCubeMapping,
-	Camera cameraCubeMapping, int index)
+void RenderPreCubeMapping(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT viewport,
+	ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* sampleState,
+	Camera& camera, ID3D11RenderTargetView* gBufferRTV[], ID3D11SamplerState* sampleStateShadow)
 {
-	setCubeMappingRotation(cameraCubeMapping, index);
+	float clearColour[4] = { 0.0f, 0.0f, 1.0f, 0.0f };
+	for (int i = 0; i < 3; i++)
+		immediateContext->ClearRenderTargetView(gBufferRTV[i], clearColour);
 
-	immediateContext->ClearDepthStencilView(dsViewCubeMapping, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-	immediateContext->IASetInputLayout(inputLayoutCubeMapping);
+	immediateContext->IASetInputLayout(inputLayout);
 	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	immediateContext->VSSetShader(vShaderCubeMapping, nullptr, 0);
-	immediateContext->RSSetViewports(1, &viewportCubeMapping);
-	immediateContext->PSSetShader(pShaderCubeMapping, nullptr, 0);
-	immediateContext->PSSetSamplers(0, 1, &sampleCubaMapping);
-	immediateContext->OMSetRenderTargets(1, &rtvCubeMapping, dsViewCubeMapping);
+	immediateContext->VSSetShader(vShader, nullptr, 0);
 
-
-	cameraCubeMapping.sendViewProjection(cameraCubeMapping, 1);
+	immediateContext->RSSetViewports(1, &viewport);
+	immediateContext->PSSetShader(pShader, nullptr, 0);
+	immediateContext->PSSetSamplers(0, 1, &sampleState);
+	immediateContext->OMSetRenderTargets(3, gBufferRTV, dsView);
 }
 
-void drawPreCubeMapping(ID3D11DeviceContext* immediateContext, vector<Mesh> mesh,
-	vector<XMFLOAT3> worldPos, struct TheWorld theWorld, ID3D11Buffer* theWorldBuffer)
+void drawPreCubeMapping(ID3D11DeviceContext* immediateContext, vector<Mesh>& mesh, vector<XMFLOAT3> worldPos, struct TheWorld theWorld, ID3D11Buffer* theWorldBuffer)
 {
-	DirectX::XMMATRIX Identity = XMMatrixIdentity();
-
 	for (int i = 1; i < mesh.size(); i++)
 	{
+		DirectX::XMMATRIX Identity = XMMatrixIdentity();
 		Identity = XMMatrixTranslation(worldPos[i].x, worldPos[i].y, worldPos[i].z);
 		XMStoreFloat4x4(&theWorld.worldMatrix, XMMatrixTranspose(Identity));
 
@@ -233,81 +319,101 @@ void drawPreCubeMapping(ID3D11DeviceContext* immediateContext, vector<Mesh> mesh
 		immediateContext->Unmap(theWorldBuffer, 0);
 		immediateContext->VSSetConstantBuffers(0, 1, &theWorldBuffer);
 
-		mesh[i].DrawCubeCapping();
+		mesh[i].Draw();
 	}
 
 	immediateContext->VSSetShader(nullptr, nullptr, 0);
 	immediateContext->PSSetShader(nullptr, nullptr, 0);
 }
 
-void RenderCubeMapping(ID3D11DeviceContext* immediateContext, ID3D11ComputeShader* cShaderCubeMapping,
-	ID3D11ShaderResourceView* srvCubeMapping, ID3D11UnorderedAccessView* UAViewCube)
+void RenderComputerShaderPreCube(ID3D11DeviceContext*& immediateContext, ID3D11ComputeShader* cShader,
+	ID3D11UnorderedAccessView* UAView, ID3D11ShaderResourceView* gBufferSRV[])
 {
-	ID3D11RenderTargetView* nullRTV = nullptr;
-	immediateContext->OMSetRenderTargets(1, &nullRTV, nullptr);
+	ID3D11RenderTargetView* nullRTV[3] = { nullptr };
+	immediateContext->OMSetRenderTargets(3, nullRTV, nullptr);
 
-	immediateContext->CSSetShader(cShaderCubeMapping, nullptr, 0);
-	immediateContext->CSSetShaderResources(0, 1, &srvCubeMapping);
-	immediateContext->CSSetUnorderedAccessViews(0, 1, &UAViewCube, nullptr);
+	immediateContext->CSSetShader(cShader, nullptr, 0);
+	immediateContext->CSSetShaderResources(0, 3, gBufferSRV);
+	immediateContext->CSSetUnorderedAccessViews(0, 1, &UAView, nullptr);
 
 	immediateContext->Dispatch(32, 32, 1);
 
 	ID3D11UnorderedAccessView* NullUAV = nullptr;
 	immediateContext->CSSetUnorderedAccessViews(0, 1, &NullUAV, nullptr);
-	ID3D11ShaderResourceView* gBufferSRVNULL = nullptr;
-	immediateContext->CSSetShaderResources(0, 1, &gBufferSRVNULL);
+	ID3D11ShaderResourceView* gBufferSRVNULL[3] = { nullptr };
+	immediateContext->CSSetShaderResources(0, 3, gBufferSRVNULL);
 
 	immediateContext->CSSetShader(nullptr, nullptr, 0);
 }
 
-void cubeMappingSystem(ID3D11DeviceContext* immediateContext, ID3D11InputLayout* inputLayoutCubeMapping,
-	ID3D11VertexShader* vShaderCubeMapping, D3D11_VIEWPORT viewportCubeMapping,
-	ID3D11PixelShader* pShaderCubeMapping, ID3D11SamplerState* sampleCubaMapping,
-	ID3D11ShaderResourceView*& srvCubeMapping, ID3D11DepthStencilView* dsViewCubeMapping, Camera& cameraCubeMapping, CamData& camData,
-	ID3D11Buffer* camBuffer, ID3D11RenderTargetView* rtv)
-{
-	immediateContext->ClearDepthStencilView(dsViewCubeMapping, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-	immediateContext->IASetInputLayout(inputLayoutCubeMapping);
-	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	immediateContext->VSSetShader(vShaderCubeMapping, nullptr, 0);
-	immediateContext->RSSetViewports(1, &viewportCubeMapping);
-	immediateContext->PSSetShader(pShaderCubeMapping, nullptr, 0);
-	immediateContext->PSSetSamplers(0, 1, &sampleCubaMapping);
-	immediateContext->OMSetRenderTargets(1, &rtv, dsViewCubeMapping);
-
-	cameraCubeMapping.sendViewProjection(cameraCubeMapping, 1);
-
-	immediateContext->PSSetShaderResources(0, 1, &srvCubeMapping);
-
-	camData.cameraPosition = cameraCubeMapping.GetPositionFloat3();
-
-	D3D11_MAPPED_SUBRESOURCE subCam = {};
-	immediateContext->Map(camBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subCam);
-	std::memcpy(subCam.pData, &camData, sizeof(CamData));
-	immediateContext->Unmap(camBuffer, 0);
-	immediateContext->PSSetConstantBuffers(0, 1, &camBuffer);
-}
-
-void drawCubeMapping(ID3D11DeviceContext* immediateContext, Camera& cubeMappingCamera, vector<Mesh> mesh,
-	vector<XMFLOAT3> worldPos, struct TheWorld theWorld, ID3D11Buffer* theWorldBuffer)
-{
-	DirectX::XMMATRIX Identity = XMMatrixIdentity();
-
-	XMFLOAT3 world = cubeMappingCamera.GetPositionFloat3();
-	Identity = XMMatrixTranslation(world.x, world.y, world.z);
-	XMStoreFloat4x4(&theWorld.worldMatrix, XMMatrixTranspose(Identity));
-
-	D3D11_MAPPED_SUBRESOURCE subData = {};
-	immediateContext->Map(theWorldBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
-	std::memcpy(subData.pData, &theWorld, sizeof(TheWorld));
-	immediateContext->Unmap(theWorldBuffer, 0);
-	immediateContext->VSSetConstantBuffers(0, 1, &theWorldBuffer);
-
-	mesh[0].DrawPrePass();
-
-	immediateContext->VSSetShader(nullptr, nullptr, 0);
-	immediateContext->PSSetShader(nullptr, nullptr, 0);
-}
+//void RenderCubeMapping(ID3D11DeviceContext* immediateContext, ID3D11ComputeShader* cShaderCubeMapping,
+//	ID3D11ShaderResourceView* srvCubeMapping, ID3D11UnorderedAccessView* UAViewCube)
+//{
+//	ID3D11RenderTargetView* nullRTV = nullptr;
+//	immediateContext->OMSetRenderTargets(1, &nullRTV, nullptr);
+//
+//	immediateContext->CSSetShader(cShaderCubeMapping, nullptr, 0);
+//	immediateContext->CSSetShaderResources(0, 1, &srvCubeMapping);
+//	immediateContext->CSSetUnorderedAccessViews(0, 1, &UAViewCube, nullptr);
+//
+//	immediateContext->Dispatch(32, 32, 1);
+//
+//	ID3D11UnorderedAccessView* NullUAV = nullptr;
+//	immediateContext->CSSetUnorderedAccessViews(0, 1, &NullUAV, nullptr);
+//	ID3D11ShaderResourceView* gBufferSRVNULL = nullptr;
+//	immediateContext->CSSetShaderResources(0, 1, &gBufferSRVNULL);
+//
+//	immediateContext->CSSetShader(nullptr, nullptr, 0);
+//}
+//
+//void cubeMappingSystem(ID3D11DeviceContext* immediateContext, ID3D11InputLayout* inputLayoutCubeMapping,
+//	ID3D11VertexShader* vShaderCubeMapping, D3D11_VIEWPORT viewportCubeMapping,
+//	ID3D11PixelShader* pShaderCubeMapping, ID3D11SamplerState* sampleCubaMapping,
+//	ID3D11ShaderResourceView*& srvCubeMapping, ID3D11DepthStencilView* dsViewCubeMapping, Camera& cameraCubeMapping, CamData& camData,
+//	ID3D11Buffer* camBuffer, ID3D11RenderTargetView* rtv)
+//{
+//	immediateContext->ClearDepthStencilView(dsViewCubeMapping, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+//	immediateContext->IASetInputLayout(inputLayoutCubeMapping);
+//	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+//	immediateContext->VSSetShader(vShaderCubeMapping, nullptr, 0);
+//	immediateContext->RSSetViewports(1, &viewportCubeMapping);
+//	immediateContext->PSSetShader(pShaderCubeMapping, nullptr, 0);
+//	immediateContext->PSSetSamplers(0, 1, &sampleCubaMapping);
+//	immediateContext->OMSetRenderTargets(1, &rtv, dsViewCubeMapping);
+//
+//	cameraCubeMapping.sendViewProjection(cameraCubeMapping, 1);
+//
+//	immediateContext->PSSetShaderResources(0, 1, &srvCubeMapping);
+//
+//	camData.cameraPosition = cameraCubeMapping.GetPositionFloat3();
+//
+//	D3D11_MAPPED_SUBRESOURCE subCam = {};
+//	immediateContext->Map(camBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subCam);
+//	std::memcpy(subCam.pData, &camData, sizeof(CamData));
+//	immediateContext->Unmap(camBuffer, 0);
+//	immediateContext->PSSetConstantBuffers(0, 1, &camBuffer);
+//}
+//
+//void drawCubeMapping(ID3D11DeviceContext* immediateContext, Camera& cubeMappingCamera, vector<Mesh> mesh,
+//	vector<XMFLOAT3> worldPos, struct TheWorld theWorld, ID3D11Buffer* theWorldBuffer)
+//{
+//	DirectX::XMMATRIX Identity = XMMatrixIdentity();
+//
+//	XMFLOAT3 world = cubeMappingCamera.GetPositionFloat3();
+//	Identity = XMMatrixTranslation(world.x, world.y, world.z);
+//	XMStoreFloat4x4(&theWorld.worldMatrix, XMMatrixTranspose(Identity));
+//
+//	D3D11_MAPPED_SUBRESOURCE subData = {};
+//	immediateContext->Map(theWorldBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
+//	std::memcpy(subData.pData, &theWorld, sizeof(TheWorld));
+//	immediateContext->Unmap(theWorldBuffer, 0);
+//	immediateContext->VSSetConstantBuffers(0, 1, &theWorldBuffer);
+//
+//	mesh[0].DrawPrePass();
+//
+//	immediateContext->VSSetShader(nullptr, nullptr, 0);
+//	immediateContext->PSSetShader(nullptr, nullptr, 0);
+//}
 
 
 void particleSystem(ID3D11DeviceContext* immediateContext, ID3D11InputLayout* inputLayoutVSParticle, ID3D11VertexShader* vShaderParticle,
@@ -415,6 +521,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	ID3D11DepthStencilView* dsView;
 	ID3D11DepthStencilView* dsViewShadow;
 	ID3D11DepthStencilView* dsViewParticle;
+	ID3D11DepthStencilView* dsViewCubeMapping;
 	ID3D11ShaderResourceView* SRVShadow;
 	ID3D11RenderTargetView* gBufferRTV[6];
 	ID3D11RenderTargetView* gBufferRTVParticle;
@@ -428,26 +535,25 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	ID3D11VertexShader* vShader;
 	ID3D11VertexShader* vShaderDepth;
 	ID3D11VertexShader* vShaderParticle;
-	ID3D11VertexShader* vShaderCubeMapping;
-	ID3D11VertexShader* vShaderSecCubeMapping;
+	ID3D11VertexShader* vShaderPreCubeMapping;
+	ID3D11VertexShader* vShaderMainCubeMapping;
 	ID3D11GeometryShader* gShaderParticle;
 	ID3D11PixelShader* pShader;
 	ID3D11PixelShader* pShaderParticle;
-	ID3D11PixelShader* pShaderCubeMapping;
-	ID3D11PixelShader* pShaderSecCubeMapping;
+	ID3D11PixelShader* pShaderPreCubeMapping;
+	ID3D11PixelShader* pShaderMainCubeMapping;
 	ID3D11ComputeShader* cShader;
 	ID3D11ComputeShader* cShaderParticle;
-	ID3D11ComputeShader* cShaderCubeMapping;
+	ID3D11ComputeShader* cShaderPreCube;
 
 	ID3D11InputLayout* inputLayoutVS;
 	ID3D11InputLayout* inputLayoutVSDepth;
 	ID3D11InputLayout* inputLayoutVSParticle;
-	ID3D11InputLayout* inputLayoutVSCubeMapping;
-	ID3D11InputLayout* inputLayoutVSSecCubeMapping;
+	ID3D11InputLayout* inputLayoutVSPreCubeMapping;
+	ID3D11InputLayout* inputLayoutVSMainCubeMapping;
 
 	ID3D11SamplerState* sampleState;
 	ID3D11SamplerState* sampleStateShadow;
-	ID3D11SamplerState* sampleStateParticle;
 	ID3D11SamplerState* sampleStateCubeMapping;
 
 	ID3D11Buffer* lightBuffer;
@@ -469,10 +575,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	ID3D11DomainShader* dShader;
 	ID3D11RasterizerState* rasterizerState;
 
-	ID3D11ShaderResourceView* srvCubeMapping; // kan behövas sätta om till sex 
-	ID3D11RenderTargetView* rtvCubeMapping[6];
-	/*ID3D11UnorderedAccessView* uavCubeMapping[6];*/
-	ID3D11DepthStencilView* dsViewCubeMapping; // kan behövas sätta om till sex
+	ID3D11ShaderResourceView* srvCubeMapping;
+	ID3D11UnorderedAccessView* UAVCubeMapping[6];
+	ID3D11RenderTargetView* gBufferRTVPreCube[3];
+	ID3D11ShaderResourceView* gBufferSRVPreCube[3];
 
 	std::vector<std::string> modelName;
 	std::vector<XMFLOAT3> worldPos;
@@ -497,19 +603,34 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		WIDTH, HEIGHT, dsViewParticle, viewportParticle, gBufferRTVParticle, gBufferSRVParticle))
 		return -1;
 
-	if (!SetupCubeMapping(device, WIDTH, HEIGHT, srvCubeMapping, rtvCubeMapping, dsViewCubeMapping, 
-		viewportCubeMapping, swapChain, UAViewC))
+	if (!SetupCubeMapping(device, WIDTH, HEIGHT, srvCubeMapping, UAVCubeMapping, viewportCubeMapping, dsViewCubeMapping,
+		gBufferRTVPreCube, gBufferSRVPreCube))
 		return -1;
 
-	if (!SetupPipeline(device, vShader, vShaderDepth, vShaderParticle, gShaderParticle, pShader, pShaderParticle, cShader,
-		cShaderParticle, inputLayoutVS, inputLayoutVSDepth, inputLayoutVSParticle, sampleState, sampleStateShadow,
-		sampleStateParticle, hShader, dShader, rasterizerState, vShaderCubeMapping, inputLayoutVSCubeMapping,
-		sampleStateCubeMapping, pShaderCubeMapping, vShaderSecCubeMapping, inputLayoutVSSecCubeMapping,
-		pShaderSecCubeMapping, cShaderCubeMapping))
+	if (!SetupShadowShaders(device, vShaderDepth, inputLayoutVSDepth))
 		return -1;
 
-	if (!SetupBuffers(device, lightBuffer, camBuffer, theWorldBuffer, directionBuffer, getDTTimeBuffer, lightData, camData,
-		theWorld, getDirection, getDTTime))
+	if (!SetupRenderShaders(device, vShader, inputLayoutVS, hShader, dShader, pShader, cShader))
+		return -1;
+
+	if (!SetupParticleShaders(device, vShaderParticle, inputLayoutVSParticle, gShaderParticle, 
+		pShaderParticle, cShaderParticle))
+		return -1;
+
+	if (!SetupSampleShaders(device, sampleState))
+		return -1;
+
+	if (!SetupSampleShadowShaders(device, sampleStateShadow))
+		return -1;
+
+	if (!SetupRasterizerState(device, rasterizerState))
+		return -1;
+
+	if (!SetupSampleStateCubeMapping(device, sampleStateCubeMapping))
+		return -1;
+	
+	if (!SetupBuffers(device, lightBuffer, camBuffer, theWorldBuffer, directionBuffer,
+		getDTTimeBuffer, lightData, camData, theWorld, getDirection, getDTTime))
 		return -1;
 
 	if (!SetupModels(modelName, worldPos))
@@ -530,6 +651,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	/*cubeMappingCamera.AdjustPosition(0.0f, 0.5f, 5.0f);*/
 	//cubeMappingCamera.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);
 
+	worldPos[0] = cubeMappingCamera.GetPositionFloat3();
+
 	MSG msg = { };
 	while (!(GetKeyState(VK_ESCAPE) & 0x8000) && msg.message != WM_QUIT)
 	{
@@ -540,37 +663,32 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		}
 
 		auto start = std::chrono::system_clock::now();
-		clearBig(immediateContext, dsViewShadow, gBufferRTV, dsView, dsViewParticle, rtv, rtvCubeMapping);
+		clearBig(immediateContext, dsViewShadow, gBufferRTV, dsView, dsViewParticle, rtv, gBufferRTVPreCube);
 		moveAbility(playerPerspectiv, camera, lightCamera, cubeMappingCamera, worldPos);
 
-		ShadowPrePass(immediateContext, dsViewShadow, viewportShadow, lightCamera, vShaderDepth, inputLayoutVSDepth, sampleStateShadow, rtv);
+		ShadowPrePass(immediateContext, dsViewShadow, viewportShadow, lightCamera, vShaderDepth, inputLayoutVSDepth);
 		drawPrePass(immediateContext, mesh, worldPos, theWorld, theWorldBuffer);
-
-		Render(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, lightBuffer, 
-			camBuffer, lightData, camData, camera, gBufferRTV, playerPerspectiv, lightCamera, SRVShadow,
-			sampleStateShadow, hShader, dShader, rasterizerState, cubeMappingCamera);
-		draw(immediateContext, mesh, worldPos, theWorld, theWorldBuffer);
-		RenderComputerShader(immediateContext, cShader, UAView, gBufferSRV, camData, camera, lightData, 
-			lightCamera, lightBuffer, camBuffer);
 
 		for (int i = 0; i < 6; i++)
 		{
-			cubePreMappingSystem(immediateContext, inputLayoutVS, vShaderCubeMapping, viewport,
-				pShaderCubeMapping, sampleState, rtvCubeMapping[i], dsView, cubeMappingCamera, i);
-			drawPreCubeMapping(immediateContext, mesh, worldPos, theWorld, theWorldBuffer);
-			/*RenderCubeMapping(immediateContext, cShaderCubeMapping, srvCubeMapping, UAViewC);*/
+			smallClear(immediateContext, dsView, gBufferRTV);
+			RenderPreCube(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, camBuffer,
+				camData, cubeMappingCamera, gBufferRTV, lightCamera, SRVShadow, sampleState, i);
+			drawPreCube(immediateContext, mesh, worldPos, theWorld, theWorldBuffer);
+			RenderComputerShaderCube(immediateContext, cShader, UAVCubeMapping[i], gBufferSRV, camData, cubeMappingCamera, lightData,
+				lightCamera, lightBuffer, camBuffer);
 		}
-		cubeMappingSystem(immediateContext, inputLayoutVS, vShaderSecCubeMapping, viewport, pShaderSecCubeMapping,
-			sampleState, srvCubeMapping, dsView, cubeMappingCamera, camData, camBuffer, rtv);
-		drawCubeMapping(immediateContext, camera, mesh, worldPos, theWorld, theWorldBuffer);
-		//immediatecontext->cleardepthstencilview(dsviewcubemapping, d3d11_clear_depth | d3d11_clear_stencil, 1.0f, 0); // 6?
-		//cubemappingsystem(immediatecontext, inputlayoutvsseccubemapping, vshaderseccubemapping, viewportcubemapping,
-		//	pshaderseccubemapping, samplestatecubemapping, srvcubemapping, dsviewcubemapping, camera, camdata, cambuffer, rtv);
-		//drawcubemapping(immediatecontext, cubemappingcamera, mesh, worldpos, theworld, theworldbuffer);
+		smallClear(immediateContext, dsView, gBufferRTV);
+
+		Render(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, lightBuffer,
+			camBuffer, lightData, camData, camera, gBufferRTV, playerPerspectiv, lightCamera, SRVShadow,
+			sampleStateShadow, hShader, dShader, rasterizerState, cubeMappingCamera);
+		draw(immediateContext, mesh, worldPos, theWorld, theWorldBuffer);
+		RenderComputerShader(immediateContext, cShader, UAView, gBufferSRV, camData, camera, lightData,
+			lightCamera, lightBuffer, camBuffer);
+
 		
-
-
-		if (playerPerspectiv == 0)
+		if (!playerPerspectiv == 1)
 		{
 			particleSystem(immediateContext, inputLayoutVSParticle, vShaderParticle, dsView, viewportParticle, gShaderParticle, pShaderParticle,
 				cShaderParticle, directionBuffer, getDirection, camera, camBuffer, camData, rtv);
@@ -603,7 +721,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	dsViewShadow->Release();
 	inputLayoutVSParticle->Release();
 	SRVShadow->Release();
-	srvCubeMapping->Release();
 	rtv->Release();
 	swapChain->Release();
 	immediateContext->Release();

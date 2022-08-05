@@ -6,11 +6,15 @@
 using namespace DirectX;
 
 
-bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11VertexShader*& vShaderDepth, ID3D11VertexShader*& vShaderParticle,
-	ID3D11GeometryShader*& gShaderParticle, ID3D11PixelShader*& pShader, ID3D11PixelShader*& pShaderParticle, ID3D11ComputeShader*& cShader,
-	ID3D11ComputeShader*& cShaderParticle, ID3D11InputLayout*& inputLayoutVS, ID3D11InputLayout*& inputLayoutVSDepth,
-	ID3D11InputLayout*& inputLayoutVSParticle, ID3D11SamplerState*& sampleState, ID3D11SamplerState*& sampleStateShadow,
-	ID3D11SamplerState*& sampleStateParticle, ID3D11HullShader*& hShader, ID3D11DomainShader*& dShader,
-	ID3D11RasterizerState*& rasterizerState, ID3D11VertexShader*& vShaderCubeMapping, ID3D11InputLayout*& inputLayoutVSCubeMapping,
-	ID3D11SamplerState*& sampleStateCubeMapping, ID3D11PixelShader*& pShaderCubeMapping, ID3D11VertexShader*& vShaderSecCubeMapping,
-	ID3D11InputLayout*& inputLayoutVSSecCubeMapping, ID3D11PixelShader*& pShaderSecCubeMapping, ID3D11ComputeShader*& cShaderCubeMapping);
+bool SetupShadowShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11InputLayout*& inputLayoutVS);
+bool SetupMainCubeMappingShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11InputLayout*& inputLayoutVS,
+	ID3D11PixelShader*& pShader);
+bool SetupRenderShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11InputLayout*& inputLayoutVS,
+	ID3D11HullShader*& hShader, ID3D11DomainShader*& dShader, ID3D11PixelShader*& pShader,
+	ID3D11ComputeShader*& cShader);
+bool SetupParticleShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11InputLayout*& inputLayoutVS,
+	ID3D11GeometryShader*& gShader, ID3D11PixelShader*& pShader, ID3D11ComputeShader*& cShader);
+bool SetupSampleShaders(ID3D11Device* device, ID3D11SamplerState*& sampleState);
+bool SetupSampleShadowShaders(ID3D11Device* device, ID3D11SamplerState*& sampleStateShadow);
+bool SetupRasterizerState(ID3D11Device* device, ID3D11RasterizerState*& rasterizerState);
+bool SetupSampleStateCubeMapping(ID3D11Device* device, ID3D11SamplerState*& sampleState);

@@ -31,14 +31,8 @@
     <Filter Include="Header Files\Scene">
       <UniqueIdentifier>{d9ee1b6c-7cb9-4cbf-982d-29013fc75563}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Scene">
-      <UniqueIdentifier>{eecd08f1-f16f-4a16-a20b-d633eb40357b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Scene\ModelReader">
       <UniqueIdentifier>{7ac4764a-58bf-4673-98a1-5d8a09144dea}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Scene\ModelReader">
-      <UniqueIdentifier>{f71845f6-8ac7-4d27-8cbf-802c4dd5f43e}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\View">
       <UniqueIdentifier>{ed417dc4-3335-41d7-bab8-b8a19d545178}</UniqueIdentifier>
@@ -61,6 +55,12 @@
     <Filter Include="Resource Files\HLSL\CubeMapping\Second-stage">
       <UniqueIdentifier>{5032eb83-424b-445f-b30a-1a5b601c9ae2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Helper\Scene">
+      <UniqueIdentifier>{eecd08f1-f16f-4a16-a20b-d633eb40357b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Helper\Scene\ModelReader">
+      <UniqueIdentifier>{f71845f6-8ac7-4d27-8cbf-802c4dd5f43e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -79,22 +79,22 @@
       <Filter>Source Files\Helper</Filter>
     </ClCompile>
     <ClCompile Include="Scene\Mesh.cpp">
-      <Filter>Source Files\Scene</Filter>
+      <Filter>Source Files\Helper\Scene</Filter>
     </ClCompile>
     <ClCompile Include="Helper\ErrorLog.cpp">
       <Filter>Source Files\Helper</Filter>
     </ClCompile>
     <ClCompile Include="Scene\ModelReader\ObjHelper.cpp">
-      <Filter>Source Files\Scene\ModelReader</Filter>
+      <Filter>Source Files\Helper\Scene\ModelReader</Filter>
     </ClCompile>
     <ClCompile Include="Scene\ModelReader\MtlReader.cpp">
-      <Filter>Source Files\Scene\ModelReader</Filter>
+      <Filter>Source Files\Helper\Scene\ModelReader</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files\View</Filter>
     </ClCompile>
     <ClCompile Include="Scene\ModelHelper.cpp">
-      <Filter>Source Files\Scene</Filter>
+      <Filter>Source Files\Helper\Scene</Filter>
     </ClCompile>
     <ClCompile Include="Setup\ShadowHelper.cpp">
       <Filter>Source Files\Setup</Filter>
@@ -137,20 +137,14 @@
     <FxCompile Include="DomainShader.hlsl">
       <Filter>Resource Files\HLSL\Tesselering</Filter>
     </FxCompile>
-    <FxCompile Include="VertexShaderFirstCubeMapping.hlsl">
-      <Filter>Resource Files\HLSL\CubeMapping\First-stage</Filter>
-    </FxCompile>
-    <FxCompile Include="PixelShaderFirstCubeMapping.hlsl">
-      <Filter>Resource Files\HLSL\CubeMapping\First-stage</Filter>
-    </FxCompile>
     <FxCompile Include="VertexShaderSecondCubeMapping.hlsl">
       <Filter>Resource Files\HLSL\CubeMapping\Second-stage</Filter>
     </FxCompile>
     <FxCompile Include="PixelShaderSecondCubeMapping.hlsl">
       <Filter>Resource Files\HLSL\CubeMapping\Second-stage</Filter>
     </FxCompile>
-    <FxCompile Include="ComputeShaderFirstCubeMapping.hlsl">
-      <Filter>Resource Files\HLSL\CubeMapping\First-stage</Filter>
+    <FxCompile Include="VertexShaderCubeMapping.hlsl">
+      <Filter>Resource Files\HLSL\CubeMapping</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
