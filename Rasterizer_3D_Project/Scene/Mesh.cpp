@@ -5,7 +5,8 @@ Mesh::Mesh(ID3D11Device* device, ID3D11DeviceContext* immediateContext, std::vec
 	std::vector<DWORD> indexTriangle, std::vector<UINT> next, std::vector<UINT> size,
 	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> ambient,
 	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> diffuse,
-	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> specular)
+	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> specular,
+	XMFLOAT3 world)
 {
 	this->device = device;
 	this->immediateContext = immediateContext;
@@ -31,6 +32,16 @@ void Mesh::Draw()
 	immediateContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
 	immediateContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT::DXGI_FORMAT_R32_UINT, 0);
 
+	DirectX::XMMATRIX Identity = XMMatrixIdentity();
+	Identity = XMMatrixTranslation(world.x, world.y, world.z);
+	XMStoreFloat4x4(&theWorld.worldMatrix, XMMatrixTranspose(Identity));
+
+	D3D11_MAPPED_SUBRESOURCE subData = {};
+	immediateContext->Map(theWorldBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
+	std::memcpy(subData.pData, &theWorld, sizeof(TheWorld));
+	immediateContext->Unmap(theWorldBuffer, 0);
+	immediateContext->VSSetConstantBuffers(0, 1, &theWorldBuffer);
+
 	for (int i = 0; i < next.size(); i++)
 	{
 		immediateContext->PSSetShaderResources(0, 1, ambient[i].GetAddressOf());
@@ -38,6 +49,8 @@ void Mesh::Draw()
 		immediateContext->PSSetShaderResources(2, 1, specular[i].GetAddressOf());
 		immediateContext->DrawIndexed(size[i], next[i], 0);
 	}
+
+
 }
 
 void Mesh::DrawCubeCapping()
@@ -86,6 +99,7 @@ Mesh::Mesh(const Mesh& mesh)
 	this->specular = mesh.specular;
 	this->size = mesh.size;
 	this->next = mesh.next;
+	this->world = mesh.world;
 }
 
 

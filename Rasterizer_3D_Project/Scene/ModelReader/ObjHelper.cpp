@@ -1,5 +1,4 @@
 #include "ObjHelper.h"
-#include "../../Helper/BufferType.h"
 
 XMFLOAT3 extractFloat3(istringstream& iss)
 {
@@ -63,7 +62,7 @@ int checkIfVertexExist(vector<XMINT3>& input, XMINT3 check)
 	return found;
 }
 
-bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, ID3D11DeviceContext* immediateContext, std::vector<BigSmall>& bigSmall)
+bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, ID3D11DeviceContext* immediateContext, std::vector<BigSmall>& bigSmall, XMFLOAT3 world)
 {
 	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> ambientVec;
 	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> diffuseVec;

@@ -11,6 +11,7 @@
 #include "Scene/modelHelper.h"
 #include "Scene/ModelReader/ObjHelper.h"
 #include "Camera.h"
+#include "Frustom.h"
 
 float dt = 0;
 
@@ -579,10 +580,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	if (!SetupModels(modelName, worldPos))
 		return -1;
 
-	for (int i = 0; i < modelName.size(); i++)
-		if (!objReader(modelName[i], mesh, device, immediateContext, bigSmall))
-			return -1;
-
+	// setup Camera:
 	camera.createConstantBuffer(camera, device, immediateContext);
 	lightCamera.createConstantBuffer(camera, device, immediateContext);
 	cubeMappingCamera.createConstantBuffer(camera, device, immediateContext);
@@ -591,10 +589,27 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	lightCamera.SetLookAtPos(XMFLOAT3(0.0f, 1.0f, 0.0f));
 	lightCamera.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);
 
-	/*cubeMappingCamera.AdjustPosition(0.0f, 0.5f, 5.0f);*/
 	cubeMappingCamera.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);
-
 	worldPos[0] = cubeMappingCamera.GetPositionFloat3();
+
+
+
+	for (int i = 0; i < modelName.size(); i++)
+		if (!objReader(modelName[i], mesh, device, immediateContext, bigSmall))
+			return -1;
+
+	Frustom frustom;
+
+	std::vector<XMFLOAT4X4> worldFrustom;
+	for (int i = 0; i < worldPos.size(); i++)
+	{
+		DirectX::XMMATRIX worldMatrix = XMMatrixIdentity();
+		worldMatrix = XMMatrixTranslation(worldPos[i].x, worldPos[i].y, worldPos[i].z);
+		worldFrustom.push_back(XMFLOAT4X4());
+		XMStoreFloat4x4(&worldFrustom[i], XMMatrixTranspose(worldMatrix));
+	}
+
+	frustom.SetupFrustom(camera.GetProjection(), bigSmall, worldFrustom);
 
 	MSG msg = { };
 	while (!(GetKeyState(VK_ESCAPE) & 0x8000) && msg.message != WM_QUIT)

@@ -1,5 +1,6 @@
 #pragma once
 #include "../Helper/Vertex.h"
+#include "../Helper/BufferType.h"
 
 #include <d3d11.h>
 #include <wrl/client.h>
@@ -20,6 +21,7 @@ private:
     std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> specular;
     std::vector<UINT> next;
     std::vector<UINT> size;
+    XMFLOAT3 world;
 
 protected:
     HRESULT CreateIndexBuffer(std::vector<DWORD> indexTriangle);
@@ -29,7 +31,8 @@ public:
         std::vector<DWORD> indexTriangle, std::vector<UINT> next, std::vector<UINT> size,
         std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> ambient, 
         std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> diffuse,
-        std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> specular);
+        std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> specular,
+        XMFLOAT3 world);
     void Draw();
     void DrawCubeCapping();
     void DrawPrePass();
