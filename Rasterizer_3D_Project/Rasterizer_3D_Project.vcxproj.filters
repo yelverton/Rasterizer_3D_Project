@@ -55,10 +55,10 @@
     <Filter Include="Resource Files\HLSL\CubeMapping\Second-stage">
       <UniqueIdentifier>{5032eb83-424b-445f-b30a-1a5b601c9ae2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Helper\Scene">
+    <Filter Include="Source Files\Scene">
       <UniqueIdentifier>{eecd08f1-f16f-4a16-a20b-d633eb40357b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Helper\Scene\ModelReader">
+    <Filter Include="Source Files\Scene\ModelReader">
       <UniqueIdentifier>{f71845f6-8ac7-4d27-8cbf-802c4dd5f43e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -79,22 +79,22 @@
       <Filter>Source Files\Helper</Filter>
     </ClCompile>
     <ClCompile Include="Scene\Mesh.cpp">
-      <Filter>Source Files\Helper\Scene</Filter>
+      <Filter>Source Files\Scene</Filter>
     </ClCompile>
     <ClCompile Include="Helper\ErrorLog.cpp">
       <Filter>Source Files\Helper</Filter>
     </ClCompile>
     <ClCompile Include="Scene\ModelReader\ObjHelper.cpp">
-      <Filter>Source Files\Helper\Scene\ModelReader</Filter>
+      <Filter>Source Files\Scene\ModelReader</Filter>
     </ClCompile>
     <ClCompile Include="Scene\ModelReader\MtlReader.cpp">
-      <Filter>Source Files\Helper\Scene\ModelReader</Filter>
+      <Filter>Source Files\Scene\ModelReader</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files\View</Filter>
     </ClCompile>
     <ClCompile Include="Scene\ModelHelper.cpp">
-      <Filter>Source Files\Helper\Scene</Filter>
+      <Filter>Source Files\Scene</Filter>
     </ClCompile>
     <ClCompile Include="Setup\ShadowHelper.cpp">
       <Filter>Source Files\Setup</Filter>
@@ -104,6 +104,9 @@
     </ClCompile>
     <ClCompile Include="Setup\CubeMappingHelper.cpp">
       <Filter>Source Files\Setup</Filter>
+    </ClCompile>
+    <ClCompile Include="Frustom.cpp">
+      <Filter>Source Files\Helper</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -189,6 +192,9 @@
     </ClInclude>
     <ClInclude Include="Setup\CubeMappingHelper.h">
       <Filter>Header Files\Setup</Filter>
+    </ClInclude>
+    <ClInclude Include="Frustom.h">
+      <Filter>Header Files\Helper</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
