@@ -1,4 +1,5 @@
 #include "ObjHelper.h"
+#include "../../Helper/BufferType.h"
 
 XMFLOAT3 extractFloat3(istringstream& iss)
 {
@@ -62,7 +63,7 @@ int checkIfVertexExist(vector<XMINT3>& input, XMINT3 check)
 	return found;
 }
 
-bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, ID3D11DeviceContext* immediateContext)
+bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, ID3D11DeviceContext* immediateContext, std::vector<BigSmall>& bigSmall)
 {
 	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> ambientVec;
 	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> diffuseVec;
@@ -169,5 +170,36 @@ bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, 
 
 	mesh.push_back(Mesh(device, immediateContext, vertex, indices, startLocation, indexCount,
 		ambientVec, diffuseVec, specularVec));
+
+	float smallestX = 0.0f;
+	float smallestY = 0.0f;
+	float smallestZ = 0.0f;
+
+	float biggestX = 0.0f;
+	float biggestY = 0.0f;
+	float biggestZ = 0.0f;
+
+	for (int i = 0; i < vertex.size(); i++)
+	{
+		if (vertex[i].pos.x < smallestX || vertex[i].pos.y < smallestY || vertex[i].pos.z < smallestZ)
+		{
+			if (vertex[i].pos.x < smallestX) smallestX = vertex[i].pos.x;
+			if (vertex[i].pos.y < smallestY) smallestY = vertex[i].pos.y;
+			if (vertex[i].pos.z < smallestZ) smallestZ = vertex[i].pos.z;
+		}
+
+		if (vertex[i].pos.x > biggestX || vertex[i].pos.y > biggestY || vertex[i].pos.z > biggestZ)
+		{
+			if (vertex[i].pos.x > biggestX) biggestX = vertex[i].pos.x;
+			if (vertex[i].pos.y > biggestY) biggestY = vertex[i].pos.y;
+			if (vertex[i].pos.z > biggestZ) biggestZ = vertex[i].pos.z;
+		}
+	}
+
+	BigSmall tempBigSmall;
+	tempBigSmall.smallest = XMVectorSet(smallestX, smallestY, smallestZ, 0.0f);
+	tempBigSmall.biggest = XMVectorSet(biggestX, biggestY, biggestZ, 0.0f);
+	bigSmall.push_back(tempBigSmall);
+
 	return true;
 }

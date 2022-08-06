@@ -9,7 +9,6 @@ struct PixelShaderInput
 	float3 posWS : WS_POSITION;
 };
 
-
 cbuffer cam : register(b0)
 {
 	float3 cameraPosition;

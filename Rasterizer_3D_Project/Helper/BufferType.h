@@ -58,3 +58,9 @@ struct CamData
     XMFLOAT3 cameraPosition;
     float padding;
 };
+
+struct BigSmall
+{
+    XMVECTOR biggest;
+    XMVECTOR smallest;
+};

@@ -509,6 +509,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	struct ParticlePosition particlePosition;
 	struct GetDirection getDirection;
 	struct GetDtTime getDTTime;
+	std::vector<BigSmall> bigSmall;
 
 	ID3D11HullShader* hShader;
 	ID3D11DomainShader* dShader;
@@ -579,7 +580,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		return -1;
 
 	for (int i = 0; i < modelName.size(); i++)
-		if (!objReader(modelName[i], mesh, device, immediateContext))
+		if (!objReader(modelName[i], mesh, device, immediateContext, bigSmall))
 			return -1;
 
 	camera.createConstantBuffer(camera, device, immediateContext);
