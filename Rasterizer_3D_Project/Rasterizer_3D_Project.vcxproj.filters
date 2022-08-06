@@ -137,14 +137,11 @@
     <FxCompile Include="DomainShader.hlsl">
       <Filter>Resource Files\HLSL\Tesselering</Filter>
     </FxCompile>
-    <FxCompile Include="VertexShaderSecondCubeMapping.hlsl">
-      <Filter>Resource Files\HLSL\CubeMapping\Second-stage</Filter>
-    </FxCompile>
-    <FxCompile Include="PixelShaderSecondCubeMapping.hlsl">
+    <FxCompile Include="PixelShaderCubeMapping.hlsl">
       <Filter>Resource Files\HLSL\CubeMapping\Second-stage</Filter>
     </FxCompile>
     <FxCompile Include="VertexShaderCubeMapping.hlsl">
-      <Filter>Resource Files\HLSL\CubeMapping</Filter>
+      <Filter>Resource Files\HLSL\CubeMapping\Second-stage</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

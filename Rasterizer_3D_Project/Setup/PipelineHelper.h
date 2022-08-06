@@ -7,7 +7,7 @@ using namespace DirectX;
 
 
 bool SetupShadowShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11InputLayout*& inputLayoutVS);
-bool SetupMainCubeMappingShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11InputLayout*& inputLayoutVS,
+bool SetupCubeMappingShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11InputLayout*& inputLayoutVS,
 	ID3D11PixelShader*& pShader);
 bool SetupRenderShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11InputLayout*& inputLayoutVS,
 	ID3D11HullShader*& hShader, ID3D11DomainShader*& dShader, ID3D11PixelShader*& pShader,
