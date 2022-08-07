@@ -32,7 +32,7 @@ private:
 	std::vector<BoundingBox> taken;
 
 protected:
-	void addTree(Node* node, int depth, float width, float height);
+	void addTree(Node* node, int depth);
 	void AddcolliedWithBoundingBox(Node* node, int depth, std::vector<Mesh> mesh);
 	void GetcolliedWithFrustom(Node* node, int depth, DirectX::BoundingFrustum frosum);
 public:

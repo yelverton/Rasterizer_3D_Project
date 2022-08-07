@@ -1,6 +1,6 @@
 #include "Frustom.h"
 
-void Frustom::addTree(Node* node, int depth, float nearPlane, float farPlane)
+void Frustom::addTree(Node* node, int depth)
 {
 	
 	for (int i = 0; i < 4; i++)
@@ -61,7 +61,7 @@ bool Frustom::SetupFrustom(XMMATRIX projection, std::vector<BigSmall> bigSmall, 
 
 	float width = 900, height = 900;
 	rootNode = new Node();
-	addTree(rootNode, 0, width, height);
+	addTree(rootNode, 0);
 	AddcolliedWithBoundingBox(rootNode, 0, mesh);
 
 	return true;

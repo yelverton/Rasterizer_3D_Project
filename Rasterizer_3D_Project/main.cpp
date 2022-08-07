@@ -163,11 +163,10 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsVie
 	immediateContext->PSSetShaderResources(3, 1, &SRVShadow);
 }
 
-void draw(ID3D11DeviceContext* immediateContext, vector<Mesh>& mesh, std::vector<int> render)
+void draw(ID3D11DeviceContext* immediateContext, vector<Mesh>& mesh)
 {
-	for (int i = 0; i < render.size(); i++)
-		if (render[i] != 0)
-			mesh[render[i]].Draw();
+	for (int i = 1; i < mesh.size(); i++)
+		mesh[i].Draw();
 
 	immediateContext->VSSetShader(nullptr, nullptr, 0);
 	immediateContext->HSSetShader(nullptr, nullptr, 0);
@@ -566,18 +565,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		if (!objReader(modelName[i], mesh, device, immediateContext, bigSmall, worldPos[i], i))
 			return -1;
 
-	Frustom frustom;
+	//Frustom frustom;
 
-	std::vector<XMFLOAT4X4> worldFrustom;
-	for (int i = 0; i < worldPos.size(); i++)
-	{
-		DirectX::XMMATRIX worldMatrix = XMMatrixIdentity();
-		worldMatrix = XMMatrixTranslation(worldPos[i].x, worldPos[i].y, worldPos[i].z);
-		worldFrustom.push_back(XMFLOAT4X4());
-		XMStoreFloat4x4(&worldFrustom[i], XMMatrixTranspose(worldMatrix));
-	}
+	//std::vector<XMFLOAT4X4> worldFrustom;
+	//for (int i = 0; i < worldPos.size(); i++)
+	//{
+	//	DirectX::XMMATRIX worldMatrix = XMMatrixIdentity();
+	//	worldMatrix = XMMatrixTranslation(worldPos[i].x, worldPos[i].y, worldPos[i].z);
+	//	worldFrustom.push_back(XMFLOAT4X4());
+	//	XMStoreFloat4x4(&worldFrustom[i], XMMatrixTranspose(worldMatrix));
+	//}
 
-	frustom.SetupFrustom(camera.GetProjection(), bigSmall, worldFrustom, mesh);
+	//frustom.SetupFrustom(camera.GetProjection(), bigSmall, worldFrustom, mesh);
 
 	MSG msg = { };
 	while (!(GetKeyState(VK_ESCAPE) & 0x8000) && msg.message != WM_QUIT)
@@ -612,7 +611,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		Render(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, lightBuffer,
 			camBuffer, lightData, camData, camera, gBufferRTV, playerPerspectiv, lightCamera, SRVShadow,
 			sampleStateShadow, hShader, dShader, rasterizerState, cubeMappingCamera);
-		draw(immediateContext, mesh, frustom.getFrustom(camera.sendViewProjection(camera)));
+		draw(immediateContext, mesh);
 		RenderComputerShader(immediateContext, cShader, UAView, gBufferSRV, camData, camera, lightData,
 			lightCamera, lightBuffer, camBuffer);
 
