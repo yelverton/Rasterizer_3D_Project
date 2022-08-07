@@ -8,10 +8,12 @@
 using namespace DirectX;
 
 #include "../Rasterizer_3D_Project/Helper/BufferType.h"
+#include "Scene/Mesh.h"
 
 struct Node
 {
 	DirectX::BoundingBox box;
+	std::vector<Mesh> mesh;
 	Node* upLeft = nullptr;
 	Node* upRight = nullptr;
 	Node* downLeft = nullptr;
@@ -21,16 +23,19 @@ struct Node
 class Frustom
 {
 private: 
-	DirectX::BoundingFrustum frosum;
 	std::vector<BoundingBox> objects;
 	Node* rootNode;
+	bool exist = false;
 	std::vector<Node*> nodeVec;
+	std::vector<Node*> currentNode;
+	std::vector<Mesh> currentMesh;
+	std::vector<BoundingBox> taken;
 
 protected:
-	void goThrowFrustom(float xAnswer, float zAnswer);
-	void addFrustom(Node* node, int depth, int topLeft, int topRight);
-	void colliedWithBoundingBox(Node* node, int depth, std::vector<BoundingBox*> object);
+	void addTree(Node* node, int depth, float width, float height);
+	void AddcolliedWithBoundingBox(Node* node, int depth, std::vector<Mesh> mesh);
+	void GetcolliedWithFrustom(Node* node, int depth, DirectX::BoundingFrustum frosum);
 public:
-	bool SetupFrustom(XMMATRIX projection, std::vector<BigSmall> bigSmall, std::vector<XMFLOAT4X4> worldFrustom);
-	void goThrowFrustom();
+	bool SetupFrustom(XMMATRIX projection, std::vector<BigSmall> bigSmall, std::vector<XMFLOAT4X4> worldFrustomm, std::vector<Mesh> mesh);
+	std::vector<int> getFrustom(XMMATRIX viewProj);
 };

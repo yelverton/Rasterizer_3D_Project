@@ -90,20 +90,11 @@ void ShadowPrePass(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView
 	lightCamera.sendViewProjection(lightCamera, 1);
 }
 
-void drawPrePass(ID3D11DeviceContext* immediateContext, vector<Mesh> mesh, vector<XMFLOAT3> worldPos, struct TheWorld theWorld, ID3D11Buffer* theWorldBuffer)
+void drawPrePass(ID3D11DeviceContext* immediateContext, vector<Mesh> mesh)
 {
 	DirectX::XMMATRIX Identity = XMMatrixIdentity();
 	for (int i = 0; i < mesh.size() - 1; i++)
 	{
-		Identity = XMMatrixTranslation(worldPos[i].x, worldPos[i].y, worldPos[i].z);
-		XMStoreFloat4x4(&theWorld.worldMatrix, XMMatrixTranspose(Identity));
-	
-		D3D11_MAPPED_SUBRESOURCE subData = {};
-		immediateContext->Map(theWorldBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
-		std::memcpy(subData.pData, &theWorld, sizeof(TheWorld));
-		immediateContext->Unmap(theWorldBuffer, 0);
-		immediateContext->VSSetConstantBuffers(0, 1, &theWorldBuffer);
-
 		mesh[i].Draw();
 	}
 
@@ -172,22 +163,11 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsVie
 	immediateContext->PSSetShaderResources(3, 1, &SRVShadow);
 }
 
-void draw(ID3D11DeviceContext* immediateContext, vector<Mesh>& mesh, vector<XMFLOAT3> worldPos, struct TheWorld theWorld, ID3D11Buffer* theWorldBuffer)
+void draw(ID3D11DeviceContext* immediateContext, vector<Mesh>& mesh, std::vector<int> render)
 {
-	for (int i = 1; i < mesh.size(); i++)
-	{
-		DirectX::XMMATRIX Identity = XMMatrixIdentity();
-		Identity = XMMatrixTranslation(worldPos[i].x, worldPos[i].y, worldPos[i].z);
-		XMStoreFloat4x4(&theWorld.worldMatrix, XMMatrixTranspose(Identity));
-
-		D3D11_MAPPED_SUBRESOURCE subData = {};
-		immediateContext->Map(theWorldBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
-		std::memcpy(subData.pData, &theWorld, sizeof(TheWorld));
-		immediateContext->Unmap(theWorldBuffer, 0);
-		immediateContext->VSSetConstantBuffers(0, 1, &theWorldBuffer);
-
-		mesh[i].Draw();
-	}
+	for (int i = 0; i < render.size(); i++)
+		if (render[i] != 0)
+			mesh[render[i]].Draw();
 
 	immediateContext->VSSetShader(nullptr, nullptr, 0);
 	immediateContext->HSSetShader(nullptr, nullptr, 0);
@@ -195,20 +175,10 @@ void draw(ID3D11DeviceContext* immediateContext, vector<Mesh>& mesh, vector<XMFL
 	immediateContext->PSSetShader(nullptr, nullptr, 0);
 }
 
-void drawPreCube(ID3D11DeviceContext* immediateContext, vector<Mesh>& mesh, vector<XMFLOAT3> worldPos, struct TheWorld theWorld, ID3D11Buffer* theWorldBuffer)
+void drawPreCube(ID3D11DeviceContext* immediateContext, vector<Mesh>& mesh)
 {
 	for (int i = 1; i < mesh.size(); i++)
 	{
-		DirectX::XMMATRIX Identity = XMMatrixIdentity();
-		Identity = XMMatrixTranslation(worldPos[i].x, worldPos[i].y, worldPos[i].z);
-		XMStoreFloat4x4(&theWorld.worldMatrix, XMMatrixTranspose(Identity));
-
-		D3D11_MAPPED_SUBRESOURCE subData = {};
-		immediateContext->Map(theWorldBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
-		std::memcpy(subData.pData, &theWorld, sizeof(TheWorld));
-		immediateContext->Unmap(theWorldBuffer, 0);
-		immediateContext->VSSetConstantBuffers(0, 1, &theWorldBuffer);
-
 		mesh[i].Draw();
 	}
 
@@ -592,10 +562,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	cubeMappingCamera.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);
 	worldPos[0] = cubeMappingCamera.GetPositionFloat3();
 
-
-
 	for (int i = 0; i < modelName.size(); i++)
-		if (!objReader(modelName[i], mesh, device, immediateContext, bigSmall))
+		if (!objReader(modelName[i], mesh, device, immediateContext, bigSmall, worldPos[i], i))
 			return -1;
 
 	Frustom frustom;
@@ -609,7 +577,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		XMStoreFloat4x4(&worldFrustom[i], XMMatrixTranspose(worldMatrix));
 	}
 
-	frustom.SetupFrustom(camera.GetProjection(), bigSmall, worldFrustom);
+	frustom.SetupFrustom(camera.GetProjection(), bigSmall, worldFrustom, mesh);
 
 	MSG msg = { };
 	while (!(GetKeyState(VK_ESCAPE) & 0x8000) && msg.message != WM_QUIT)
@@ -622,17 +590,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 		auto start = std::chrono::system_clock::now();
 		clearBig(immediateContext, dsViewShadow, gBufferRTV, dsView, dsViewParticle, rtv, gBufferRTVPreCube);
+		std::vector<int> frosumRender;
 		moveAbility(playerPerspectiv, camera, lightCamera, cubeMappingCamera, worldPos);
 
 		ShadowPrePass(immediateContext, dsViewShadow, viewportShadow, lightCamera, vShaderDepth, inputLayoutVSDepth);
-		drawPrePass(immediateContext, mesh, worldPos, theWorld, theWorldBuffer);
+		drawPrePass(immediateContext, mesh);
 
 		for (int i = 0; i < 6; i++)
 		{
 			smallClear(immediateContext, dsView, gBufferRTV);
 			RenderPreCube(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, camBuffer,
 				camData, cubeMappingCamera, gBufferRTV, lightCamera, SRVShadow, sampleState, i);
-			drawPreCube(immediateContext, mesh, worldPos, theWorld, theWorldBuffer);
+			drawPreCube(immediateContext, mesh);
 			RenderComputerShaderCube(immediateContext, cShader, UAVCubeMapping[i], gBufferSRV, camData, cubeMappingCamera, lightData,
 				lightCamera, lightBuffer, camBuffer);
 		}
@@ -643,7 +612,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		Render(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, lightBuffer,
 			camBuffer, lightData, camData, camera, gBufferRTV, playerPerspectiv, lightCamera, SRVShadow,
 			sampleStateShadow, hShader, dShader, rasterizerState, cubeMappingCamera);
-		draw(immediateContext, mesh, worldPos, theWorld, theWorldBuffer);
+		draw(immediateContext, mesh, frustom.getFrustom(camera.sendViewProjection(camera)));
 		RenderComputerShader(immediateContext, cShader, UAView, gBufferSRV, camData, camera, lightData,
 			lightCamera, lightBuffer, camBuffer);
 

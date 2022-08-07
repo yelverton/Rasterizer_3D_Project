@@ -1,45 +1,39 @@
 #include "Frustom.h"
 
-void Frustom::addFrustom(Node* node, int depth, int topLeft, int topRight)
+void Frustom::addTree(Node* node, int depth, float nearPlane, float farPlane)
 {
+	
 	for (int i = 0; i < 4; i++)
 	{
 		switch (i)
 		{
 			case 0:
 			{
-				Node* bottomLeft = new Node();
-				nodeVec.push_back(bottomLeft);
-				node->downLeft = bottomLeft;
+				node->downLeft = new Node();
+				//node->box.CreateFromPoints(box, )
 				if (depth + 1 < 3)
-					addFrustom(bottomLeft, depth + 1, 0, 0);
+					addTree(node->downLeft, depth + 1);
 				break;
 			}
 			case 1:
 			{
-				Node* bottomRight = new Node();
-				nodeVec.push_back(bottomRight);
-				node->downRight = bottomRight;
+				node->downRight = new Node();
 				if (depth + 1 < 3)
-					addFrustom(bottomRight, depth + 1, 0, 0);
+					addTree(node->downRight, depth + 1);
 				break;
 			}
 			case 2:
 			{
-				Node* topLeft = new Node();
-				nodeVec.push_back(topLeft);
-				node->downLeft = topLeft;
+				node->upLeft = new Node();
 				if (depth + 1 < 3)
-					addFrustom(topLeft, depth + 1, 0, 0);
+					addTree(node->upLeft, depth + 1);
 				break;
 			}
 			case 3:
 			{
-				Node* topRight = new Node();
-				nodeVec.push_back(topRight);
-				node->upRight = topRight;
+				node->upRight = new Node();
 				if (depth + 1 < 3)
-					addFrustom(topRight, depth + 1, 0, 0);
+					addTree(node->upRight, depth + 1);
 				break;
 			}
 		}
@@ -47,59 +41,33 @@ void Frustom::addFrustom(Node* node, int depth, int topLeft, int topRight)
 
 }
 
-void CreateTree(Node* node, int depth)
+
+bool Frustom::SetupFrustom(XMMATRIX projection, std::vector<BigSmall> bigSmall, std::vector<XMFLOAT4X4> worldFrustom, std::vector<Mesh> mesh)
 {
-
-}
-
-void Frustom::goThrowFrustom(float xAnswer, float zAnswer)
-{
-	XMVECTOR xPos = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
-	XMVECTOR zPos = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-
-	for (int i = 0; i < objects.size(); i++)
-	{
-		objects[i].Contains(frosum);
-	}
-
-	
-
-}
-
-bool Frustom::SetupFrustom(XMMATRIX projection, std::vector<BigSmall> bigSmall, std::vector<XMFLOAT4X4> worldFrustom)
-{
-	DirectX::BoundingFrustum::CreateFromMatrix(frosum, projection);
-
 	for (int i = 0; i < bigSmall.size(); i++)
 	{
 		objects.push_back(DirectX::BoundingBox());
 		DirectX::BoundingBox::CreateFromPoints(objects[i], bigSmall[i].smallest, bigSmall[i].biggest);
 		XMMATRIX send = XMLoadFloat4x4(&worldFrustom[i]);
 		objects[i].Transform(objects[i], send);
+		mesh[i].setBB(objects[i]);
 	}
 
-	Node* nodeTemp = new Node();
-	addFrustom(nodeTemp, 0, 0, 0);
+	DirectX::BoundingFrustum frosum;
+	DirectX::BoundingFrustum::CreateFromMatrix(frosum, projection);
+	DirectX::BoundingBox dude;
+	
+	XMFLOAT3 origin = frosum.Origin;
+
+	float width = 900, height = 900;
+	rootNode = new Node();
+	addTree(rootNode, 0, width, height);
+	AddcolliedWithBoundingBox(rootNode, 0, mesh);
 
 	return true;
 }
 
-
-
-void Frustom::goThrowFrustom()
-{
-	XMVECTOR getStuff;
-
-	//for (int i = 0; i < objects.size(); i++)
-	//{
-	//	if (frosum.Intersects(objects[i]))
-	//	{
-	//		goThrowFrustom()
-	//	}
-	//}
-}
-
-void Frustom::colliedWithBoundingBox(Node* node, int depth, std::vector<BoundingBox> object)
+void Frustom::GetcolliedWithFrustom(Node* node, int depth, DirectX::BoundingFrustum frosum)
 {
 	for (int i = 0; i < 4; i++)
 	{
@@ -107,43 +75,137 @@ void Frustom::colliedWithBoundingBox(Node* node, int depth, std::vector<Bounding
 		{
 		case 0:
 		{
-			if (depth == 2)
-			{
-				for (int i = 0; i < object.size(); i++)
-				{ 
-					if (object[i].Contains(node->box))
-				}
-			}
+			if (depth + 1 < 3)
+				GetcolliedWithFrustom(node->downLeft, depth + 1, frosum);
+			break;
 		}
 		case 1:
 		{
-			Node* bottomRight = new Node();
-			nodeVec.push_back(bottomRight);
-			node->downRight = bottomRight;
 			if (depth + 1 < 3)
-				addFrustom(bottomRight, depth + 1, 0, 0);
+				GetcolliedWithFrustom(node->downRight, depth + 1, frosum);
 			break;
 		}
 		case 2:
 		{
-			Node* topLeft = new Node();
-			nodeVec.push_back(topLeft);
-			node->downLeft = topLeft;
 			if (depth + 1 < 3)
-				addFrustom(topLeft, depth + 1, 0, 0);
+				GetcolliedWithFrustom(node->upLeft, depth + 1, frosum);
 			break;
 		}
 		case 3:
 		{
-			Node* topRight = new Node();
-			nodeVec.push_back(topRight);
-			node->upRight = topRight;
 			if (depth + 1 < 3)
-				addFrustom(topRight, depth + 1, 0, 0);
+				GetcolliedWithFrustom(node->upRight, depth + 1, frosum);
 			break;
 		}
 		}
 	}
+
+	if (depth == 2)
+	{
+		if (frosum.Contains(node->box))
+		{
+			for (int i = 0; i < node->mesh.size(); i++)
+			{
+				currentMesh.push_back(node->mesh[i]);
+			}
+		}
+	}
+
+}
+
+
+void Frustom::AddcolliedWithBoundingBox(Node* node, int depth, std::vector<Mesh> mesh)
+{
+	for (int i = 0; i < 4; i++)
+	{
+		switch (i)
+		{
+		case 0:
+		{
+			for (int i = 0; i < mesh.size(); i++)
+			{
+				if (mesh[i].getBB().Contains(node->box) != 0)
+				{
+					node->mesh.push_back(mesh[i]);
+					taken.push_back(mesh[i].getBB());
+				}
+			}
+			if (depth + 1 < 3)
+				AddcolliedWithBoundingBox(node->downLeft, depth + 1, mesh);
+			break;
+		}
+		case 1:
+		{
+			for (int i = 0; i < mesh.size(); i++)
+			{
+				if (mesh[i].getBB().Contains(node->box) != 0)
+				{
+					node->mesh.push_back(mesh[i]);
+					taken.push_back(mesh[i].getBB());
+					if (depth + 1 < 3)
+						AddcolliedWithBoundingBox(node->downRight, depth + 1, mesh);
+				}
+			}
+			break;
+		}
+		case 2:
+		{
+			for (int i = 0; i < mesh.size(); i++)
+			{
+				if (mesh[i].getBB().Contains(node->box) != 0)
+				{
+					node->mesh.push_back(mesh[i]);
+					taken.push_back(mesh[i].getBB());
+					if (depth + 1 < 3)
+						AddcolliedWithBoundingBox(node->upLeft, depth + 1, mesh);
+				}
+			}
+			break;
+		}
+		case 3:
+		{
+			for (int i = 0; i < mesh.size(); i++)
+			{
+				if (mesh[i].getBB().Contains(node->box) != 0)
+				{
+					node->mesh.push_back(mesh[i]);
+					taken.push_back(mesh[i].getBB());
+					if (depth + 1 < 3)
+						AddcolliedWithBoundingBox(node->upRight, depth + 1, mesh);
+				}
+			}
+			break;
+		}
+		}
+		
+	}
+}
+
+std::vector<int> Frustom::getFrustom(XMMATRIX viewProj)
+{
+	currentMesh.clear();
+	DirectX::BoundingFrustum frosum;
+	//DirectX::XMMATRIX inverseViewMatrix = DirectX::XMMatrixInverse(nullptr, viewProj);
+	DirectX::BoundingFrustum::CreateFromMatrix(frosum, viewProj);
+
+	GetcolliedWithFrustom(rootNode, 0, frosum);
+	//rootNode->box.CreateFromPoints()
+	std::vector<int> unique;
+	for (int i = 0; i < currentMesh.size(); i++) 
+	{
+		bool found = false;
+		for (int j = 0; j < unique.size(); j++) 
+		{
+			if (unique[j] == currentMesh[i].getUniqueId())
+				found = true;
+		}
+
+		if (!found)
+			unique.push_back(currentMesh[i].getUniqueId());
+	}
+
+
+	return unique;
 }
 
 

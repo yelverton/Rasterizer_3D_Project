@@ -42,6 +42,7 @@ public:
 	bool createConstantBuffer(Camera& cam, ID3D11Device* device, ID3D11DeviceContext* immediateContext);
 	void adjustProjectionMatrix(float FOV, float aspectRatio, float nearZ, float farZ);
 	void sendViewProjection(Camera& cam, int vertexShaderPos);
+	XMMATRIX sendViewProjection(Camera& cam);
 	void sendViewProjectionGS(Camera& cam, int vertexShaderPos);
 
 private:

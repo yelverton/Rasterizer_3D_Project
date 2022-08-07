@@ -62,7 +62,8 @@ int checkIfVertexExist(vector<XMINT3>& input, XMINT3 check)
 	return found;
 }
 
-bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, ID3D11DeviceContext* immediateContext, std::vector<BigSmall>& bigSmall, XMFLOAT3 world)
+bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, ID3D11DeviceContext* immediateContext, 
+	std::vector<BigSmall>& bigSmall, XMFLOAT3 worldPos, int unique)
 {
 	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> ambientVec;
 	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> diffuseVec;
@@ -168,7 +169,7 @@ bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, 
 	}
 
 	mesh.push_back(Mesh(device, immediateContext, vertex, indices, startLocation, indexCount,
-		ambientVec, diffuseVec, specularVec));
+		ambientVec, diffuseVec, specularVec, worldPos, unique));
 
 	float smallestX = 0.0f;
 	float smallestY = 0.0f;

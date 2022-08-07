@@ -6,7 +6,7 @@ Camera::Camera()
 	this->posVector = XMLoadFloat3(&this->pos);
 	this->rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	this->rotVector = XMLoadFloat3(&this->rot);
-	this->projection = DirectX::XMMatrixPerspectiveFovLH(0.8f, 1024.f / 1024.f, 0.1f, 800.0f);
+	this->projection = DirectX::XMMatrixPerspectiveFovLH(0.8f, 1024.f / 1024.f, 0.1f, 100.0f);
 	this->UpdateViewMatrix();
 }
 
@@ -242,6 +242,12 @@ void Camera::sendViewProjection(Camera& cam, int vertexShaderPos)
 	memcpy(subData.pData, &VP, sizeof(VP));
 	immediateContext->Unmap(ConstantBuffer.Get(), 0);
 	immediateContext->VSSetConstantBuffers(vertexShaderPos, 1, ConstantBuffer.GetAddressOf());
+}
+
+XMMATRIX Camera::sendViewProjection(Camera& cam)
+{
+	cam.UpdateViewMatrix();
+	return cam.GetViewMatrix() * cam.GetProjection();
 }
 
 void Camera::sendViewProjectionGS(Camera& cam, int vertexShaderPos)

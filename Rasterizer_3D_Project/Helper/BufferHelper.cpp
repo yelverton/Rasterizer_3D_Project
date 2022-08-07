@@ -129,9 +129,9 @@ bool setupGetDtTime(ID3D11Device* device, ID3D11Buffer*& getDTTimeBuffer, struct
 }
 
 bool SetupBuffers(ID3D11Device* device, ID3D11Buffer*& lightBuffer, ID3D11Buffer*& camBuffer,
-	ID3D11Buffer*& theWorldBuffer, ID3D11Buffer*& getDirectionBuffer, ID3D11Buffer*& getDTTimeBuffer, 
+	ID3D11Buffer*& theWorldBuffer, ID3D11Buffer*& getDirectionBuffer, ID3D11Buffer*& getDTTimeBuffer,
 	struct LightData& lightData, struct CamData& camData, struct TheWorld& theWorld, struct GetDirection& getDirection,
-	struct GetDtTime& getDtTime)
+	struct GetDtTime& getDTTime)
 {
 	if (!createLightBuffer(device, lightBuffer, lightData))
 		return false;
@@ -145,7 +145,7 @@ bool SetupBuffers(ID3D11Device* device, ID3D11Buffer*& lightBuffer, ID3D11Buffer
 	if (!setupForwardVector(device, getDirectionBuffer, getDirection))
 		return false;
 	
-	if (!setupGetDtTime(device, getDTTimeBuffer, getDtTime))
+	if (!setupGetDtTime(device, getDTTimeBuffer, getDTTime))
 		return false;
 
 	return true;
