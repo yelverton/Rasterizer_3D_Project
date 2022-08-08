@@ -27,7 +27,7 @@ struct GeometryShaderOutput
 	float4 pos : SV_Position;
 };
 
-[maxvertexcount(4)] // create a cube 
+[maxvertexcount(4)] // create a QUAD
 void main(point float4 input[1] : SV_Position, inout TriangleStream<GeometryShaderOutput> outputStream)
 {
 	const static float SIZE = 0.25f;
