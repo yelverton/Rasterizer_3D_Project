@@ -200,6 +200,5 @@ bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, 
 	tempBigSmall.smallest = XMVectorSet(smallestX, smallestY, smallestZ, 0.0f);
 	tempBigSmall.biggest = XMVectorSet(biggestX, biggestY, biggestZ, 0.0f);
 	bigSmall.push_back(tempBigSmall);
-
 	return true;
 }

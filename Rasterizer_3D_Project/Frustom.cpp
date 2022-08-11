@@ -1,39 +1,92 @@
 #include "Frustom.h"
 
-void Frustom::addTree(Node* node, int depth)
+void Frustom::addTree(Node* node, int depth, float x, float z)
 {
-	
+	// first 50 , 50
+	x /= 2;
+	z /= 2;
 	for (int i = 0; i < 4; i++)
 	{
 		switch (i)
 		{
 			case 0:
 			{
-				node->downLeft = new Node();
-				//node->box.CreateFromPoints(box, )
-				if (depth + 1 < 3)
-					addTree(node->downLeft, depth + 1);
-				break;
-			}
-			case 1:
-			{
-				node->downRight = new Node();
-				if (depth + 1 < 3)
-					addTree(node->downRight, depth + 1);
-				break;
-			}
-			case 2:
-			{
+				DirectX::BoundingBox box;
+				float smallestX = -x;
+				float smallestZ = -z;
+				XMVECTOR smallest = XMVectorSet(smallestX, -20.f, smallestZ, 0.0f);
+
+				float biggestX = smallestX + x;
+				float biggestZ = smallestZ + z;
+
+				XMVECTOR biggest = XMVectorSet(biggestX, 20.f, biggestZ, 0.0f);
+				DirectX::BoundingBox::CreateFromPoints(box, smallest, biggest);
+
+				double midX = (smallestX + biggestX) / 2;
+				double midZ = (smallestZ + biggestZ) / 2;
+				XMMATRIX midPoint = XMMatrixTranslation(midX, 0.0f, midZ);
+				box.Transform(objects[i], midPoint);
+				node->box = box;
+
 				node->upLeft = new Node();
 				if (depth + 1 < 3)
 					addTree(node->upLeft, depth + 1);
 				break;
 			}
-			case 3:
+			case 1:
 			{
 				node->upRight = new Node();
 				if (depth + 1 < 3)
 					addTree(node->upRight, depth + 1);
+				break;
+			}
+			case 2:
+			{
+				DirectX::BoundingBox box;
+				float smallestX = -x;
+				float smallestZ = -z;
+				XMVECTOR smallest = XMVectorSet(smallestX, -20.f, smallestZ, 0.0f);
+
+				float biggestX = smallestX + x;
+				float biggestZ = smallestZ + z;
+
+				XMVECTOR biggest = XMVectorSet(biggestX, 20.f, biggestZ, 0.0f);
+				DirectX::BoundingBox::CreateFromPoints(box, smallest, biggest);
+
+				double midX = (smallestX + biggestX) / 2;
+				double midZ = (smallestZ + biggestZ) / 2;
+				XMMATRIX midPoint = XMMatrixTranslation(midX, 0.0f, midZ);
+				box.Transform(objects[i], midPoint);
+				node->box = box;
+
+				node->downLeft = new Node();
+				if (depth + 1 < 3)
+					addTree(node->downLeft, depth + 1, x, z);
+				break;
+			}
+			case 3:
+			{
+				DirectX::BoundingBox box;
+				float smallestX = -x + x;
+				float smallestZ = -z;
+				XMVECTOR smallest = XMVectorSet(smallestX, -20.f, smallestZ, 0.0f);
+
+				float biggestX = smallestX + x;
+				float biggestZ = smallestZ + z;
+
+				XMVECTOR biggest = XMVectorSet(biggestX, 20.f, biggestZ, 0.0f);
+				DirectX::BoundingBox::CreateFromPoints(box, smallest, biggest);
+
+				double midX = (smallestX + biggestX) / 2;
+				double midZ = (smallestZ + biggestZ) / 2;
+				XMMATRIX midPoint = XMMatrixTranslation(midX, 0.0f, midZ);
+				box.Transform(objects[i], midPoint);
+				node->box = box;
+
+
+				node->downRight = new Node();
+				if (depth + 1 < 3)
+					addTree(node->downRight, depth + 1);
 				break;
 			}
 		}
@@ -59,9 +112,10 @@ bool Frustom::SetupFrustom(XMMATRIX projection, std::vector<BigSmall> bigSmall, 
 	
 	XMFLOAT3 origin = frosum.Origin;
 
-	float width = 900, height = 900;
-	rootNode = new Node();
-	addTree(rootNode, 0);
+	float x = 100;
+	float z = 100;
+
+	addTree(rootNode, 0, x, z);
 	AddcolliedWithBoundingBox(rootNode, 0, mesh);
 
 	return true;
