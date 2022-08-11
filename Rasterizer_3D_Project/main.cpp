@@ -11,7 +11,7 @@
 #include "Scene/modelHelper.h"
 #include "Scene/ModelReader/ObjHelper.h"
 #include "Camera.h"
-#include "Frustom.h"
+#include "QuadTree.h"
 
 float dt = 0;
 
@@ -163,10 +163,16 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsVie
 	immediateContext->PSSetShaderResources(3, 1, &SRVShadow);
 }
 
-void draw(ID3D11DeviceContext* immediateContext, vector<Mesh>& mesh)
+void draw(ID3D11DeviceContext* immediateContext, vector<Mesh>& mesh, std::vector<int> viewFrustom)
 {
-	for (int i = 1; i < mesh.size(); i++)
-		mesh[i].Draw();
+	for (int i = 0; i < viewFrustom.size(); i++)
+	{
+		if (viewFrustom[i] != 0)
+			mesh[viewFrustom[i]].Draw();
+	}
+
+	//for (int i = 1; i < mesh.size(); i++)
+	//	mesh[i].Draw();
 
 	immediateContext->VSSetShader(nullptr, nullptr, 0);
 	immediateContext->HSSetShader(nullptr, nullptr, 0);
@@ -479,7 +485,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	struct ParticlePosition particlePosition;
 	struct GetDirection getDirection;
 	struct GetDtTime getDTTime;
-	std::vector<BigSmall> bigSmall;
 
 	ID3D11HullShader* hShader;
 	ID3D11DomainShader* dShader;
@@ -562,10 +567,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	worldPos[0] = cubeMappingCamera.GetPositionFloat3();
 
 	for (int i = 0; i < modelName.size(); i++)
-		if (!objReader(modelName[i], mesh, device, immediateContext, bigSmall, worldPos[i], i))
+		if (!objReader(modelName[i], mesh, device, immediateContext, worldPos[i], i))
 			return -1;
 
-	//Frustom frustom;
+	QuadTree quadTree;
+	quadTree.SetupQuadTree(mesh);
 
 	//std::vector<XMFLOAT4X4> worldFrustom;
 	//for (int i = 0; i < worldPos.size(); i++)
@@ -606,12 +612,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		}
 		smallClear(immediateContext, dsView, gBufferRTV);
 
-		//immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
 		Render(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, lightBuffer,
 			camBuffer, lightData, camData, camera, gBufferRTV, playerPerspectiv, lightCamera, SRVShadow,
 			sampleStateShadow, hShader, dShader, rasterizerState, cubeMappingCamera);
-		draw(immediateContext, mesh);
+		draw(immediateContext, mesh, quadTree.AllInViewFrustom(camera.sendViewProjection(camera)));
 		RenderComputerShader(immediateContext, cShader, UAView, gBufferSRV, camData, camera, lightData,
 			lightCamera, lightBuffer, camBuffer);
 

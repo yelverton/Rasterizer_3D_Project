@@ -16,7 +16,7 @@ bool getModelInfo(std::vector<std::string>& fileName, std::vector<XMFLOAT3>& wor
 	else {
 		std::string line;
 		std::string temp;
-		for (int i = 0; i < 1; i++) {
+		for (int i = 0; i < 3; i++) {
 			myfile >> line;
 			fileName.push_back(line);
 			worldPos.push_back("");

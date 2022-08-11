@@ -63,7 +63,7 @@ int checkIfVertexExist(vector<XMINT3>& input, XMINT3 check)
 }
 
 bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, ID3D11DeviceContext* immediateContext, 
-	std::vector<BigSmall>& bigSmall, XMFLOAT3 worldPos, int unique)
+	XMFLOAT3 worldPos, int unique)
 {
 	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> ambientVec;
 	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> diffuseVec;
@@ -162,15 +162,6 @@ bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, 
 		}
 	}
 
-	indexCount.push_back(indices.size());
-	for (int i = 0; i < indexCount.size() - 1; i++)
-	{
-		indexCount[indexCount.size() - 1] -= indexCount[i];
-	}
-
-	mesh.push_back(Mesh(device, immediateContext, vertex, indices, startLocation, indexCount,
-		ambientVec, diffuseVec, specularVec, worldPos, unique));
-
 	float smallestX = 0.0f;
 	float smallestY = 0.0f;
 	float smallestZ = 0.0f;
@@ -196,9 +187,17 @@ bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, 
 		}
 	}
 
-	BigSmall tempBigSmall;
-	tempBigSmall.smallest = XMVectorSet(smallestX, smallestY, smallestZ, 0.0f);
-	tempBigSmall.biggest = XMVectorSet(biggestX, biggestY, biggestZ, 0.0f);
-	bigSmall.push_back(tempBigSmall);
+	indexCount.push_back(indices.size());
+	for (int i = 0; i < indexCount.size() - 1; i++)
+	{
+		indexCount[indexCount.size() - 1] -= indexCount[i];
+	}
+
+	XMVECTOR smallest = XMVectorSet(smallestX, smallestY, smallestZ, 0.0f);
+	XMVECTOR biggest = XMVectorSet(biggestX, biggestY, biggestZ, 0.0f);
+
+	mesh.push_back(Mesh(device, immediateContext, vertex, indices, startLocation, indexCount,
+		ambientVec, diffuseVec, specularVec, worldPos, unique, smallest, biggest));
+
 	return true;
 }

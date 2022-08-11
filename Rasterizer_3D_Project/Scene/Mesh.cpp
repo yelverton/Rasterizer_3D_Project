@@ -6,7 +6,7 @@ Mesh::Mesh(ID3D11Device* device, ID3D11DeviceContext* immediateContext, std::vec
 	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> ambient,
 	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> diffuse,
 	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> specular,
-	XMFLOAT3 world, int unique)
+	XMFLOAT3 world, int unique, XMVECTOR smallest, XMVECTOR biggest)
 {
 	this->device = device;
 	this->immediateContext = immediateContext;
@@ -25,6 +25,8 @@ Mesh::Mesh(ID3D11Device* device, ID3D11DeviceContext* immediateContext, std::vec
 
 	if (FAILED(SetupWorldMatrixs(world)))
 		ErrorLog::Log("Failed to setup worldBuffer!");
+
+	CreateBoundingBox(smallest, biggest);
 }
 
 void Mesh::Draw()
@@ -34,41 +36,13 @@ void Mesh::Draw()
 
 	immediateContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
 	immediateContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT::DXGI_FORMAT_R32_UINT, 0);
-
-	D3D11_MAPPED_SUBRESOURCE subData = {};
-	immediateContext->Map(theWorldBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
-	std::memcpy(subData.pData, &theWorld, sizeof(TheWorld));
-	immediateContext->Unmap(theWorldBuffer, 0);
-	immediateContext->VSSetConstantBuffers(0, 1, &theWorldBuffer);
+	SetContantBuffer();
 
 	for (int i = 0; i < next.size(); i++)
 	{
 		immediateContext->PSSetShaderResources(0, 1, ambient[i].GetAddressOf());
 		immediateContext->PSSetShaderResources(1, 1, diffuse[i].GetAddressOf());
 		immediateContext->PSSetShaderResources(2, 1, specular[i].GetAddressOf());
-		immediateContext->DrawIndexed(size[i], next[i], 0);
-	}
-
-
-}
-
-void Mesh::DrawCubeCapping()
-{
-	UINT stride = sizeof(SimpleVertex);
-	UINT offset = 0;
-
-	immediateContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
-	immediateContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT::DXGI_FORMAT_R32_UINT, 0);
-
-	D3D11_MAPPED_SUBRESOURCE subData = {};
-	immediateContext->Map(theWorldBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
-	std::memcpy(subData.pData, &theWorld, sizeof(TheWorld));
-	immediateContext->Unmap(theWorldBuffer, 0);
-	immediateContext->VSSetConstantBuffers(0, 1, &theWorldBuffer);
-
-	for (int i = 0; i < next.size(); i++)
-	{
-		immediateContext->PSSetShaderResources(0, 1, ambient[i].GetAddressOf());
 		immediateContext->DrawIndexed(size[i], next[i], 0);
 	}
 }
@@ -80,28 +54,13 @@ void Mesh::DrawPrePass()
 
 	immediateContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
 	immediateContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT::DXGI_FORMAT_R32_UINT, 0);
-
-	D3D11_MAPPED_SUBRESOURCE subData = {};
-	immediateContext->Map(theWorldBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
-	std::memcpy(subData.pData, &theWorld, sizeof(TheWorld));
-	immediateContext->Unmap(theWorldBuffer, 0);
-	immediateContext->VSSetConstantBuffers(0, 1, &theWorldBuffer);
+	SetContantBuffer();
 
 	for (int i = 0; i < next.size(); i++)
 	{
 		immediateContext->DrawIndexed(size[i], next[i], 0);
 	}
 }
-
-void Mesh::DrawOnlyWorld()
-{
-	D3D11_MAPPED_SUBRESOURCE subData = {};
-	immediateContext->Map(theWorldBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
-	std::memcpy(subData.pData, &theWorld, sizeof(TheWorld));
-	immediateContext->Unmap(theWorldBuffer, 0);
-	immediateContext->VSSetConstantBuffers(0, 1, &theWorldBuffer);
-}
-
 
 int Mesh::NrOfSubMashes()
 {
@@ -120,15 +79,11 @@ int Mesh::getUniqueId()
 	return unique;
 }
 
-DirectX::BoundingBox Mesh::getBB()
+DirectX::BoundingBox Mesh::getBoundingBox()
 {
-	return bb;
+	return boundingBox;
 }
 
-DirectX::BoundingBox Mesh::setBB(DirectX::BoundingBox bb)
-{
-	return bb;
-}
 
 Mesh::Mesh(const Mesh& mesh)
 {
@@ -210,4 +165,18 @@ HRESULT Mesh::SetupWorldMatrixs(XMFLOAT3 world)
 	return hr;
 }
 
+void Mesh::CreateBoundingBox(XMVECTOR smallest, XMVECTOR biggest)
+{
+	DirectX::BoundingBox::CreateFromPoints(boundingBox, smallest, biggest);
+	boundingBox.Transform(boundingBox, XMLoadFloat4x4(&theWorld.worldMatrix));
+}
+
+void Mesh::SetContantBuffer()
+{
+	D3D11_MAPPED_SUBRESOURCE subData = {};
+	immediateContext->Map(theWorldBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
+	std::memcpy(subData.pData, &theWorld, sizeof(TheWorld));
+	immediateContext->Unmap(theWorldBuffer, 0);
+	immediateContext->VSSetConstantBuffers(0, 1, &theWorldBuffer);
+}
 

@@ -105,7 +105,7 @@
     <ClCompile Include="Setup\CubeMappingHelper.cpp">
       <Filter>Source Files\Setup</Filter>
     </ClCompile>
-    <ClCompile Include="Frustom.cpp">
+    <ClCompile Include="QuadTree.cpp">
       <Filter>Source Files\Helper</Filter>
     </ClCompile>
   </ItemGroup>
@@ -193,7 +193,7 @@
     <ClInclude Include="Setup\CubeMappingHelper.h">
       <Filter>Header Files\Setup</Filter>
     </ClInclude>
-    <ClInclude Include="Frustom.h">
+    <ClInclude Include="QuadTree.h">
       <Filter>Header Files\Helper</Filter>
     </ClInclude>
   </ItemGroup>
