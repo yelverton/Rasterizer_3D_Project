@@ -31,7 +31,7 @@ protected:
     HRESULT CreateIndexBuffer(std::vector<DWORD> indexTriangle);
     HRESULT CreateVertexBuffer(std::vector<SimpleVertex> vertexTriangle);
     HRESULT SetupWorldMatrixs(XMFLOAT3 world);
-    void CreateBoundingBox(XMVECTOR smallest, XMVECTOR biggest);
+    void CreateBoundingBox(XMVECTOR smallest, XMVECTOR biggest, XMFLOAT3 world);
     void SetContantBuffer();
 public:
     Mesh(ID3D11Device* device, ID3D11DeviceContext* immediateContext, std::vector<SimpleVertex> vertexTriangle, 

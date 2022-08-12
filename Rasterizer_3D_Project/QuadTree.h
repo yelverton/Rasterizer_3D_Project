@@ -33,15 +33,16 @@ class QuadTree
 private: 
 	Node* rootNode;
 	std::vector<Mesh> inViewFrustom;
+	std::vector<int> found;
 	int nrOf = 0;
 	double inside = 0;
+	double collidedWithBox = 0;
 
 protected:
 	void SetupQuadTreeEnpty(Node* node, int depth, float x, float z);
-	void SetupBoundingBoxCenter(Node*& node, float& x, float& z, int index);
-	void SetupBoundingBox(Node*& node, float x, float z);
-	void ColliedWithQuadBox(Node* node, int depth, std::vector<Mesh> mesh);
-	void ColliedWithViewFrustom(Node* node, int depth, DirectX::BoundingFrustum frosum);
+	void SetupBoundingBox(Node*& node);
+	void ColliedWithQuadBox(Node* node, int depth, std::vector<Mesh>& mesh);
+	void ColliedWithViewFrustom(Node* node, int depth, DirectX::BoundingFrustum& frosum);
 public:
 	bool SetupQuadTree(std::vector<Mesh> mesh);
 	std::vector<int> AllInViewFrustom(XMMATRIX viewProj);

@@ -1,64 +1,64 @@
 #include "QuadTree.h"
+#include "Helper\ErrorLog.h"
 
-void QuadTree::SetupBoundingBoxCenter(Node*& node, float& x, float& z, int index)
+void QuadTree::SetupBoundingBox(Node*& node)
 {
-	if (index == 0) // top left
-	{
-		x = node->boundingBoxCenter.x - x;
-		z = node->boundingBoxCenter.y + z;
-	}
-	else if (index == 1) // top right
-	{
-		x = node->boundingBoxCenter.x + x;
-		z = node->boundingBoxCenter.y + z;
-	}
-	else if (index == 2) // bottom left
-	{
-		x = node->boundingBoxCenter.x - x;
-		z = node->boundingBoxCenter.y - z;
-	}
-	else if (index == 3)
-	{
-		x = node->boundingBoxCenter.x + x;
-		z = node->boundingBoxCenter.y - z;
-	}
-}
-
-void QuadTree::SetupBoundingBox(Node*& node, float x, float z)
-{
-	// create size of boundingBox
-	XMVECTOR smallest = XMVectorSet(0.0f, -20.f, 0.0f, 0.0f);
-	XMVECTOR biggest = XMVectorSet(node->boundingBoxSize.x, 20.0f, node->boundingBoxSize.y, 0.0f);
-
-	// setting up nodePoint
 	node->nodePoint = new NodePoint();
+	node->nodePoint->box.Center = XMFLOAT3((float)node->boundingBoxCenter.x, -10.0f, (float)node->boundingBoxCenter.y);
+	//node->nodePoint->box.Extents = XMFLOAT3(node->boundingBoxCenter.x, -10.0f, float(node->boundingBoxCenter.y + node->boundingBoxSize.y));
+	node->nodePoint->box.Extents = XMFLOAT3(node->boundingBoxSize.y, node->boundingBoxSize.y, node->boundingBoxSize.y);
+
+	/*XMFLOAT3 world = XMFLOAT3((float)node->boundingBoxCenter.x, 0.0f, (float)node->boundingBoxCenter.y);
+	XMVECTOR smallest = XMVectorSet(-node->boundingBoxSize.x, -20.f, -node->boundingBoxSize.y, 0.0f);
+	XMVECTOR biggest = XMVectorSet(node->boundingBoxSize.x, 30.0f, node->boundingBoxSize.y, 0.0f);
+
 	DirectX::BoundingBox::CreateFromPoints(node->nodePoint->box, smallest, biggest);
+	DirectX::XMMATRIX tempScale = DirectX::XMMatrixScaling(0.0f, 0.0f, 0.0f);
+	DirectX::XMMATRIX tempRota = DirectX::XMMatrixRotationRollPitchYaw(0.0f, 0.0f, 0.0f);
+	DirectX::XMMATRIX tempTrans = DirectX::XMMatrixTranslation(world.x, world.y, world.z);
 
 	DirectX::XMMATRIX WMBB = XMMatrixIdentity();
-	XMMATRIX midPoint = XMMatrixTranslation(x, 0.0f, z);
+	WMBB = DirectX::XMMatrixMultiply(tempScale, tempRota);
+	WMBB = DirectX::XMMatrixMultiply(WMBB, tempTrans);
 
-	/*node->nodePoint->box.Transform(node->nodePoint->box, )*/
-	node->nodePoint->box.Transform(node->nodePoint->box, midPoint);
+	node->nodePoint->box.Transform(node->nodePoint->box, WMBB);*/
+
 }
 
+bool QuadTree::SetupQuadTree(std::vector<Mesh> mesh)
+{
+	float x = 64.0f;
+	float z = 64.0f;
 
+	rootNode = new Node();
+	rootNode->boundingBoxCenter = XMFLOAT2(0.0f, 0.0f);
+
+	SetupQuadTreeEnpty(rootNode, 0, x, z);
+
+	ColliedWithQuadBox(rootNode, 0, mesh);
+
+	//for (int i = 0; i < mesh.size(); i++)
+	//	ErrorLog::Log(std::to_string(mesh[i].getBoundingBox().Center.y));
+
+	ErrorLog::Log(std::to_string(inside));
+	ErrorLog::Log(std::to_string(collidedWithBox));
+	for (int i = 0; i < found.size(); i++)
+		ErrorLog::Log(std::to_string(found[i]));
+
+	return true;
+}
 
 void QuadTree::SetupQuadTreeEnpty(Node* node, int depth, float x, float z)
 {
-	node->depth = depth;
-
-	if (depth > 0)
-	{
-		node->boundingBoxCenter = XMFLOAT2(x, z);
-	}
-
-	x = fabsf(x);
-	z = fabsf(z);
-
 	node->boundingBoxSize = XMFLOAT2(x, z);
+	node->depth = depth;
+	
+	x *= 0.5f;
+	z *= 0.5f;
 
-	x /= 2;
-	z /= 2;
+	// Bootom left corner
+	float xCenter = x;
+	float zCenter = z;
 
 	for (int i = 0; i < 4; i++)
 	{
@@ -66,84 +66,76 @@ void QuadTree::SetupQuadTreeEnpty(Node* node, int depth, float x, float z)
 		{
 			case 0: // Top left
 			{
-				float xLeft = x;
-				float zLeft = z;
-
-				SetupBoundingBoxCenter(node, xLeft, zLeft, i);
-
 				if (depth > 0)
 				{
-					SetupBoundingBox(node, xLeft, zLeft);
+					SetupBoundingBox(node);
 					nrOf++;
 				}
 
 				if (depth + 1 < 3)
 				{
 					node->upLeft = new Node();
-					SetupQuadTreeEnpty(node->upLeft, depth + 1, xLeft, zLeft);
+					xCenter = node->boundingBoxCenter.x - x;
+					zCenter = node->boundingBoxCenter.y + x;
+					node->upLeft->boundingBoxCenter = XMFLOAT2(xCenter, zCenter);
+					SetupQuadTreeEnpty(node->upLeft, depth + 1, x, z);
 				}
 
 				break;
 			}
 			case 1: // Top right
 			{
-				float xLeft = x;
-				float zLeft = z;
-
-				SetupBoundingBoxCenter(node, xLeft, zLeft, i);
-
 				if (depth > 0)
 				{
-					SetupBoundingBox(node, xLeft, zLeft);
+					SetupBoundingBox(node);
 					nrOf++;
 				}
 
 				if (depth + 1 < 3)
 				{
 					node->upRight = new Node();
-					SetupQuadTreeEnpty(node->upRight, depth + 1, xLeft, zLeft);
+					xCenter = node->boundingBoxCenter.x + x;
+					zCenter = node->boundingBoxCenter.y + z;
+					node->upRight->boundingBoxCenter = XMFLOAT2(xCenter, zCenter);
+					SetupQuadTreeEnpty(node->upRight, depth + 1, x, z);
 				}
 
 				break;
 			}
 			case 2: // bottom left
 			{
-				float xLeft = x;
-				float zLeft = z;
-
-				SetupBoundingBoxCenter(node, xLeft, zLeft, i);
-
 				if (depth > 0)
 				{
-					SetupBoundingBox(node, xLeft, zLeft);
+					SetupBoundingBox(node);
 					nrOf++;
 				}
 
 				if (depth + 1 < 3)
 				{
 					node->downLeft = new Node();
-					SetupQuadTreeEnpty(node->downLeft, depth + 1, xLeft, zLeft);
+					xCenter = node->boundingBoxCenter.x - x;
+					zCenter = node->boundingBoxCenter.y - z;
+					node->downLeft->boundingBoxCenter = XMFLOAT2(xCenter, zCenter);
+					SetupQuadTreeEnpty(node->downLeft, depth + 1, x, z);
 				}
 
 				break;
 			}
 			case 3:
 			{
-				float xLeft = x;
-				float zLeft = z;
-
-				SetupBoundingBoxCenter(node, xLeft, zLeft, i);
-
 				if (depth > 0)
 				{
-					SetupBoundingBox(node, xLeft, zLeft);
+					SetupBoundingBox(node);
 					nrOf++;
 				}
 
 				if (depth + 1 < 3)
 				{
 					node->downRight = new Node();
-					SetupQuadTreeEnpty(node->downRight, depth + 1, xLeft, zLeft);
+					xCenter = node->boundingBoxCenter.x + x;
+					zCenter = node->boundingBoxCenter.y - z;
+					node->downRight->boundingBoxCenter = XMFLOAT2(xCenter, zCenter);
+					SetupQuadTreeEnpty(node->downRight, depth + 1, x, z);
 				}
 
 				break;
@@ -153,128 +145,69 @@ void QuadTree::SetupQuadTreeEnpty(Node* node, int depth, float x, float z)
 
 }
 
-void QuadTree::ColliedWithQuadBox(Node* node, int depth, std::vector<Mesh> mesh)
+void QuadTree::ColliedWithQuadBox(Node* node, int depth, std::vector<Mesh>& mesh)
 {
+
 	for (int i = 0; i < 4; i++)
 	{
 		switch (i)
 		{
 			case 0:
 			{
-				if (depth != 0)
+				if (depth + 1 < 3)
 				{
-					for (int i = 0; i < mesh.size(); i++)
-					{
-						if (mesh[i].getBoundingBox().Contains(node->nodePoint->box) != 0)
-						{
-							if (depth < 2)
-							{
-								node->upLeft = new Node();
-								ColliedWithQuadBox(node->upLeft, depth + 1, mesh);
-								break;
-							}
-
-							if (depth == 2)
-							{
-								node->nodePoint->mesh.push_back(mesh[i]);
-								inside++;
-							}
-						}
-					}
+					ColliedWithQuadBox(node->upLeft, depth + 1, mesh);
 				}
 
 				break;
 			}
 			case 1:
 			{
-				if (depth != 0)
+				if (depth + 1 < 3)
 				{
-					for (int i = 0; i < mesh.size(); i++)
-					{
-						if (mesh[i].getBoundingBox().Contains(node->nodePoint->box) != 0)
-						{
-							if (depth < 2)
-							{
-								node->upRight = new Node();
-								ColliedWithQuadBox(node->upRight, depth + 1, mesh);
-								break;
-							}
-
-							if (depth == 2)
-								node->nodePoint->mesh.push_back(mesh[i]);
-						}
-					}
+					ColliedWithQuadBox(node->upRight, depth + 1, mesh);
 				}
 
 				break;
 			}
 			case 2:
 			{
-				if (depth != 0)
+				if (depth + 1 < 3)
 				{
-					for (int i = 0; i < mesh.size(); i++)
-					{
-						if (mesh[i].getBoundingBox().Contains(node->nodePoint->box) != 0)
-						{
-							if (depth < 2)
-							{
-								node->downLeft = new Node();
-								ColliedWithQuadBox(node->downLeft, depth + 1, mesh);
-								break;
-							}
-
-							if (depth == 2)
-								node->nodePoint->mesh.push_back(mesh[i]);
-						}
-					}
+					ColliedWithQuadBox(node->downLeft, depth + 1, mesh);
 				}
 
 				break;
 			}
 			case 3:
 			{
-				if (depth != 0)
+				if (depth + 1 < 3)
 				{
-					for (int i = 0; i < mesh.size(); i++)
-					{
-						if (mesh[i].getBoundingBox().Contains(node->nodePoint->box) != 0)
-						{
-							if (depth < 2)
-							{
-								node->downRight = new Node();
-								ColliedWithQuadBox(node->downRight, depth + 1, mesh);
-								break;
-							}
-
-							if (depth == 2)
-								node->nodePoint->mesh.push_back(mesh[i]);
-						}
-					}
+					ColliedWithQuadBox(node->downRight, depth + 1, mesh);
 				}
 
 				break;
 			}
 		}
 	}
+
+	if (node->nodePoint != nullptr && depth > 1)
+	{
+		inside++;
+		for (int i = 0; i < mesh.size(); i++)
+		{
+			if (mesh[i].getBoundingBox().Contains(node->nodePoint->box) != 0)
+			{
+				node->nodePoint->mesh.push_back(mesh[i]);
+				collidedWithBox++;
+				found.push_back(mesh[i].getUniqueId());
+			}
+		}
+	}
 }
 
-bool QuadTree::SetupQuadTree(std::vector<Mesh> mesh)
-{
-	float x = 50.0f;
-	float z = 50.0f;
-	rootNode = new Node();
-	rootNode->boundingBoxCenter = XMFLOAT2(0.0f, 0.0f);
 
-	SetupQuadTreeEnpty(rootNode, 0, x, z);
-
-	ColliedWithQuadBox(rootNode, 0, mesh);
-	
-	
-	
-	return true;
-}
-
-void QuadTree::ColliedWithViewFrustom(Node* node, int depth, DirectX::BoundingFrustum frosum)
+void QuadTree::ColliedWithViewFrustom(Node* node, int depth, DirectX::BoundingFrustum& frosum)
 {
 	for (int i = 0; i < 4; i++)
 	{
@@ -282,53 +215,23 @@ void QuadTree::ColliedWithViewFrustom(Node* node, int depth, DirectX::BoundingFr
 		{
 			case 0:
 			{
-				if (depth > 1)
+				if (depth + 1 < 3)
 				{
-					if (frosum.Contains(node->nodePoint->box))
-					{
-						for (int i = 0; i < node->nodePoint->mesh.size(); i++)
-						{
-							inViewFrustom.push_back(node->nodePoint->mesh[i]);
-						}
-					}
-				}
-				else
-				{
-						ColliedWithViewFrustom(node->upLeft, depth + 1, frosum);
+					ColliedWithViewFrustom(node->upLeft, depth + 1, frosum);
 				}
 
 				break;
 			}
 			case 1:
 			{
-				if (depth > 1)
-				{
-					if (frosum.Contains(node->nodePoint->box))
-					{
-						for (int i = 0; i < node->nodePoint->mesh.size(); i++)
-						{
-							inViewFrustom.push_back(node->nodePoint->mesh[i]);
-						}
-					}
-				}
-				else
+				if (depth + 1 < 3)
 				{
 					ColliedWithViewFrustom(node->upRight, depth + 1, frosum);
 				}
 			}
 			case 2:
 			{
-				if (depth > 1)
-				{
-					if (frosum.Contains(node->nodePoint->box))
-					{
-						for (int i = 0; i < node->nodePoint->mesh.size(); i++)
-						{
-							inViewFrustom.push_back(node->nodePoint->mesh[i]);
-						}
-					}
-				}
-				else
+				if (depth + 1 < 3)
 				{
 					ColliedWithViewFrustom(node->downLeft, depth + 1, frosum);
 				}
@@ -337,17 +240,7 @@ void QuadTree::ColliedWithViewFrustom(Node* node, int depth, DirectX::BoundingFr
 			}
 			case 3:
 			{
-				if (depth > 1)
-				{
-					if (frosum.Contains(node->nodePoint->box))
-					{
-						for (int i = 0; i < node->nodePoint->mesh.size(); i++)
-						{
-							inViewFrustom.push_back(node->nodePoint->mesh[i]);
-						}
-					}
-				}
-				else
+				if (depth + 1 < 3)
 				{
 					ColliedWithViewFrustom(node->downRight, depth + 1, frosum);
 				}
@@ -356,6 +249,16 @@ void QuadTree::ColliedWithViewFrustom(Node* node, int depth, DirectX::BoundingFr
 		}
 	}
 
+	if (node->nodePoint != nullptr && depth > 1)
+	{
+		for (int i = 0; i < node->nodePoint->mesh.size(); i++)
+		{
+			if (frosum.Contains(node->nodePoint->mesh[i].getBoundingBox()) != 0)
+			{
+				inViewFrustom.push_back(node->nodePoint->mesh[i]);
+			}
+		}
+	}
 
 }
 

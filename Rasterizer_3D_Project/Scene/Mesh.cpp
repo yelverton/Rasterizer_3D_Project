@@ -26,7 +26,7 @@ Mesh::Mesh(ID3D11Device* device, ID3D11DeviceContext* immediateContext, std::vec
 	if (FAILED(SetupWorldMatrixs(world)))
 		ErrorLog::Log("Failed to setup worldBuffer!");
 
-	CreateBoundingBox(smallest, biggest);
+	CreateBoundingBox(smallest, biggest, world);
 }
 
 void Mesh::Draw()
@@ -94,10 +94,11 @@ Mesh::Mesh(const Mesh& mesh)
 	this->ambient = mesh.ambient;
 	this->diffuse = mesh.diffuse;
 	this->specular = mesh.specular;
+	this->boundingBox = mesh.boundingBox;
+	this->theWorldBuffer = mesh.theWorldBuffer;
 	this->size = mesh.size;
 	this->next = mesh.next;
 	this->theWorld = mesh.theWorld;
-	this->theWorldBuffer = mesh.theWorldBuffer;
 	this->unique = mesh.unique;
 }
 
@@ -165,10 +166,21 @@ HRESULT Mesh::SetupWorldMatrixs(XMFLOAT3 world)
 	return hr;
 }
 
-void Mesh::CreateBoundingBox(XMVECTOR smallest, XMVECTOR biggest)
+void Mesh::CreateBoundingBox(XMVECTOR smallest, XMVECTOR biggest, XMFLOAT3 world)
 {
 	DirectX::BoundingBox::CreateFromPoints(boundingBox, smallest, biggest);
-	boundingBox.Transform(boundingBox, XMLoadFloat4x4(&theWorld.worldMatrix));
+	DirectX::XMMATRIX tempScale = DirectX::XMMatrixScaling(0.0f, 0.0f, 0.0f);
+	DirectX::XMMATRIX tempRota = DirectX::XMMatrixRotationRollPitchYaw(0.0f, 0.0f, 0.0f);
+	DirectX::XMMATRIX tempTrans = DirectX::XMMatrixTranslation(world.x, world.y, world.z);
+
+	DirectX::XMMATRIX WMBB = XMMatrixIdentity();
+	WMBB = DirectX::XMMatrixMultiply(tempScale, tempRota);
+	WMBB = DirectX::XMMatrixMultiply(WMBB, tempTrans);
+
+	boundingBox.Transform(boundingBox, WMBB);
+
+	/*boundingBox.Transform(boundingBox, XMLoadFloat4x4(&theWorld.worldMatrix));*/
+
 }
 
 void Mesh::SetContantBuffer()

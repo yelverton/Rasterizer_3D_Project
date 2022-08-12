@@ -33,6 +33,8 @@ bool getModelInfo(std::vector<std::string>& fileName, std::vector<XMFLOAT3>& wor
 		}
 	}
 
+
+
 	return true;
 }
 

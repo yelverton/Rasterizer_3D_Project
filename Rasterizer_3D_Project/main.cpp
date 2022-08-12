@@ -163,13 +163,18 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsVie
 	immediateContext->PSSetShaderResources(3, 1, &SRVShadow);
 }
 
-void draw(ID3D11DeviceContext* immediateContext, vector<Mesh>& mesh, std::vector<int> viewFrustom)
+void draw(ID3D11DeviceContext* immediateContext, vector<Mesh>& mesh, std::vector<int> viewFrustom, Camera camera)
 {
 	for (int i = 0; i < viewFrustom.size(); i++)
 	{
 		if (viewFrustom[i] != 0)
 			mesh[viewFrustom[i]].Draw();
 	}
+
+	OutputDebugString(L"fps: ");
+	OutputDebugString(std::to_wstring(viewFrustom.size()).c_str());
+	OutputDebugString(L"\n");
+
 
 	//for (int i = 1; i < mesh.size(); i++)
 	//	mesh[i].Draw();
@@ -615,7 +620,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		Render(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, lightBuffer,
 			camBuffer, lightData, camData, camera, gBufferRTV, playerPerspectiv, lightCamera, SRVShadow,
 			sampleStateShadow, hShader, dShader, rasterizerState, cubeMappingCamera);
-		draw(immediateContext, mesh, quadTree.AllInViewFrustom(camera.sendViewProjection(camera)));
+		draw(immediateContext, mesh, quadTree.AllInViewFrustom(camera.sendViewProjection(camera)), camera);
 		RenderComputerShader(immediateContext, cShader, UAView, gBufferSRV, camData, camera, lightData,
 			lightCamera, lightBuffer, camBuffer);
 

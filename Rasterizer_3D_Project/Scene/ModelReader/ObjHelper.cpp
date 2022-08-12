@@ -89,6 +89,7 @@ bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, 
 
 	vector<XMINT3> tempINT3; 
 	vector<XMINT3> f_ID;
+	XMFLOAT3 test = worldPos;
 
 	std::string mtlFile, readArea, line, word;
 	int indicesCounter = 0;
