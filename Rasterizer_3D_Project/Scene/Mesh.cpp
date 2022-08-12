@@ -169,7 +169,7 @@ HRESULT Mesh::SetupWorldMatrixs(XMFLOAT3 world)
 void Mesh::CreateBoundingBox(XMVECTOR smallest, XMVECTOR biggest, XMFLOAT3 world)
 {
 	DirectX::BoundingBox::CreateFromPoints(boundingBox, smallest, biggest);
-	DirectX::XMMATRIX tempScale = DirectX::XMMatrixScaling(0.0f, 0.0f, 0.0f);
+	DirectX::XMMATRIX tempScale = DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f);
 	DirectX::XMMATRIX tempRota = DirectX::XMMatrixRotationRollPitchYaw(0.0f, 0.0f, 0.0f);
 	DirectX::XMMATRIX tempTrans = DirectX::XMMatrixTranslation(world.x, world.y, world.z);
 

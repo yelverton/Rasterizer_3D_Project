@@ -4,17 +4,17 @@
 void QuadTree::SetupBoundingBox(Node*& node)
 {
 	node->nodePoint = new NodePoint();
-	node->nodePoint->box.Center = XMFLOAT3((float)node->boundingBoxCenter.x, 0.0f, (float)node->boundingBoxCenter.y);
-	node->nodePoint->box.Extents = XMFLOAT3(node->boundingBoxCenter.x, 10.0f, float(node->boundingBoxCenter.y + node->boundingBoxSize.y));
+	//node->nodePoint->box.Center = XMFLOAT3((float)node->boundingBoxCenter.x, 0.0f, (float)node->boundingBoxCenter.y);
+	//node->nodePoint->box.Extents = XMFLOAT3(node->boundingBoxCenter.x, 10.0f, float(node->boundingBoxCenter.y + node->boundingBoxSize.y));
 	/*node->nodePoint->box.Extents = XMFLOAT3(node->boundingBoxSize.y, node->boundingBoxSize.y, node->boundingBoxSize.y);*/
 
-	/*XMFLOAT3 world = XMFLOAT3(node->boundingBoxCenter.x, 0.0f, node->boundingBoxCenter.y);
+	XMFLOAT3 world = XMFLOAT3(node->boundingBoxCenter.x, 0.0f, node->boundingBoxCenter.y);
 	XMVECTOR smallest = XMVectorSet(-(node->boundingBoxSize.x), -20.f, -(node->boundingBoxSize.y), 0.0f);
 	XMVECTOR biggest = XMVectorSet(node->boundingBoxSize.x, 30.0f, node->boundingBoxSize.y, 0.0f);
 
 	DirectX::BoundingBox box;
 	DirectX::BoundingBox::CreateFromPoints(box, smallest, biggest);
-	DirectX::XMMATRIX tempScale = DirectX::XMMatrixScaling(0.0f, 0.0f, 0.0f);
+	DirectX::XMMATRIX tempScale = DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f);
 	DirectX::XMMATRIX tempRota = DirectX::XMMatrixRotationRollPitchYaw(0.0f, 0.0f, 0.0f);
 	DirectX::XMMATRIX tempTrans = DirectX::XMMatrixTranslation(world.x, world.y, world.z);
 
@@ -22,8 +22,8 @@ void QuadTree::SetupBoundingBox(Node*& node)
 	WMBB = DirectX::XMMatrixMultiply(tempScale, tempRota);
 	WMBB = DirectX::XMMatrixMultiply(WMBB, tempTrans);
 
-	node->nodePoint->box.Transform(box, WMBB);*/
-	//node->nodePoint->box = box;
+	box.Transform(box, WMBB);
+	node->nodePoint->box = box;
 }
 
 bool QuadTree::SetupQuadTree(std::vector<Mesh> mesh)
