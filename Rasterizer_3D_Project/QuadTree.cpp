@@ -41,10 +41,10 @@ bool QuadTree::SetupQuadTree(std::vector<Mesh> mesh)
 	//for (int i = 0; i < mesh.size(); i++)
 	//	ErrorLog::Log(std::to_string(mesh[i].getBoundingBox()));
 
-	ErrorLog::Log(std::to_string(inside));
-	ErrorLog::Log(std::to_string(collidedWithBox));
-	for (int i = 0; i < found.size(); i++)
-		ErrorLog::Log(std::to_string(found[i]));
+	//ErrorLog::Log(std::to_string(inside));
+	//ErrorLog::Log(std::to_string(collidedWithBox));
+	//for (int i = 0; i < found.size(); i++)
+	//	ErrorLog::Log(std::to_string(found[i]));
 
 	return true;
 }
@@ -267,8 +267,8 @@ std::vector<int> QuadTree::AllInViewFrustom(XMMATRIX viewProj)
 {
 	inViewFrustom.clear();
 	DirectX::BoundingFrustum frosum;
-	//DirectX::XMMATRIX inverseViewMatrix = DirectX::XMMatrixInverse(nullptr, viewProj);
-	DirectX::BoundingFrustum::CreateFromMatrix(frosum, viewProj);
+	DirectX::XMMATRIX inverseViewMatrix = DirectX::XMMatrixInverse(nullptr, viewProj);
+	DirectX::BoundingFrustum::CreateFromMatrix(frosum, viewProj, false);
 
 	ColliedWithViewFrustom(rootNode, 0, frosum);
 	//rootNode->box.CreateFromPoints()

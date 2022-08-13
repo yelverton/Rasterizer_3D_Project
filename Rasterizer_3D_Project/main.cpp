@@ -93,7 +93,7 @@ void ShadowPrePass(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView
 void drawPrePass(ID3D11DeviceContext* immediateContext, vector<Mesh> mesh)
 {
 	DirectX::XMMATRIX Identity = XMMatrixIdentity();
-	for (int i = 0; i < mesh.size() - 1; i++)
+	for (int i = 0; i < mesh.size(); i++)
 	{
 		mesh[i].Draw();
 	}

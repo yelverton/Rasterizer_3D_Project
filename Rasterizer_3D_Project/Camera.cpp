@@ -6,7 +6,7 @@ Camera::Camera()
 	this->posVector = XMLoadFloat3(&this->pos);
 	this->rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	this->rotVector = XMLoadFloat3(&this->rot);
-	this->projection = DirectX::XMMatrixPerspectiveFovLH(0.8f, 1024.f / 1024.f, 0.1f, 100.0f);
+	this->projection = DirectX::XMMatrixPerspectiveFovLH(0.8f, 1024.f / 1024.f, 0.1f, 30.0f);
 	this->UpdateViewMatrix();
 }
 
@@ -247,7 +247,9 @@ void Camera::sendViewProjection(Camera& cam, int vertexShaderPos)
 XMMATRIX Camera::sendViewProjection(Camera& cam)
 {
 	cam.UpdateViewMatrix();
-	return cam.GetViewMatrix() * cam.GetProjection();
+
+	XMMATRIX send = DirectX::XMMatrixPerspectiveFovLH(1.0f, 1024.f / 1024.f, 0.1f, 30.0f);
+	return cam.GetViewMatrix() * send;
 }
 
 void Camera::sendViewProjectionGS(Camera& cam, int vertexShaderPos)
