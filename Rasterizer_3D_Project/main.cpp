@@ -171,11 +171,6 @@ void draw(ID3D11DeviceContext* immediateContext, vector<Mesh>& mesh, std::vector
 			mesh[viewFrustom[i]].Draw();
 	}
 
-	OutputDebugString(L"fps: ");
-	OutputDebugString(std::to_wstring(viewFrustom.size()).c_str());
-	OutputDebugString(L"\n");
-
-
 	//for (int i = 1; i < mesh.size(); i++)
 	//	mesh[i].Draw();
 
