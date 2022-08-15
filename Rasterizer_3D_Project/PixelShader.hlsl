@@ -2,6 +2,9 @@ Texture2D Ambient : register(t0);
 Texture2D Deffuse : register(t1);
 Texture2D Specular : register(t2);
 Texture2D DepthTexture : register(t3);
+Texture2D DepthTextureTwo : register(t4);
+Texture2D DepthTextureThree : register(t5);
+Texture2D DepthTextureFour : register(t6);
 SamplerState Sampler : SAMPLER : register(s0);
 SamplerState SampleDepth : SAMPLER : register(s1);
 
@@ -54,9 +57,9 @@ vsOutPut main(PixelShaderInput input) : SV_TARGET
 	float Epsilon = 0.00125f;
 	
 	float t0 = (DepthTexture.Sample(SampleDepth, smTex + float2(0.0f, 0.0f)).r + Epsilon < depth) ? 0.0f : 1.0f;
-	float t1 = (DepthTexture.Sample(SampleDepth, smTex2 + float2(0.0f, 0.0f)).r + Epsilon < depth2) ? 0.0f : 1.0f;
-	float t2 = (DepthTexture.Sample(SampleDepth, smTex3 + float2(0.0f, 0.0f)).r + Epsilon < depth3) ? 0.0f : 1.0f;
-	float t3 = (DepthTexture.Sample(SampleDepth, smtex4 + float2(0.0f, 0.0f)).r + Epsilon < depth4) ? 0.0f : 1.0f;
+	float t1 = (DepthTextureTwo.Sample(SampleDepth, smTex2 + float2(0.0f, 0.0f)).r + Epsilon < depth2) ? 0.0f : 1.0f;
+	float t2 = (DepthTextureThree.Sample(SampleDepth, smTex3 + float2(0.0f, 0.0f)).r + Epsilon < depth3) ? 0.0f : 1.0f;
+	float t3 = (DepthTextureFour.Sample(SampleDepth, smtex4 + float2(0.0f, 0.0f)).r + Epsilon < depth4) ? 0.0f : 1.0f;
 	
 	float2 texelPosition = smTex * 1024.0f;
 

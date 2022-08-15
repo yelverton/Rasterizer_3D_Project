@@ -4,9 +4,10 @@
 #include <string>
 #include <iostream>
 
-bool CreateDepthStencil(ID3D11Device* device, UINT width, UINT height, ID3D11DepthStencilView*& dsViewShadow,
-	ID3D11ShaderResourceView*& SRVShadow)
+bool CreateDepthStencil(ID3D11Device* device, UINT width, UINT height, ID3D11DepthStencilView* dsViewShadow[],
+	ID3D11ShaderResourceView* SRVShadow[])
 {
+	// Texture
 	D3D11_TEXTURE2D_DESC textureDesc = {};
 	textureDesc.Width = (width * 2);
 	textureDesc.Height = (height * 2);
@@ -20,38 +21,44 @@ bool CreateDepthStencil(ID3D11Device* device, UINT width, UINT height, ID3D11Dep
 	textureDesc.CPUAccessFlags = 0;
 	textureDesc.MiscFlags = 0;
 
-	ID3D11Texture2D* dsTexture;
-	if (FAILED(device->CreateTexture2D(&textureDesc, nullptr, &dsTexture)))
-	{
-		ErrorLog::Log("Failed to create depth stencil texture!");
-		return false;
-	}
-
+	// DSView
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
 	depthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
 	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	depthStencilViewDesc.Texture2D.MipSlice = 0;
 	depthStencilViewDesc.Flags = 0;
 
-	if (FAILED(device->CreateDepthStencilView(dsTexture, &depthStencilViewDesc, &dsViewShadow)))
-	{
-		ErrorLog::Log("Failed to create depth stencil View for shadow!");
-		return false;
-	}
-
+	// SRV
 	D3D11_SHADER_RESOURCE_VIEW_DESC shaderDesc;
 	shaderDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	shaderDesc.Format = DXGI_FORMAT_R32_FLOAT;
 	shaderDesc.Texture2D.MostDetailedMip = 0;
 	shaderDesc.Texture2D.MipLevels = 1;
-
-	if (FAILED(device->CreateShaderResourceView(dsTexture, &shaderDesc, &SRVShadow)))
+	
+	for (int i = 0; i < 4; i++)
 	{
-		ErrorLog::Log("Failed to create SRV!");
-		return false;
+		ID3D11Texture2D* dsTexture;
+		if (FAILED(device->CreateTexture2D(&textureDesc, nullptr, &dsTexture)))
+		{
+			ErrorLog::Log("Failed to create depth stencil texture!");
+			return false;
+		}
+
+		if (FAILED(device->CreateDepthStencilView(dsTexture, &depthStencilViewDesc, &dsViewShadow[i])))
+		{
+			ErrorLog::Log("Failed to create depth stencil View for shadow!");
+			return false;
+		}
+
+
+		if (FAILED(device->CreateShaderResourceView(dsTexture, &shaderDesc, &SRVShadow[i])))
+		{
+			ErrorLog::Log("Failed to create SRV!");
+			return false;
+		}
+		dsTexture->Release();
 	}
 
-	dsTexture->Release();
 	return true;
 }
 
@@ -132,7 +139,7 @@ void SetViewportShadow(D3D11_VIEWPORT& viewportShadow, UINT width, UINT height)
 }
 
 bool SetupShadowHelper(ID3D11Device*& device, ID3D11DeviceContext*& immediateContext, D3D11_VIEWPORT& viewportShadow, UINT width, UINT height,
-	ID3D11DepthStencilView*& dsViewShadow, ID3D11ShaderResourceView*& SRVShadow, ID3D11RenderTargetView* gBufferRTV[6],
+	ID3D11DepthStencilView* dsViewShadow[], ID3D11ShaderResourceView* SRVShadow[], ID3D11RenderTargetView* gBufferRTV[6],
 	ID3D11ShaderResourceView* gBufferSRV[6], IDXGISwapChain*& swapChain, ID3D11UnorderedAccessView*& UAView)
 {
 	// [Shadow Stage] Depth stencil
