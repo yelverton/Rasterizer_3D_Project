@@ -6,7 +6,7 @@ Camera::Camera()
 	this->posVector = XMLoadFloat3(&this->pos);
 	this->rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	this->rotVector = XMLoadFloat3(&this->rot);
-	this->projection = DirectX::XMMatrixPerspectiveFovLH(0.8f, 1024.f / 1024.f, 0.1f, 30.0f);
+	this->projection = DirectX::XMMatrixPerspectiveFovLH(0.8f, 1024.f / 1024.f, 0.1f, 100.0f);
 	this->UpdateViewMatrix();
 }
 

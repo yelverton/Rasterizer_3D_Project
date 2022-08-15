@@ -127,7 +127,8 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsVie
 	ID3D11Buffer* lightBuffer, ID3D11Buffer* camBuffer, struct LightData lightData, struct CamData camData, Camera camera,
 	ID3D11RenderTargetView* gBufferRTV[], int playerPerspectiv, Camera lightCamera, ID3D11ShaderResourceView* SRVShadow,
 	ID3D11SamplerState* sampleStateShadow, ID3D11HullShader* hShader, ID3D11DomainShader* dShader,
-	ID3D11RasterizerState* rasterizerState, Camera cubeMappingCamera)
+	ID3D11RasterizerState* rasterizerState, Camera cubeMappingCamera, Camera lightCameraTwo, Camera lightCameraThree,
+	Camera lightCameraFour)
 {
 	immediateContext->IASetInputLayout(inputLayout);
 	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
@@ -159,6 +160,9 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsVie
 		cubeMappingCamera.sendViewProjection(cubeMappingCamera, 1);
 
 	lightCamera.sendViewProjection(lightCamera, 2);
+	lightCameraTwo.sendViewProjection(lightCameraTwo, 3);
+	lightCameraThree.sendViewProjection(lightCameraThree, 4);
+	lightCameraFour.sendViewProjection(lightCameraFour, 5);
 
 	immediateContext->PSSetShaderResources(3, 1, &SRVShadow);
 }
@@ -500,7 +504,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	std::vector<Mesh> mesh;
 	Camera camera;
+
+	// light
 	Camera lightCamera;
+	Camera lightCameraTwo;
+	Camera lightCameraThree;
+	Camera lightCameraFour;
+	
 	Camera cubeMappingCamera;
 
 	std::vector<XMFLOAT3> particels;
@@ -556,12 +566,29 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	// setup Camera:
 	camera.createConstantBuffer(camera, device, immediateContext);
+
+	// Light
 	lightCamera.createConstantBuffer(camera, device, immediateContext);
+	lightCameraTwo.createConstantBuffer(camera, device, immediateContext);
+	lightCameraThree.createConstantBuffer(camera, device, immediateContext);
+	lightCameraFour.createConstantBuffer(camera, device, immediateContext);
+	
 	cubeMappingCamera.createConstantBuffer(camera, device, immediateContext);
 
 	lightCamera.AdjustPosition(0.0f, 10.0f, -5.0f);
+
+	// light
 	lightCamera.SetLookAtPos(XMFLOAT3(0.0f, 1.0f, 0.0f));
 	lightCamera.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);
+	
+	lightCameraTwo.SetLookAtPos(XMFLOAT3(3.0f, 1.0f, 0.0f));
+	lightCameraTwo.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);
+	
+	lightCameraThree.SetLookAtPos(XMFLOAT3(-3.0f, 1.0f, 0.0f));
+	lightCameraThree.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);
+
+	lightCameraFour.SetLookAtPos(XMFLOAT3(0.0f, 1.0f, 3.0f));
+	lightCameraFour.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);
 
 	cubeMappingCamera.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);
 	worldPos[0] = cubeMappingCamera.GetPositionFloat3();
@@ -614,7 +641,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 		Render(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, lightBuffer,
 			camBuffer, lightData, camData, camera, gBufferRTV, playerPerspectiv, lightCamera, SRVShadow,
-			sampleStateShadow, hShader, dShader, rasterizerState, cubeMappingCamera);
+			sampleStateShadow, hShader, dShader, rasterizerState, cubeMappingCamera, lightCameraTwo, lightCameraThree,
+			lightCameraFour);
 		draw(immediateContext, mesh, quadTree.AllInViewFrustom(camera.sendViewProjection(camera)), camera);
 		RenderComputerShader(immediateContext, cShader, UAView, gBufferSRV, camData, camera, lightData,
 			lightCamera, lightBuffer, camBuffer);
