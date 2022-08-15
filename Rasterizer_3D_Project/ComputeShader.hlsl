@@ -19,6 +19,24 @@ cbuffer cam : register(b1)
 	float padding0;
 };
 
+cbuffer lightTwo : register(b2)
+{
+	float3 lightPositionTwo;
+	float shininessTwo;
+};
+
+cbuffer lightThree : register(b3)
+{
+	float3 lightPositionThree;
+	float shininessThree;
+};
+
+cbuffer lightFour : register(b4)
+{
+	float3 lightPositionFour;
+	float shininessFour;
+};
+
 [numthreads(32, 32, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
 {
@@ -29,17 +47,34 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	
 	float3 camToPic = normalize(cameraPosition - Pos);
 	float3 lightDir = normalize(lightPosition - Pos);
+	float3 lightDirTwo = normalize(lightPositionTwo - Pos);
+	float3 lightDirThree = normalize(lightPositionThree - Pos);
+	float3 lightDirFour = normalize(lightPositionFour - Pos);
 	
 	// Ambient
 	float3 Ambient = ambinetComponent.Load(location).xyz;
 	
 	float3 diffuseLevel = dot(Normal, -lightDir);
-	float3 Diffuse = diffuseComponent.Load(location).xyz * diffuseLevel;
+	float3 diffuseLevelTwo = dot(Normal, -lightDirTwo);
+	float3 diffuseLevelThree = dot(Normal, -lightDirThree);
+	float3 diffuseLevelFour = dot(Normal, -lightDirFour);
+	float3 Diffuse = diffuseComponent.Load(location).xyz * diffuseLevel * diffuseLevelTwo * diffuseLevelThree * diffuseLevelFour;
 	
 	// Specular
 	float3 reflectDir = normalize(reflect(lightPosition, Normal));
 	float specularConponent = pow(max(dot(-lightDir, reflectDir), 0.0f), shininess);
-	float3 Specular = specularComponent.Load(location).xyz * specularConponent * 10.0f;
+	
+	float3 reflectDirTwo = normalize(reflect(lightPositionTwo, Normal));
+	float specularConponentTwo = pow(max(dot(-lightDirTwo, reflectDirTwo), 0.0f), shininess);
+	
+	float3 reflectDirThree = normalize(reflect(lightPositionThree, Normal));
+	float specularConponentThree = pow(max(dot(-lightDirThree, reflectDirThree), 0.0f), shininess);
+	
+	float3 reflectDirFour = normalize(reflect(lightPositionFour, Normal));
+	float specularConponentFour = pow(max(dot(-lightDirFour, reflectDirFour), 0.0f), shininess);
+	
+	float3 Specular = specularComponent.Load(location).xyz * specularConponent * specularConponentTwo * 
+	specularConponentThree * specularConponentFour;
 
 	backBuffer[DTid.xy] = (float4(Ambient, 1.0f) + float4(Diffuse, 1.0f) + float4(Specular, 1.0f)) * diffuseComponent.Load(location).w;
 

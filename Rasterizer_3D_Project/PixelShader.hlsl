@@ -61,9 +61,9 @@ vsOutPut main(PixelShaderInput input) : SV_TARGET
 	float t2 = (DepthTextureThree.Sample(SampleDepth, smTex3 + float2(0.0f, 0.0f)).r + Epsilon < depth3) ? 0.0f : 1.0f;
 	float t3 = (DepthTextureFour.Sample(SampleDepth, smtex4 + float2(0.0f, 0.0f)).r + Epsilon < depth4) ? 0.0f : 1.0f;
 	
-	float2 texelPosition = smTex * 1024.0f;
+	//float2 texelPosition = smTex * 1024.0f;
 
-	float2 leps = frac(texelPosition);
+	//float2 leps = frac(texelPosition);
     
 	//float shadow = lerp(lerp(t0, t1, leps.x), lerp(t2, t3, leps.x), leps.y);
 	float shadow = (t0 + t1 + t2 + t3) / 4;
