@@ -32,13 +32,13 @@ struct vsOutPut
 
 vsOutPut main(PixelShaderInput input) : SV_TARGET
 {
-	// normalize
-	input.posLight = normalize(input.posLight);
-	input.posLightTwo = normalize(input.posLightTwo);
-	input.posLightThree = normalize(input.posLightThree);
-	input.posLightFour = normalize(input.posLightFour);
+	//// normalize
+	//input.posLight = normalize(input.posLight);
+	//input.posLightTwo = normalize(input.posLightTwo);
+	//input.posLightThree = normalize(input.posLightThree);
+	//input.posLightFour = normalize(input.posLightFour);
 	
-	// Normalized device space
+	// ndv
 	input.posLight.xy /= input.posLight.w;
 	input.posLightTwo.xy /= input.posLightTwo.w;
 	input.posLightThree.xy /= input.posLightThree.w;

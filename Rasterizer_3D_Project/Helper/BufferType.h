@@ -49,8 +49,44 @@ struct BufferData
 
 struct LightData
 {
-    XMFLOAT3 lightPosition;
-    float shininess;
+    XMFLOAT3 lightDirection;
+    float padding;
+};
+
+struct LightDataTwo
+{
+    XMFLOAT3 posTwo;
+    float ranageTwo; 
+    XMFLOAT3 dirTwo;
+    float coneTwo;
+    XMFLOAT3 cSpotTwo;
+    float paddingTwo;
+    XMFLOAT3 attTwo;
+    float paddingTwoTwo;
+};
+
+struct LightDataThree
+{
+    XMFLOAT3 posThree;
+    float ranageThree;
+    XMFLOAT3 dirThree;
+    float coneThree;
+    XMFLOAT3 cSpotThree;
+    float paddingThree;
+    XMFLOAT3 attThree;
+    float paddingThreeThree;
+};
+
+struct LightDataFour
+{
+    XMFLOAT3 posFour;
+    float ranageFour;
+    XMFLOAT3 dirFour;
+    float coneFour;
+    XMFLOAT3 cSpotFour;
+    float paddingFour;
+    XMFLOAT3 attFour;
+    float paddingFourFour;
 };
 
 struct CamData

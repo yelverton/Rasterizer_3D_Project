@@ -244,13 +244,19 @@ void Camera::sendViewProjection(Camera& cam, int vertexShaderPos)
 	immediateContext->VSSetConstantBuffers(vertexShaderPos, 1, ConstantBuffer.GetAddressOf());
 }
 
-XMMATRIX Camera::sendViewProjection(Camera& cam)
+DirectX::BoundingFrustum Camera::sendFrustom(Camera& camera)
 {
-	cam.UpdateViewMatrix();
+	camera.UpdateViewMatrix();
 
-	XMMATRIX send = DirectX::XMMatrixPerspectiveFovLH(1.0f, 1024.f / 1024.f, 0.1f, 30.0f);
-	return cam.GetViewMatrix() * send;
+	DirectX::BoundingFrustum frosum;
+	DirectX::BoundingFrustum::CreateFromMatrix(frosum, projection);
+	
+	DirectX::XMMATRIX inverseViewMatrix = DirectX::XMMatrixInverse(nullptr, viewMatrix);
+	frosum.Transform(frosum, inverseViewMatrix);
+
+	return frosum;
 }
+
 
 void Camera::sendViewProjectionGS(Camera& cam, int vertexShaderPos)
 {

@@ -5,6 +5,7 @@
 #include <wrl/client.h>
 #include "Helper\BufferType.h"
 #include "Helper\ErrorLog.h"
+#include <directxcollision.h>
 
 using namespace DirectX;
 
@@ -42,7 +43,7 @@ public:
 	bool createConstantBuffer(Camera& cam, ID3D11Device* device, ID3D11DeviceContext* immediateContext);
 	void adjustProjectionMatrix(float FOV, float aspectRatio, float nearZ, float farZ);
 	void sendViewProjection(Camera& cam, int vertexShaderPos);
-	XMMATRIX sendViewProjection(Camera& cam);
+	DirectX::BoundingFrustum sendFrustom(Camera& camera);
 	void sendViewProjectionGS(Camera& cam, int vertexShaderPos);
 
 private:

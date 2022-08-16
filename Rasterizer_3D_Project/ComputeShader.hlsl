@@ -9,8 +9,8 @@ RWTexture2D<unorm float4> backBuffer : register(u0);
 
 cbuffer light : register(b0)
 {
-	float3 lightPosition;
-	float shininess;
+	float3 lightDirection;
+	float padding;
 };
 
 cbuffer cam : register(b1)
@@ -21,61 +21,132 @@ cbuffer cam : register(b1)
 
 cbuffer lightTwo : register(b2)
 {
-	float3 lightPositionTwo;
-	float shininessTwo;
+	float3 posTwo;
+	float ranageTwo;
+	float3 dirTwo;
+	float coneTwo;
+	float3 cSpotTwo;
+	float paddingTwo;
+	float3 attTwo;
+	float paddingTwoTwo;
 };
 
 cbuffer lightThree : register(b3)
 {
-	float3 lightPositionThree;
-	float shininessThree;
+	float3 posThree;
+	float ranageThree;
+	float3 dirThree;
+	float coneThree;
+	float3 cSpotThree;
+	float paddingThree;
+	float3 attThree;
+	float paddingThreeThree;
 };
 
 cbuffer lightFour : register(b4)
 {
-	float3 lightPositionFour;
-	float shininessFour;
+	float3 posFour;
+	float ranageFour;
+	float3 dirFour;
+	float coneFour;
+	float3 cSpotFour;
+	float paddingFour;
+	float3 attFour;
+	float paddingFourFour;
 };
 
 [numthreads(32, 32, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
 {
+	// setup
 	int3 location = int3(DTid.x, DTid.y, DTid.z);
-	
 	float3 Normal = normalize(normal.Load(location).xyz);
 	float3 Pos = posWS.Load(location).xyz;
+	float3 camToPic = normalize(Pos - cameraPosition);
 	
-	float3 camToPic = normalize(cameraPosition - Pos);
-	float3 lightDir = normalize(lightPosition - Pos);
-	float3 lightDirTwo = normalize(lightPositionTwo - Pos);
-	float3 lightDirThree = normalize(lightPositionThree - Pos);
-	float3 lightDirFour = normalize(lightPositionFour - Pos);
+	// textures
+	float3 Ambient = ambinetComponent.Load(location).xyz * 0.4f;
+	float3 Diffuse = diffuseComponent.Load(location).xyz;
+	float3 Specular = specularComponent.Load(location).xyz;
 	
-	// Ambient
-	float3 Ambient = ambinetComponent.Load(location).xyz;
+	//// diffuse (direction light)
+	//float3 lightDir = -normalize(lightDirection);
+	//float3 diffuseLevel = max(dot(Normal, lightDir), 0.0f);
 	
-	float3 diffuseLevel = dot(Normal, -lightDir);
-	float3 diffuseLevelTwo = dot(Normal, -lightDirTwo);
-	float3 diffuseLevelThree = dot(Normal, -lightDirThree);
-	float3 diffuseLevelFour = dot(Normal, -lightDirFour);
-	float3 Diffuse = diffuseComponent.Load(location).xyz * diffuseLevel * diffuseLevelTwo * diffuseLevelThree * diffuseLevelFour;
+	//// specular (direction light)
+	//float3 reflectDirFour = normalize(reflect(lightDirection, Normal));
+	//float3 specularConponentFour = pow(max(dot(reflectDirFour, -camToPic), 0.0f), 50);
 	
-	// Specular
-	float3 reflectDir = normalize(reflect(lightPosition, Normal));
-	float specularConponent = pow(max(dot(-lightDir, reflectDir), 0.0f), shininess);
+	// spotlight (Light Two)
+	float3 lightToPixelTwo = posTwo - Pos;
+	lightToPixelTwo = normalize(lightToPixelTwo);
+	float lightStrenghtTwo = length(lightToPixelTwo);
+	float diffuseLevelTwo = 0.0f;
+	float specCompTwo = 0.0f;
 	
-	float3 reflectDirTwo = normalize(reflect(lightPositionTwo, Normal));
-	float specularConponentTwo = pow(max(dot(-lightDirTwo, reflectDirTwo), 0.0f), shininess);
+	if (lightStrenghtTwo <= ranageTwo)
+	{
+		lightToPixelTwo /= lightStrenghtTwo;
+		float amountLightTwo = dot(lightToPixelTwo, Normal);
+		
+		if (amountLightTwo > 0.0f)
+		{
+			Diffuse /= (attTwo[0] + (attTwo[1] * lightStrenghtTwo) + (attTwo[2] * (lightStrenghtTwo * lightStrenghtTwo)));
+			diffuseLevelTwo = pow(max(dot(-lightToPixelTwo, dirTwo), 0.0f), coneTwo);
+			
+			float3 recTwo = normalize(reflect(-dirTwo, Normal));
+			specCompTwo = pow(max(dot(recTwo, lightToPixelTwo), 0.0f), 120.0f);
+		}
+	}
 	
-	float3 reflectDirThree = normalize(reflect(lightPositionThree, Normal));
-	float specularConponentThree = pow(max(dot(-lightDirThree, reflectDirThree), 0.0f), shininess);
+	//// spotlight (Light Three)
+	//float3 lightToPixelThree = normalize(posThree - Pos);
+	//float3 lightStrenghtThree = length(lightToPixelThree);
+	//float diffuseLevelThree = 0.0f;
+	//float specCompThree = 0.0f;
 	
-	float3 reflectDirFour = normalize(reflect(lightPositionFour, Normal));
-	float specularConponentFour = pow(max(dot(-lightDirFour, reflectDirFour), 0.0f), shininess);
+	//if (lightStrenghtThree <= ranageThree)
+	//{
+	//	lightToPixelThree /= lightStrenghtThree;
+	//	float amountLightThree = dot(lightToPixelThree, Normal);
+		
+	//	if (amountLightThree > 0.0f)
+	//	{
+	//		Diffuse /= (attThree[0] + (attThree[1] * lightStrenghtThree) + (attThree[2] * (lightStrenghtThree * lightStrenghtThree)));
+	//		diffuseLevelThree = pow(max(dot(-lightToPixelThree, dirThree), 0.0f), coneThree);
+			
+	//		float3 recThree = normalize(reflect(-dirThree, Normal));
+	//		specCompTwo = pow(max(dot(recThree, lightToPixelThree), 0.0f), 120.0f);
+	//	}
+	//}
 	
-	float3 Specular = specularComponent.Load(location).xyz * specularConponent * specularConponentTwo * 
-	specularConponentThree * specularConponentFour;
-
-	backBuffer[DTid.xy] = (float4(Ambient, 1.0f) + float4(Diffuse, 1.0f) + float4(Specular, 1.0f)) * diffuseComponent.Load(location).w;
-
+	//// spotlight (Light Four)
+	//float3 lightToPixelFour = normalize(posFour - Pos);
+	//float3 lightStrenghtFour = length(lightToPixelFour);
+	//float diffuseLevelFour = 0.0f;
+	//float specCompFour = 0.0f;
+	
+	//if (lightStrenghtFour <= ranageFour)
+	//{
+	//	lightToPixelFour /= lightStrenghtFour;
+	//	float amountLightFour = dot(lightToPixelFour, Normal);
+		
+	//	if (amountLightFour > 0.0f)
+	//	{
+	//		Diffuse /= (attFour[0] + (attFour[1] * lightStrenghtFour) + (attFour[2] * (lightStrenghtFour * lightStrenghtFour)));
+	//		diffuseLevelThree = pow(max(dot(-lightToPixelFour, dirFour), 0.0f), coneFour);
+			
+	//		float3 recFour = normalize(reflect(-dirFour, Normal));
+	//		specCompTwo = pow(max(dot(recFour, lightToPixelFour), 0.0f), 120.0f);
+	//	}
+	//}
+	
+	// diffuse + specular (direction light) sumbit
+	//Diffuse = Diffuse * diffuseLevel;
+	Diffuse *= diffuseLevelTwo;
+	
+	//Specular = Specular * specularConponentFour;
+	//Specular = Specular * specCompTwo;
+	
+	backBuffer[DTid.xy] = float4(Ambient + Diffuse, 1.0f) /*+ float4(Specular, 1.0f))*/ * diffuseComponent.Load(location).w;
 }

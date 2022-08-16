@@ -71,9 +71,7 @@ void moveAbility(int& playerPerspectiv, Camera& camera, Camera& lightCamera, Cam
 	else if (GetAsyncKeyState('B'))
 		playerPerspectiv = 3;
 	else if (GetAsyncKeyState('N'))
-		playerPerspectiv = 4;
-	else if (GetAsyncKeyState('Z'))
-		playerPerspectiv = 5;
+		playerPerspectiv = 3;
 
 	if (playerPerspectiv == 0) {
 		camera.moveCamera(camera, dt);
@@ -82,16 +80,12 @@ void moveAbility(int& playerPerspectiv, Camera& camera, Camera& lightCamera, Cam
 		lightCamera.moveCamera(lightCamera, dt);
 	}
 	else if (playerPerspectiv == 2) {
-		cubeMappingCamera.moveCamera(cubeMappingCamera, dt);
-		worldPos[0] = cubeMappingCamera.GetPositionFloat3();
-	}
-	else if (playerPerspectiv == 3) {
 		lightCameraTwo.moveCamera(lightCameraTwo, dt);
 	}
-	else if (playerPerspectiv == 4) {
+	else if (playerPerspectiv == 3) {
 		lightCameraThree.moveCamera(lightCameraThree, dt);
 	}
-	else if (playerPerspectiv == 5) {
+	else if (playerPerspectiv == 4) {
 		lightCameraFour.moveCamera(lightCameraFour, dt);
 	}
 } 
@@ -191,13 +185,12 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsVie
 	else if (playerPerspectiv == 1)
 		lightCamera.sendViewProjection(lightCamera, 1);
 	else if (playerPerspectiv == 2)
-		cubeMappingCamera.sendViewProjection(cubeMappingCamera, 1);
-	else if (playerPerspectiv == 3)
 		lightCameraTwo.sendViewProjection(lightCameraTwo, 1);
-	else if (playerPerspectiv == 4)
+	else if (playerPerspectiv == 3)
 		lightCameraThree.sendViewProjection(lightCameraThree, 1);
-	else if (playerPerspectiv == 5)
+	else if (playerPerspectiv == 4)
 		lightCameraFour.sendViewProjection(lightCameraFour, 1);
+
 
 
 	lightCamera.sendViewProjection(lightCamera, 2);
@@ -242,7 +235,9 @@ void drawPreCube(ID3D11DeviceContext* immediateContext, vector<Mesh>& mesh)
 
 void RenderComputerShader(ID3D11DeviceContext*& immediateContext, ID3D11ComputeShader* cShader,
 	ID3D11UnorderedAccessView* UAView, ID3D11ShaderResourceView* gBufferSRV[], CamData camData, 
-	Camera camera, LightData lightData, Camera lightCamera, ID3D11Buffer* lightBuffer, ID3D11Buffer* camBuffer)
+	Camera camera, LightData lightData, Camera lightCamera, ID3D11Buffer* lightBuffer, ID3D11Buffer* camBuffer,
+	Camera lightCameraTwo, Camera lightCameraThree, Camera lightCameraFour, LightDataTwo lightDataTwo, LightDataThree lightDataThree,
+	LightDataFour lightDataFour, ID3D11Buffer* lightBufferTwo, ID3D11Buffer* lightBufferThree, ID3D11Buffer* lightBufferFour)
 {
 	ID3D11RenderTargetView* nullRTV[6] = { nullptr };
 	immediateContext->OMSetRenderTargets(6, nullRTV, nullptr);
@@ -252,7 +247,6 @@ void RenderComputerShader(ID3D11DeviceContext*& immediateContext, ID3D11ComputeS
 	immediateContext->CSSetUnorderedAccessViews(0, 1, &UAView, nullptr);
 
 	camData.cameraPosition = camera.GetPositionFloat3();
-	lightData.lightPosition = lightCamera.GetPositionFloat3();
 
 	D3D11_MAPPED_SUBRESOURCE subLight = {};
 	immediateContext->Map(lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subLight);
@@ -266,6 +260,31 @@ void RenderComputerShader(ID3D11DeviceContext*& immediateContext, ID3D11ComputeS
 	immediateContext->Unmap(camBuffer, 0);
 	immediateContext->CSSetConstantBuffers(1, 1, &camBuffer);
 	
+	// other lights
+	lightDataTwo.posTwo = lightCameraTwo.GetPositionFloat3();
+
+	D3D11_MAPPED_SUBRESOURCE subLightTwo = {};
+	immediateContext->Map(lightBufferTwo, 0, D3D11_MAP_WRITE_DISCARD, 0, &subLightTwo);
+	std::memcpy(subLight.pData, &lightDataTwo, sizeof(LightDataTwo));
+	immediateContext->Unmap(lightBufferTwo, 0);
+	immediateContext->CSSetConstantBuffers(2, 1, &lightBufferTwo);
+
+	lightDataThree.posThree = lightCameraThree.GetPositionFloat3();
+
+	D3D11_MAPPED_SUBRESOURCE subLightThree = {};
+	immediateContext->Map(lightBufferThree, 0, D3D11_MAP_WRITE_DISCARD, 0, &subLightThree);
+	std::memcpy(subLight.pData, &lightDataThree, sizeof(LightData));
+	immediateContext->Unmap(lightBufferThree, 0);
+	immediateContext->CSSetConstantBuffers(3, 1, &lightBufferThree);
+
+	lightDataFour.posFour = lightCameraFour.GetPositionFloat3();
+
+	D3D11_MAPPED_SUBRESOURCE subLightFour = {};
+	immediateContext->Map(lightBufferFour, 0, D3D11_MAP_WRITE_DISCARD, 0, &subLightFour);
+	std::memcpy(subLight.pData, &lightDataFour, sizeof(LightDataFour));
+	immediateContext->Unmap(lightBufferFour, 0);
+	immediateContext->CSSetConstantBuffers(4, 1, &lightBufferFour);
+
 	immediateContext->Dispatch(32, 32, 1);
 
 	ID3D11UnorderedAccessView* NullUAV = nullptr;
@@ -279,7 +298,8 @@ void RenderComputerShader(ID3D11DeviceContext*& immediateContext, ID3D11ComputeS
 void RenderComputerShaderCube(ID3D11DeviceContext*& immediateContext, ID3D11ComputeShader* cShader,
 	ID3D11UnorderedAccessView* UAView, ID3D11ShaderResourceView* gBufferSRV[], CamData camData,
 	Camera camera, LightData lightData, Camera lightCamera, ID3D11Buffer* lightBuffer, ID3D11Buffer* camBuffer,
-	Camera lightCameraTwo, Camera lightCameraThree, Camera lightCameraFour)
+	Camera lightCameraTwo, Camera lightCameraThree, Camera lightCameraFour, LightDataTwo lightDataTwo, LightDataThree lightDataThree,
+	LightDataFour lightDataFour, ID3D11Buffer* lightBufferTwo, ID3D11Buffer* lightBufferThree, ID3D11Buffer* lightBufferFour)
 {
 	ID3D11RenderTargetView* nullRTV[6] = { nullptr };
 	immediateContext->OMSetRenderTargets(6, nullRTV, nullptr);
@@ -289,7 +309,6 @@ void RenderComputerShaderCube(ID3D11DeviceContext*& immediateContext, ID3D11Comp
 	immediateContext->CSSetUnorderedAccessViews(0, 1, &UAView, nullptr);
 
 	camData.cameraPosition = camera.GetPositionFloat3();
-	lightData.lightPosition = lightCamera.GetPositionFloat3();
 
 	D3D11_MAPPED_SUBRESOURCE subLight = {};
 	immediateContext->Map(lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subLight);
@@ -304,29 +323,29 @@ void RenderComputerShaderCube(ID3D11DeviceContext*& immediateContext, ID3D11Comp
 	immediateContext->CSSetConstantBuffers(1, 1, &camBuffer);
 
 	// other lights
-	lightData.lightPosition = lightCameraTwo.GetPositionFloat3();
+	lightDataTwo.dirTwo = lightCameraTwo.GetPositionFloat3();
 
-	subLight = {};
-	immediateContext->Map(lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subLight);
-	std::memcpy(subLight.pData, &lightData, sizeof(LightData));
-	immediateContext->Unmap(lightBuffer, 0);
-	immediateContext->CSSetConstantBuffers(2, 1, &lightBuffer);
+	D3D11_MAPPED_SUBRESOURCE subLightTwo = {};
+	immediateContext->Map(lightBufferTwo, 0, D3D11_MAP_WRITE_DISCARD, 0, &subLightTwo);
+	std::memcpy(subLight.pData, &lightDataTwo, sizeof(LightDataTwo));
+	immediateContext->Unmap(lightBufferTwo, 0);
+	immediateContext->CSSetConstantBuffers(2, 1, &lightBufferTwo);
 
-	lightData.lightPosition = lightCameraThree.GetPositionFloat3();
+	lightDataThree.dirThree = lightCameraThree.GetPositionFloat3();
 
-	subLight = {};
-	immediateContext->Map(lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subLight);
-	std::memcpy(subLight.pData, &lightData, sizeof(LightData));
-	immediateContext->Unmap(lightBuffer, 0);
-	immediateContext->CSSetConstantBuffers(3, 1, &lightBuffer);
+	D3D11_MAPPED_SUBRESOURCE subLightThree = {};
+	immediateContext->Map(lightBufferThree, 0, D3D11_MAP_WRITE_DISCARD, 0, &subLightThree);
+	std::memcpy(subLight.pData, &lightDataThree, sizeof(LightData));
+	immediateContext->Unmap(lightBufferThree, 0);
+	immediateContext->CSSetConstantBuffers(3, 1, &lightBufferThree);
 
-	lightData.lightPosition = lightCameraFour.GetPositionFloat3();
+	lightDataFour.dirFour = lightCameraFour.GetPositionFloat3();
 
-	subLight = {};
-	immediateContext->Map(lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subLight);
-	std::memcpy(subLight.pData, &lightData, sizeof(LightData));
-	immediateContext->Unmap(lightBuffer, 0);
-	immediateContext->CSSetConstantBuffers(4, 1, &lightBuffer);
+	D3D11_MAPPED_SUBRESOURCE subLightFour = {};
+	immediateContext->Map(lightBufferFour, 0, D3D11_MAP_WRITE_DISCARD, 0, &subLightFour);
+	std::memcpy(subLight.pData, &lightDataFour, sizeof(LightDataFour));
+	immediateContext->Unmap(lightBufferFour, 0);
+	immediateContext->CSSetConstantBuffers(4, 1, &lightBufferFour);
 
 	immediateContext->Dispatch(32, 32, 1);
 
@@ -547,6 +566,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	ID3D11SamplerState* sampleStateCubeMapping;
 
 	ID3D11Buffer* lightBuffer;
+	ID3D11Buffer* lightBufferTwo;
+	ID3D11Buffer* lightBufferThree;
+	ID3D11Buffer* lightBufferFour;
+
 	ID3D11Buffer* camBuffer;
 	ID3D11Buffer* theWorldBuffer;
 	ID3D11Buffer* particleBuffer;
@@ -554,6 +577,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	ID3D11Buffer* getDTTimeBuffer;
 
 	struct LightData lightData;
+	struct LightDataTwo lightDataTwo;
+	struct LightDataThree lightDataThree;
+	struct LightDataFour lightDataFour;
+
 	struct CamData camData;
 	struct TheWorld theWorld;
 	struct DepthBufferData depthBufferData;
@@ -629,7 +656,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		return -1;
 	
 	if (!SetupBuffers(device, lightBuffer, camBuffer, theWorldBuffer, directionBuffer,
-		getDTTimeBuffer, lightData, camData, theWorld, getDirection, getDTTime))
+		getDTTimeBuffer, lightData, camData, theWorld, getDirection, getDTTime, lightBufferTwo, lightBufferThree, lightBufferFour,
+		lightDataTwo, lightDataThree, lightDataFour))
 		return -1;
 
 	if (!SetupModels(modelName, worldPos))
@@ -706,39 +734,44 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			drawPrePass(immediateContext, mesh);
 		}
 
-		for (int i = 0; i < 6; i++)
+		if (playerPerspectiv == 0)
 		{
+			for (int i = 0; i < 6; i++)
+			{
+				smallClear(immediateContext, dsView, gBufferRTV);
+				RenderPreCube(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, camBuffer,
+					camData, cubeMappingCamera, gBufferRTV, lightCamera, SRVShadow, sampleState, i, lightCameraTwo,
+					lightCameraThree, lightCameraFour);
+				drawPreCube(immediateContext, mesh);
+				RenderComputerShaderCube(immediateContext, cShader, UAVCubeMapping[i], gBufferSRV, camData, cubeMappingCamera, lightData,
+					lightCamera, lightBuffer, camBuffer, lightCameraTwo, lightCameraThree, lightCameraFour, lightDataTwo, lightDataThree, 
+					lightDataFour, lightBufferTwo, lightBufferThree, lightBufferFour);
+			}
 			smallClear(immediateContext, dsView, gBufferRTV);
-			RenderPreCube(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, camBuffer,
-				camData, cubeMappingCamera, gBufferRTV, lightCamera, SRVShadow, sampleState, i, lightCameraTwo,
-				lightCameraThree, lightCameraFour);
-			drawPreCube(immediateContext, mesh);
-			RenderComputerShaderCube(immediateContext, cShader, UAVCubeMapping[i], gBufferSRV, camData, cubeMappingCamera, lightData,
-				lightCamera, lightBuffer, camBuffer, lightCameraTwo, lightCameraThree, lightCameraFour);
 		}
-		smallClear(immediateContext, dsView, gBufferRTV);
 
 		Render(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, lightBuffer,
 			camBuffer, lightData, camData, camera, gBufferRTV, playerPerspectiv, lightCamera, SRVShadow,
 			sampleStateShadow, hShader, dShader, rasterizerState, cubeMappingCamera, lightCameraTwo, lightCameraThree,
 			lightCameraFour);
-		draw(immediateContext, mesh, quadTree.AllInViewFrustom(camera.sendViewProjection(camera)), camera);
+		draw(immediateContext, mesh, quadTree.AllInViewFrustom(camera.sendFrustom(camera)), camera);
 		RenderComputerShader(immediateContext, cShader, UAView, gBufferSRV, camData, camera, lightData,
-			lightCamera, lightBuffer, camBuffer);
+			lightCamera, lightBuffer, camBuffer, lightCameraTwo, lightCameraThree, lightCameraFour, lightDataTwo, lightDataThree,
+			lightDataFour, lightBufferTwo, lightBufferThree, lightBufferFour);
 
 		
-		if (!playerPerspectiv == 1)
+		if (playerPerspectiv == 0)
 		{
 			particleSystem(immediateContext, inputLayoutVSParticle, vShaderParticle, dsView, viewportParticle, gShaderParticle, pShaderParticle,
 				cShaderParticle, directionBuffer, getDirection, camera, camBuffer, camData, rtv);
 			drawParticle(immediateContext, particels, worldPos, theWorld, theWorldBuffer, particleBuffer, dsView);
 			RenderComputerShaderParticle(immediateContext, cShaderParticle, gBufferRTVParticle, gBufferSRVParticle, UAViewP,
 				particels, getDTTimeBuffer, getDTTime);
-		}
+			cubeMappingSystem(immediateContext, inputLayoutVSMainCubeMapping, vShaderMainCubeMapping, viewportCubeMapping,
+				pShaderMainCubeMapping, sampleStateCubeMapping, srvCubeMapping, dsView, camera, camData, camBuffer, rtv);
+			drawCubeMapping(immediateContext, cubeMappingCamera, mesh, worldPos, theWorld, theWorldBuffer);
 
-		cubeMappingSystem(immediateContext, inputLayoutVSMainCubeMapping, vShaderMainCubeMapping, viewportCubeMapping,
-			pShaderMainCubeMapping, sampleStateCubeMapping, srvCubeMapping, dsView, camera, camData, camBuffer, rtv);
-		drawCubeMapping(immediateContext, cubeMappingCamera, mesh, worldPos, theWorld, theWorldBuffer);
+		}
 		swapChain->Present(0, 0);
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> elapsed_seconds = end - start;
