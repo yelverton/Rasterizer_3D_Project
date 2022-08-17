@@ -78,43 +78,43 @@ void moveAbility(int& playerPerspectiv, Camera& camera, Camera& lightCamera, Cam
 	} 
 	else if (playerPerspectiv == 1) {
 		lightCamera.moveCamera(lightCamera, dt);
-		OutputDebugString(L"0&&x: ");
-		OutputDebugString(std::to_wstring(lightCamera.GetPositionFloat3().x).c_str());
-		OutputDebugString(L" y: ");
-		OutputDebugString(std::to_wstring(lightCamera.GetPositionFloat3().y).c_str());
-		OutputDebugString(L" z: ");
-		OutputDebugString(std::to_wstring(lightCamera.GetPositionFloat3().z).c_str());
-		OutputDebugString(L"\n");
+		//OutputDebugString(L"0&&x: ");
+		//OutputDebugString(std::to_wstring(lightCamera.GetPositionFloat3().x).c_str());
+		//OutputDebugString(L" y: ");
+		//OutputDebugString(std::to_wstring(lightCamera.GetPositionFloat3().y).c_str());
+		//OutputDebugString(L" z: ");
+		//OutputDebugString(std::to_wstring(lightCamera.GetPositionFloat3().z).c_str());
+		//OutputDebugString(L"\n");
 	}
 	else if (playerPerspectiv == 2) {
 		lightCameraTwo.moveCamera(lightCameraTwo, dt);
-		OutputDebugString(L"1&&x: ");
-		OutputDebugString(std::to_wstring(lightCameraTwo.GetPositionFloat3().x).c_str());
-		OutputDebugString(L" y: ");
-		OutputDebugString(std::to_wstring(lightCameraTwo.GetPositionFloat3().y).c_str());
-		OutputDebugString(L" z: ");
-		OutputDebugString(std::to_wstring(lightCameraTwo.GetPositionFloat3().z).c_str());
-		OutputDebugString(L"\n");
+		//OutputDebugString(L"1&&x: ");
+		//OutputDebugString(std::to_wstring(lightCameraTwo.GetPositionFloat3().x).c_str());
+		//OutputDebugString(L" y: ");
+		//OutputDebugString(std::to_wstring(lightCameraTwo.GetPositionFloat3().y).c_str());
+		//OutputDebugString(L" z: ");
+		//OutputDebugString(std::to_wstring(lightCameraTwo.GetPositionFloat3().z).c_str());
+		//OutputDebugString(L"\n");
 	}
 	else if (playerPerspectiv == 3) {
 		lightCameraThree.moveCamera(lightCameraThree, dt);
-		OutputDebugString(L"2&&x: ");
-		OutputDebugString(std::to_wstring(lightCameraThree.GetPositionFloat3().x).c_str());
-		OutputDebugString(L" y: ");
-		OutputDebugString(std::to_wstring(lightCameraThree.GetPositionFloat3().y).c_str());
-		OutputDebugString(L" z: ");
-		OutputDebugString(std::to_wstring(lightCameraThree.GetPositionFloat3().z).c_str());
-		OutputDebugString(L"\n");
+		//OutputDebugString(L"2&&x: ");
+		//OutputDebugString(std::to_wstring(lightCameraThree.GetPositionFloat3().x).c_str());
+		//OutputDebugString(L" y: ");
+		//OutputDebugString(std::to_wstring(lightCameraThree.GetPositionFloat3().y).c_str());
+		//OutputDebugString(L" z: ");
+		//OutputDebugString(std::to_wstring(lightCameraThree.GetPositionFloat3().z).c_str());
+		//OutputDebugString(L"\n");
 	}
 	else if (playerPerspectiv == 4) {
 		lightCameraFour.moveCamera(lightCameraFour, dt);
-		OutputDebugString(L"3&&x: ");
-		OutputDebugString(std::to_wstring(lightCameraFour.GetPositionFloat3().x).c_str());
-		OutputDebugString(L" y: ");
-		OutputDebugString(std::to_wstring(lightCameraFour.GetPositionFloat3().y).c_str());
-		OutputDebugString(L" z: ");
-		OutputDebugString(std::to_wstring(lightCameraFour.GetPositionFloat3().z).c_str());
-		OutputDebugString(L"\n");
+		//OutputDebugString(L"3&&x: ");
+		//OutputDebugString(std::to_wstring(lightCameraFour.GetPositionFloat3().x).c_str());
+		//OutputDebugString(L" y: ");
+		//OutputDebugString(std::to_wstring(lightCameraFour.GetPositionFloat3().y).c_str());
+		//OutputDebugString(L" z: ");
+		//OutputDebugString(std::to_wstring(lightCameraFour.GetPositionFloat3().z).c_str());
+		//OutputDebugString(L"\n");
 	}
 } 
 
@@ -775,7 +775,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 				//RenderComputerShaderCube(immediateContext, cShader, UAVCubeMapping[i], gBufferSRV, camData, cubeMappingCamera, lightData,
 				//	lightCamera, lightBuffer, camBuffer, lightCameraTwo, lightCameraThree, lightCameraFour, lightDataTwo, lightDataThree, 
 				//	lightDataFour, lightBufferTwo, lightBufferThree, lightBufferFour);
-				RenderComputerShader(immediateContext, cShader, UAVCubeMapping[i], gBufferSRV, camData, camera, lightData,
+				RenderComputerShader(immediateContext, cShader, UAVCubeMapping[i], gBufferSRV, camData, cubeMappingCamera, lightData,
 					lightCamera, lightBuffer, camBuffer, lightCameraTwo, lightCameraThree, lightCameraFour, lightDataTwo, lightDataThree,
 					lightDataFour, lightBufferTwo, lightBufferThree, lightBufferFour);
 			}

@@ -173,19 +173,27 @@ bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, 
 
 	for (int i = 0; i < v.size(); i++)
 	{
-		if (vertex[i].pos.x <= smallestX && vertex[i].pos.y <= smallestY && vertex[i].pos.z <= smallestZ)
-		{
-			smallestX = vertex[i].pos.x;
-			smallestY = vertex[i].pos.y;
-			smallestZ = vertex[i].pos.z;
-		}
+		if (vertex[i].pos.x < smallestX) smallestX = vertex[i].pos.x;
+		if (vertex[i].pos.y < smallestY) smallestY = vertex[i].pos.y;
+		if (vertex[i].pos.z < smallestZ) smallestZ = vertex[i].pos.z;
+		if (vertex[i].pos.x > biggestX) biggestX = vertex[i].pos.x;
+		if (vertex[i].pos.y > biggestY) biggestY = vertex[i].pos.y;
+		if (vertex[i].pos.z > biggestZ) biggestZ = vertex[i].pos.z;
 
-		if (vertex[i].pos.x >= biggestX && vertex[i].pos.y >= biggestY && vertex[i].pos.z >= biggestZ)
-		{
-			biggestX = vertex[i].pos.x;
-			biggestY = vertex[i].pos.y;
-			biggestZ = vertex[i].pos.z;
-		}
+
+		//if (vertex[i].pos.x <= smallestX && vertex[i].pos.y <= smallestY && vertex[i].pos.z <= smallestZ)
+		//{
+		//	smallestX = vertex[i].pos.x;
+		//	smallestY = vertex[i].pos.y;
+		//	smallestZ = vertex[i].pos.z;
+		//}
+
+		//if (vertex[i].pos.x >= biggestX && vertex[i].pos.y >= biggestY && vertex[i].pos.z >= biggestZ)
+		//{
+		//	biggestX = vertex[i].pos.x;
+		//	biggestY = vertex[i].pos.y;
+		//	biggestZ = vertex[i].pos.z;
+		//}
 	}
 
 	indexCount.push_back(indices.size());

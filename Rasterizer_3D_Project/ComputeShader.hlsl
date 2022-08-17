@@ -75,7 +75,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	
 	// specular (direction light)
 	float3 reflectDirFour = normalize(reflect(lightDirection, Normal));
-	float3 specularConponentFour = pow(max(dot(reflectDirFour, -camToPic), 0.0f), 50);
+	float3 specCompOne = pow(max(dot(reflectDirFour, -camToPic), 0.0f), 50);
 	
 	//spotlight(LightTwo)
 	
@@ -146,13 +146,34 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	
 	// diffuse + specular (direction light) sumbit
 	//Diffuse = Diffuse * diffuseLevel;
-	float3 DiffuseUse = (Diffuse * diffuseLevel + Diffuse * diffuseLevelTwo + Diffuse * diffuseLevelThree + Diffuse * diffuseLevelFour);
-	float specularUse = Specular * specularConponentFour + Specular * specCompTwo + Specular * specCompThree + Specular * specCompFour;
-	float3 finalUse = (Ambient + DiffuseUse + specularUse) * posWS.Load(location).w;
 	
-	//Specular = Specular * specCompTwo;
+	//// Diffuse 
+	//float3 DiffuseInfo0 = Diffuse * diffuseLevel;
+	//float3 DiffuseInfo1 = Diffuse * diffuseLevelTwo;
+	//float3 DiffuseInfo2 = Diffuse * diffuseLevelThree;
+	//float3 DiffuseInfo3 = Diffuse * diffuseLevelFour;
+	//float3 finalDiffuse = (DiffuseInfo0 + DiffuseInfo1 + DiffuseInfo2 + DiffuseInfo3) * ambinetComponent.Load(location).w;
+	//// Specular 
+	//float3 SpecularInfo0 = Specular * specCompOne * posWS.Load(location).w;
+	//float3 SpecularInfo1 = Specular * specCompTwo * ambinetComponent.Load(location).w;
+	//float3 SpecularInfo2 = Specular * specCompThree * diffuseComponent.Load(location).w;
+	//float3 SpecularInfo3 = Specular * specCompFour * specularComponent.Load(location).w;
+	//float3 finalSpecular = SpecularInfo0 + SpecularInfo1 + SpecularInfo2 + SpecularInfo3;
 	
-	//backBuffer[DTid.xy] = float4(Ambient, 1.0f) + (float4(Diffuse, 1.0f) * posWS.Load(location).w) + float4(Specular, 1.0f);
-	backBuffer[DTid.xy] = float4(finalUse, 1.0f);
+	//// output color
+	//float3 output = Ambient + finalDiffuse + finalSpecular;
+	
+	//Diffuse *= diffuseLevel + diffuseLevelTwo + diffuseLevelThree + diffuseLevelFour;
+	//Specular *= specCompOne + specCompTwo + specCompThree + specCompFour;
 
+	float3 DiffuseUse = (Diffuse * diffuseLevel + Diffuse * diffuseLevelTwo + Diffuse * diffuseLevelThree + Diffuse * diffuseLevelFour);
+	float specularUse = Specular * specCompOne + Specular * specCompTwo + Specular * specCompThree + Specular * specCompFour;
+	float3 finalUse = (Ambient + DiffuseUse + specularUse) * ambinetComponent.Load(location).w;
+	
+	//float3 finalUse2 = (Diffuse * ambinetComponent.Load(location).w) + Specular + Ambient;
+	//float3 finalUse3 = finalUse + finalUse2;
+	////Specular = Specular * specCompTwo;
+	
+	//backBuffer[DTid.xy] = float4(finalUse3, 1.0f) + (float4(Diffuse, 1.0f) * posWS.Load(location).w) + float4(Specular, 1.0f);
+	backBuffer[DTid.xy] = float4(finalUse, 1.0f);
 }
