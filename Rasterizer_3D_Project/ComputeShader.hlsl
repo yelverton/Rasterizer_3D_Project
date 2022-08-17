@@ -69,15 +69,16 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	float3 Diffuse = diffuseComponent.Load(location).xyz;
 	float3 Specular = specularComponent.Load(location).xyz;
 	
-	//// diffuse (direction light)
-	//float3 lightDir = -normalize(lightDirection);
-	//float3 diffuseLevel = max(dot(Normal, lightDir), 0.0f);
+	////// diffuse (direction light)
+	float3 lightDir = -normalize(lightDirection);
+	float3 diffuseLevel = max(dot(Normal, lightDir), 0.0f);
 	
-	//// specular (direction light)
-	//float3 reflectDirFour = normalize(reflect(lightDirection, Normal));
-	//float3 specularConponentFour = pow(max(dot(reflectDirFour, -camToPic), 0.0f), 50);
+	// specular (direction light)
+	float3 reflectDirFour = normalize(reflect(lightDirection, Normal));
+	float3 specularConponentFour = pow(max(dot(reflectDirFour, -camToPic), 0.0f), 50);
 	
-	// spotlight (Light Two)
+	//spotlight(LightTwo)
+	
 	float3 lightToPixelTwo = posTwo - Pos;
 	lightToPixelTwo = normalize(lightToPixelTwo);
 	float lightStrenghtTwo = length(lightToPixelTwo);
@@ -99,54 +100,59 @@ void main( uint3 DTid : SV_DispatchThreadID )
 		}
 	}
 	
-	//// spotlight (Light Three)
-	//float3 lightToPixelThree = normalize(posThree - Pos);
-	//float3 lightStrenghtThree = length(lightToPixelThree);
-	//float diffuseLevelThree = 0.0f;
-	//float specCompThree = 0.0f;
+	// spotlight (Light Three)
+	float3 lightToPixelThree = posThree - Pos;
+	lightToPixelThree = normalize(lightToPixelThree);
+	float lightStrenghtThree = length(lightToPixelThree);
+	float diffuseLevelThree = 0.0f;
+	float specCompThree = 0.0f;
 	
-	//if (lightStrenghtThree <= ranageThree)
-	//{
-	//	lightToPixelThree /= lightStrenghtThree;
-	//	float amountLightThree = dot(lightToPixelThree, Normal);
+	if (lightStrenghtThree <= ranageThree)
+	{
+		lightToPixelThree /= lightStrenghtThree;
+		float amountLightThree = dot(lightToPixelThree, Normal);
 		
-	//	if (amountLightThree > 0.0f)
-	//	{
-	//		Diffuse /= (attThree[0] + (attThree[1] * lightStrenghtThree) + (attThree[2] * (lightStrenghtThree * lightStrenghtThree)));
-	//		diffuseLevelThree = pow(max(dot(-lightToPixelThree, dirThree), 0.0f), coneThree);
+		if (amountLightThree > 0.0f)
+		{
+			Diffuse /= (attThree[0] + (attThree[1] * lightStrenghtThree) + (attThree[2] * (lightStrenghtThree * lightStrenghtThree)));
+			diffuseLevelThree = pow(max(dot(-lightToPixelThree, dirThree), 0.0f), coneThree);
 			
-	//		float3 recThree = normalize(reflect(-dirThree, Normal));
-	//		specCompTwo = pow(max(dot(recThree, lightToPixelThree), 0.0f), 120.0f);
-	//	}
-	//}
+			float3 recThree = normalize(reflect(-dirThree, Normal));
+			specCompTwo = pow(max(dot(recThree, lightToPixelThree), 0.0f), 120.0f);
+		}
+	}
 	
-	//// spotlight (Light Four)
-	//float3 lightToPixelFour = normalize(posFour - Pos);
-	//float3 lightStrenghtFour = length(lightToPixelFour);
-	//float diffuseLevelFour = 0.0f;
-	//float specCompFour = 0.0f;
+	// spotlight (Light Four)
+	float3 lightToPixelFour = posFour - Pos;
+	lightToPixelFour = normalize(lightToPixelFour);
+	float lightStrenghtFour = length(lightToPixelFour);
+	float diffuseLevelFour = 0.0f;
+	float specCompFour = 0.0f;
 	
-	//if (lightStrenghtFour <= ranageFour)
-	//{
-	//	lightToPixelFour /= lightStrenghtFour;
-	//	float amountLightFour = dot(lightToPixelFour, Normal);
+	if (lightStrenghtFour <= ranageFour)
+	{
+		lightToPixelFour /= lightStrenghtFour;
+		float amountLightFour = dot(lightToPixelFour, Normal);
 		
-	//	if (amountLightFour > 0.0f)
-	//	{
-	//		Diffuse /= (attFour[0] + (attFour[1] * lightStrenghtFour) + (attFour[2] * (lightStrenghtFour * lightStrenghtFour)));
-	//		diffuseLevelThree = pow(max(dot(-lightToPixelFour, dirFour), 0.0f), coneFour);
+		if (amountLightFour > 0.0f)
+		{
+			Diffuse /= (attFour[0] + (attFour[1] * lightStrenghtFour) + (attFour[2] * (lightStrenghtFour * lightStrenghtFour)));
+			diffuseLevelFour = pow(max(dot(-lightToPixelFour, dirFour), 0.0f), coneFour);
 			
-	//		float3 recFour = normalize(reflect(-dirFour, Normal));
-	//		specCompTwo = pow(max(dot(recFour, lightToPixelFour), 0.0f), 120.0f);
-	//	}
-	//}
+			float3 recFour = normalize(reflect(-dirFour, Normal));
+			specCompTwo = pow(max(dot(recFour, lightToPixelFour), 0.0f), 120.0f);
+		}
+	}
 	
 	// diffuse + specular (direction light) sumbit
 	//Diffuse = Diffuse * diffuseLevel;
-	Diffuse *= diffuseLevelTwo;
+	float3 DiffuseUse = (Diffuse * diffuseLevel + Diffuse * diffuseLevelTwo + Diffuse * diffuseLevelThree + Diffuse * diffuseLevelFour);
+	float specularUse = Specular * specularConponentFour + Specular * specCompTwo + Specular * specCompThree + Specular * specCompFour;
+	float3 finalUse = (Ambient + DiffuseUse + specularUse) * posWS.Load(location).w;
 	
-	//Specular = Specular * specularConponentFour;
 	//Specular = Specular * specCompTwo;
 	
-	backBuffer[DTid.xy] = float4(Ambient + Diffuse, 1.0f) /*+ float4(Specular, 1.0f))*/ * diffuseComponent.Load(location).w;
+	//backBuffer[DTid.xy] = float4(Ambient, 1.0f) + (float4(Diffuse, 1.0f) * posWS.Load(location).w) + float4(Specular, 1.0f);
+	backBuffer[DTid.xy] = float4(finalUse, 1.0f);
+
 }

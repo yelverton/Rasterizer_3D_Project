@@ -11,6 +11,9 @@ struct Vertex
 	float3 normal : normal;
 	float3 posWS : WS_POSITION;
 	float4 posLight : LIGHTPOS;
+	float4 posLightTwo : LIGHTPOSTWO;
+	float4 posLightThree : LIGHTPOSTHREE;
+	float4 posLightFour : LIGHTPOSFOUR;
 };
 
 cbuffer cam : register(b0)

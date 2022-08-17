@@ -32,10 +32,10 @@ bool createLightBuffer(ID3D11Device* device, ID3D11Buffer*& lightBuffer, struct 
 bool createLightBufferTwo(ID3D11Device* device, ID3D11Buffer*& lightBuffer, struct LightDataTwo& lightData)
 {
 	// create light constant buffer
-	lightData.posTwo = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	lightData.posTwo = XMFLOAT3(5.0f, 5.0f, 0.0f);
 	lightData.ranageTwo = 20.0f;
 	lightData.dirTwo = XMFLOAT3(0.0f, -1.0f, 0.0f);
-	lightData.coneTwo = 5.0f;
+	lightData.coneTwo = 10.0f;
 	lightData.cSpotTwo = XMFLOAT3(1.0f, 1.0f, 1.0f);
 	lightData.paddingTwo = 0.0f;
 	lightData.attTwo = XMFLOAT3(0.7f, 0.2f, 0.0f);	

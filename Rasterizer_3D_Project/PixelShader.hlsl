@@ -77,7 +77,6 @@ vsOutPut main(PixelShaderInput input) : SV_TARGET
 	output.baseColour = float4(1.0f, 0.0f, 0.0f, 0.0f); // Behöver lägga till specular exponent fråga om det är shiness kan vara ej :D
 	output.ambinetComponent = Ambient.Sample(Sampler, input.uv).rgba;
 	output.diffuseComponent = Deffuse.Sample(Sampler, input.uv).rgba;
-	output.diffuseComponent.w = shadow;
 	output.specularComponent = Specular.Sample(Sampler, input.uv).rgba;
 	
 	return output;
