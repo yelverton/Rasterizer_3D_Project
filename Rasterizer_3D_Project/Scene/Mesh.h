@@ -22,6 +22,8 @@ private:
     std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> specular;
     DirectX::BoundingBox boundingBox;
     ID3D11Buffer* theWorldBuffer;
+    XMVECTOR smallest;
+    XMVECTOR biggest;
     std::vector<UINT> next;
     std::vector<UINT> size;
     TheWorld theWorld;
@@ -33,6 +35,7 @@ protected:
     HRESULT SetupWorldMatrixs(XMFLOAT3 world);
     void CreateBoundingBox(XMVECTOR smallest, XMVECTOR biggest, XMFLOAT3 world);
     void SetContantBuffer();
+    void setWorldPos(XMFLOAT3 world);
 public:
     Mesh(ID3D11Device* device, ID3D11DeviceContext* immediateContext, std::vector<SimpleVertex> vertexTriangle, 
         std::vector<DWORD> indexTriangle, std::vector<UINT> next, std::vector<UINT> size,
@@ -45,6 +48,7 @@ public:
     void DrawPrePass();
     int NrOfSubMashes();
     void changeWorld(XMFLOAT3 world);
+    void setUniqueId(int unique);
     int getUniqueId();
     DirectX::BoundingBox getBoundingBox();
     Mesh(const Mesh& mesh);

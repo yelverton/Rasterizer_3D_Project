@@ -16,6 +16,8 @@ Mesh::Mesh(ID3D11Device* device, ID3D11DeviceContext* immediateContext, std::vec
 	this->next = next;
 	this->size = size;
 	this->unique = unique;
+	this->smallest = smallest;
+	this->biggest = biggest;
 
 	if (FAILED(CreateVertexBuffer(vertexTriangle)))
 		ErrorLog::Log("Failed to create Vertex Buffer!");
@@ -74,6 +76,11 @@ void Mesh::changeWorld(XMFLOAT3 world)
 	XMStoreFloat4x4(&theWorld.worldMatrix, XMMatrixTranspose(Identity));
 }
 
+void Mesh::setUniqueId(int unique)
+{
+	this->unique = unique;
+}
+
 int Mesh::getUniqueId()
 {
 	return unique;
@@ -100,6 +107,8 @@ Mesh::Mesh(const Mesh& mesh)
 	this->next = mesh.next;
 	this->theWorld = mesh.theWorld;
 	this->unique = mesh.unique;
+	this->biggest = mesh.biggest;
+	this->smallest = mesh.smallest;
 }
 
 
@@ -190,5 +199,13 @@ void Mesh::SetContantBuffer()
 	std::memcpy(subData.pData, &theWorld, sizeof(TheWorld));
 	immediateContext->Unmap(theWorldBuffer, 0);
 	immediateContext->VSSetConstantBuffers(0, 1, &theWorldBuffer);
+}
+
+void Mesh::setWorldPos(XMFLOAT3 world)
+{
+	if (FAILED(SetupWorldMatrixs(world)))
+		ErrorLog::Log("Failed to setup worldBuffer!");
+
+	CreateBoundingBox(smallest, biggest, world);
 }
 
