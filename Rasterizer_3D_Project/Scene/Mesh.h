@@ -49,6 +49,7 @@ public:
         std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> specular,
         XMFLOAT3 world, int unique, XMVECTOR smallest, XMVECTOR biggest, std::vector<float> specularExponent);
     
+    void release();
     void Draw();
     void DrawPrePass();
     int NrOfSubMashes();

@@ -522,6 +522,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_ LPWSTR    lpCmdLine,
 	_In_ int       nCmdShow)
 {
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	const UINT WIDTH = 1024;
 	const UINT HEIGHT = 1024;
 
@@ -536,7 +537,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	ID3D11UnorderedAccessView* UAView;
 	ID3D11UnorderedAccessView* UAViewP;
-	ID3D11UnorderedAccessView* UAViewC;
 
 	ID3D11DepthStencilView* dsView;
 	ID3D11DepthStencilView* dsViewShadow[4];
@@ -807,42 +807,74 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	}
 
 	lightBuffer->Release();
+	lightBufferTwo->Release();	
+	lightBufferThree->Release();
+	lightBufferFour->Release();	
 	camBuffer->Release();
+	directionBuffer->Release();
+	theWorldBuffer->Release();
 	particleBuffer->Release();
 	sampleState->Release();
-	sampleState->Release();
+	sampleStateShadow->Release();
+	sampleStateCubeMapping->Release();
+	getDTTimeBuffer->Release();
 	inputLayoutVS->Release();
 	inputLayoutVSDepth->Release();
 	inputLayoutVSParticle->Release();
+	rasterizerState->Release();
+	dShader->Release();
+	hShader->Release();
 	pShader->Release();
 	vShader->Release();
 	vShaderDepth->Release();
 	vShaderParticle->Release();
 	gShaderParticle->Release();
+	//vShaderPreCubeMapping->Release();
+	pShaderParticle->Release();
+	//pShaderPreCubeMapping->Release();
+	pShaderMainCubeMapping->Release();
+	//cShaderPreCube->Release();
+	srvCubeMapping->Release();
 	cShader->Release();
 	cShaderParticle->Release();
+	gBufferRTVParticle->Release();
 	dsView->Release();
 	for (int i = 0; i < 4; i++)
 	{
 		dsViewShadow[i]->Release();
 		SRVShadow[i]->Release();
-
 	}
-	inputLayoutVSParticle->Release();
+	UAView->Release();
+	UAViewP->Release();
+	dsViewParticle->Release();
 	rtv->Release();
+	//dsViewCubeMapping->Release();
+	//inputLayoutVSPreCubeMapping->Release();
+	inputLayoutVSMainCubeMapping->Release();
 	swapChain->Release();
 	immediateContext->Release();
 	device->Release();
 	hShader->Release();
 	dShader->Release();
 	/*resterizerState->Release();*/
-
 	for (int i = 0; i < 6; i++)
 	{
 		gBufferRTV[i]->Release();
 		gBufferSRV[i]->Release();
-		//uavCubeMapping[i]->Release();
+		UAVCubeMapping[i]->Release();
 	}
+
+	for (int i = 0; i < 3; i++)
+	{
+		//gBufferRTVPreCube[i]->Release();
+		//gBufferSRVPreCube[i]->Release();
+	}
+	
+	for (int i = 0; i < mesh.size(); i++)
+	{
+		mesh[i].release();
+	}
+
 
 	return 0;
 }

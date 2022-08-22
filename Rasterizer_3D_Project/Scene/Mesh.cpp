@@ -40,6 +40,14 @@ Mesh::Mesh(ID3D11Device* device, ID3D11DeviceContext* immediateContext, std::vec
 	CreateBoundingBox(smallest, biggest, world);
 }
 
+void Mesh::release()
+{
+	theWorldBuffer->Release();
+	for (int i = 0; i < shinessBuffer.size(); i++)
+		shinessBuffer[i]->Release();
+	shinessBuffer.clear();
+}
+
 void Mesh::Draw()
 {
 	UINT stride = sizeof(SimpleVertex);
