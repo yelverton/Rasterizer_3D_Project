@@ -706,35 +706,35 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	cubeMappingCamera.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);
 	worldPos[0] = cubeMappingCamera.GetPositionFloat3();
 
-	//vector<std::string> temp;
-	//for (int i = 0; i < modelName.size(); i++)
-	//{
-	//	bool found = false;
-	//	for (int j = 0; j < temp.size(); j++)
-	//	{
-	//		if (temp[j] == modelName[i])
-	//		{
-	//			mesh.push_back(mesh[j]);
-	//			mesh[i].changeWorld(worldPos[i]);
-	//			mesh[i].setUniqueId(i);
-	//			found = true;
-	//		}
-	//	}
-
-	//	if (!found)
-	//	{
-	//		if (!objReader(modelName[i], mesh, device, immediateContext, worldPos[i], i))
-	//			return -1;
-	//		temp.push_back(modelName[i]);
-	//	}
-
-	//}
-
+	vector<std::string> temp;
 	for (int i = 0; i < modelName.size(); i++)
 	{
-		if (!objReader(modelName[i], mesh, device, immediateContext, worldPos[i], i))
-			return -1;
+		bool found = false;
+		for (int j = 0; j < temp.size(); j++)
+		{
+			if (temp[j] == modelName[i])
+			{
+				mesh.push_back(mesh[j]);
+				mesh[i].changeWorld(worldPos[i]);
+				mesh[i].setUniqueId(i);
+				found = true;
+			}
+		}
+
+		if (!found)
+		{
+			if (!objReader(modelName[i], mesh, device, immediateContext, worldPos[i], i))
+				return -1;
+			temp.push_back(modelName[i]);
+		}
+
 	}
+
+	//for (int i = 0; i < modelName.size(); i++)
+	//{
+	//	if (!objReader(modelName[i], mesh, device, immediateContext, worldPos[i], i))
+	//		return -1;
+	//}
 
 
 	QuadTree quadTree;

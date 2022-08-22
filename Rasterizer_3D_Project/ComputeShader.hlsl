@@ -76,7 +76,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	
 	// specular (direction light)
 	float3 reflectDirFour = normalize(reflect(lightDirection, Normal));
-	float3 specCompOne = pow(max(dot(reflectDirFour, -camToPic), 0.0f), shiness);
+	float3 specCompOne = pow(max(dot(reflectDirFour, -camToPic), 0.0f), 50.0f);
 	
 	//spotlight(LightTwo)
 	

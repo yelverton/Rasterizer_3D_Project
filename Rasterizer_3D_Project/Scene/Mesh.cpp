@@ -238,9 +238,9 @@ void Mesh::SetShinessBuffer(int index)
 {
 	D3D11_MAPPED_SUBRESOURCE subData = {};
 	immediateContext->Map(shinessBuffer[index], 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
-	std::memcpy(subData.pData, &shineness, sizeof(Shineness));
+	std::memcpy(subData.pData, &shineness[index], sizeof(Shineness));
 	immediateContext->Unmap(shinessBuffer[index], 0);
-	immediateContext->VSSetConstantBuffers(6, 1, &shinessBuffer[index]);
+	immediateContext->PSSetConstantBuffers(0, 1, &shinessBuffer[index]);
 }
 
 void Mesh::setWorldPos(XMFLOAT3 world)

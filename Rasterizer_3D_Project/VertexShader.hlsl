@@ -33,12 +33,6 @@ cbuffer LightVPFour : register(b5)
 	matrix lightProjectionFour;
 }
 
-cbuffer Shineness : register(b6)
-{
-	float3 padding;
-	float shiness;
-};
-
 struct VertexShaderInput
 {
 	float3 position : POSITION;
@@ -81,7 +75,6 @@ VertexShaderOutput main(VertexShaderInput input)
 	output.posLightTwo = mul(float4(input.position, 1.0f), lightWorldViewProjectionTwo);
 	output.posLightThree = mul(float4(input.position, 1.0f), lightWorldViewProjectionThree);
 	output.posLightFour = mul(float4(input.position, 1.0f), lightWorldViewProjectionFour);
-	output.shiness = float4(shiness, 0.0f, 0.0f, 0.0f);
 	
 	return output;
 }
