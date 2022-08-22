@@ -5,9 +5,9 @@ Ka 0.00 0.00 0.00
 Tf 1.00 1.00 1.00
 Ni 1.00
 Ns 18.00
-map_Kd sandRock
-map_Ka sandRock
-map_Ks sandRock
+map_Kd rockTex
+map_Ka rockTex
+map_Ks rockTex
 Ns 120
 newmtl Blue
 # illum 4
