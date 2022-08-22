@@ -168,7 +168,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 
 	float3 DiffuseUse = (Diffuse * diffuseLevel + Diffuse * diffuseLevelTwo + Diffuse * diffuseLevelThree + Diffuse * diffuseLevelFour);
 	float specularUse = Specular * specCompOne + Specular * specCompTwo + Specular * specCompThree + Specular * specCompFour;
-	float3 finalUse = (Ambient + DiffuseUse + specularUse) * ambinetComponent.Load(location).w;
+	float3 finalUse = Ambient + (DiffuseUse + specularUse) * ambinetComponent.Load(location).w;
 	
 	//float3 finalUse2 = (Diffuse * ambinetComponent.Load(location).w) + Specular + Ambient;
 	//float3 finalUse3 = finalUse + finalUse2;
