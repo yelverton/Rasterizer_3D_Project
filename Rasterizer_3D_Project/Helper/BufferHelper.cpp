@@ -32,7 +32,7 @@ bool createLightBuffer(ID3D11Device* device, ID3D11Buffer*& lightBuffer, struct 
 bool createLightBufferTwo(ID3D11Device* device, ID3D11Buffer*& lightBuffer, struct LightDataTwo& lightData)
 {
 	// create light constant buffer
-	lightData.posTwo = XMFLOAT3(5.0f, 5.0f, 0.0f);
+	lightData.posTwo = XMFLOAT3(-23.0f, 10.0f, 2.8f);
 	lightData.ranageTwo = 20.0f;
 	lightData.dirTwo = XMFLOAT3(0.0f, -1.0f, 0.0f);
 	lightData.coneTwo = 10.0f;
@@ -66,7 +66,7 @@ bool createLightBufferTwo(ID3D11Device* device, ID3D11Buffer*& lightBuffer, stru
 bool createLightBufferThree(ID3D11Device* device, ID3D11Buffer*& lightBuffer, struct LightDataThree& lightData)
 {
 	// create light constant buffer
-	lightData.posThree = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	lightData.posThree = XMFLOAT3(-0.91f, 10.0f, 27.4f);
 	lightData.ranageThree = 5.0f;
 	lightData.dirThree = XMFLOAT3(0.0f, -1.0f, 0.0f);
 	lightData.coneThree = 5.0f;
@@ -100,7 +100,7 @@ bool createLightBufferThree(ID3D11Device* device, ID3D11Buffer*& lightBuffer, st
 bool createLightBufferFour(ID3D11Device* device, ID3D11Buffer*& lightBuffer, struct LightDataFour& lightData)
 {
 	// create light constant buffer
-	lightData.posFour = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	lightData.posFour = XMFLOAT3(33.6f, 10.0f, 3.1f);
 	lightData.ranageFour = 5.0f;
 	lightData.dirFour = XMFLOAT3(0.0f, -1.0f, 0.0f);
 	lightData.coneFour = 5.0f;

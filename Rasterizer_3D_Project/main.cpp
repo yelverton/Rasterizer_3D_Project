@@ -270,7 +270,8 @@ void RenderComputerShader(ID3D11DeviceContext*& immediateContext, ID3D11ComputeS
 	immediateContext->CSSetUnorderedAccessViews(0, 1, &UAView, nullptr);
 
 	camData.cameraPosition = camera.GetPositionFloat3();
-	lightData.lightDirection = lightCamera.GetPositionFloat3();
+	lightData.lightDirection = XMFLOAT3(-0.0f, -0.5f, -0.5f);
+	//lightData.lightDirection = lightCamera.GetPositionFloat3();
 
 	D3D11_MAPPED_SUBRESOURCE subLight = {};
 	immediateContext->Map(lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subLight);
@@ -285,7 +286,7 @@ void RenderComputerShader(ID3D11DeviceContext*& immediateContext, ID3D11ComputeS
 	immediateContext->CSSetConstantBuffers(1, 1, &camBuffer);
 	
 	// other lights
-	lightDataTwo.posTwo = lightCameraTwo.GetPositionFloat3();
+	lightDataTwo.posTwo = XMFLOAT3(-23.0f, 10.0f, 2.8f);
 
 	D3D11_MAPPED_SUBRESOURCE subLightTwo = {};
 	immediateContext->Map(lightBufferTwo, 0, D3D11_MAP_WRITE_DISCARD, 0, &subLightTwo);
@@ -293,7 +294,7 @@ void RenderComputerShader(ID3D11DeviceContext*& immediateContext, ID3D11ComputeS
 	immediateContext->Unmap(lightBufferTwo, 0);
 	immediateContext->CSSetConstantBuffers(2, 1, &lightBufferTwo);
 
-	lightDataThree.posThree = lightCameraThree.GetPositionFloat3();
+	lightDataThree.posThree = XMFLOAT3(-0.91f, 10.0f, 27.4f);
 
 	D3D11_MAPPED_SUBRESOURCE subLightThree = {};
 	immediateContext->Map(lightBufferThree, 0, D3D11_MAP_WRITE_DISCARD, 0, &subLightThree);
@@ -301,7 +302,7 @@ void RenderComputerShader(ID3D11DeviceContext*& immediateContext, ID3D11ComputeS
 	immediateContext->Unmap(lightBufferThree, 0);
 	immediateContext->CSSetConstantBuffers(3, 1, &lightBufferThree);
 
-	lightDataFour.posFour = lightCameraFour.GetPositionFloat3();
+	lightDataFour.posFour = XMFLOAT3(33.6f, 10.0f, 3.1f);
 
 	D3D11_MAPPED_SUBRESOURCE subLightFour = {};
 	immediateContext->Map(lightBufferFour, 0, D3D11_MAP_WRITE_DISCARD, 0, &subLightFour);
@@ -689,18 +690,23 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	lightCameraTwo.AdjustPosition(-23.0f, 10.0f, 2.8f);
 	lightCameraThree.AdjustPosition(-0.91f, 10.0f, 27.4f);
 	lightCameraFour.AdjustPosition(33.6f, 10.0f, 3.1f);
+	//lightCamera.AdjustPosition(0.0f, 0.0f, 0.0f);
+	//lightCameraTwo.AdjustPosition(0.0f, 0.0f, 0.0f);
+	//lightCameraThree.AdjustPosition(0.0f, 0.0f, 0.0f);
+	//lightCameraFour.AdjustPosition(0.0f, 0.0f, 0.0f);
+
 
 	// light
-	lightCamera.SetLookAtPos(XMFLOAT3(0.0f, 1.0f, 0.0f));
+	lightCamera.SetLookAtPos(XMFLOAT3(0.0f, -1.0f, 0.0f));
 	lightCamera.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);
 	
-	lightCameraTwo.SetLookAtPos(XMFLOAT3(0.0f, 1.0f, 0.0f));
+	lightCameraTwo.SetLookAtPos(XMFLOAT3(0.0f, -1.0f, 0.0f));
 	lightCameraTwo.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);
 	
-	lightCameraThree.SetLookAtPos(XMFLOAT3(0.0f, 1.0f, 0.0f));
+	lightCameraThree.SetLookAtPos(XMFLOAT3(0.0f, -1.0f, 0.0f));
 	lightCameraThree.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);
 
-	lightCameraFour.SetLookAtPos(XMFLOAT3(0.0f, 1.0f, 0.0f));
+	lightCameraFour.SetLookAtPos(XMFLOAT3(0.0f, -1.0f, 0.0f));
 	lightCameraFour.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);
 
 	cubeMappingCamera.adjustProjectionMatrix(DirectX::XM_PI * 0.6, float(WIDTH / HEIGHT), 0.1, 1000.f);

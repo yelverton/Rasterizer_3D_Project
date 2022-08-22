@@ -66,17 +66,17 @@ vsOutPut main(PixelShaderInput input) : SV_TARGET
 	//float2 leps = frac(texelPosition);
     
 	//float shadow = lerp(lerp(t0, t1, leps.x), lerp(t2, t3, leps.x), leps.y);
-	float shadow = (t0 + t1 + t2 + t3) / 4;
-	if (shadow <= 0.3f)
-		shadow = 0.3f;
+	//float shadow = (t0 + t1 + t2 + t3) / 4;
+	//if (shadow <= 0.3f)
+	//	shadow = 0.3f;
 	
 	vsOutPut output;
 	
 	output.posWS = float4(input.posWS, 1.0f);
 	output.normal = float4(input.normal, 1.0f);
-	output.baseColour = float4(1.0f, 0.0f, 0.0f, 0.0f); // Behöver lägga till specular exponent fråga om det är shiness kan vara ej :D
+	output.baseColour = float4(t0, t1, t1, t2); // Behöver lägga till specular exponent fråga om det är shiness kan vara ej :D
 	output.ambinetComponent = Ambient.Sample(Sampler, input.uv).rgba;
-	output.ambinetComponent.w = shadow;
+	//output.ambinetComponent.w = t0;
 	output.diffuseComponent = Deffuse.Sample(Sampler, input.uv).rgba;
 	output.specularComponent = Specular.Sample(Sampler, input.uv).rgba;
 	
