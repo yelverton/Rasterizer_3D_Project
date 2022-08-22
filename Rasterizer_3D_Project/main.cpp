@@ -270,7 +270,7 @@ void RenderComputerShader(ID3D11DeviceContext*& immediateContext, ID3D11ComputeS
 	immediateContext->CSSetUnorderedAccessViews(0, 1, &UAView, nullptr);
 
 	camData.cameraPosition = camera.GetPositionFloat3();
-	lightData.lightDirection = lightCamera.GetPositionFloat3();
+	lightData.lightDirection = XMFLOAT3(-0.0f, -0.5f, -0.5f);
 
 	D3D11_MAPPED_SUBRESOURCE subLight = {};
 	immediateContext->Map(lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subLight);

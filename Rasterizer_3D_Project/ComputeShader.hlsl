@@ -71,6 +71,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	float3 Specular = specularComponent.Load(location).xyz;
 	
 	////// diffuse (direction light)
+	//float3 lightToPixel = pos
 	float3 lightDir = -normalize(lightDirection);
 	float3 diffuseLevel = max(dot(Normal, lightDir), 0.0f);
 	
