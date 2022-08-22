@@ -47,7 +47,7 @@ bool CreateShaderResourView(std::string mtlPictures, ID3D11ShaderResourceView*& 
 }
 
 bool mtlReader(std::string mtlFile, ID3D11ShaderResourceView*& ambient, ID3D11ShaderResourceView*& diffuse,
-	ID3D11ShaderResourceView*& specular, std::string readArea, std::vector<float>& specularExponent, ID3D11Device* device)
+	ID3D11ShaderResourceView*& specular, std::string readArea, float& shineness, ID3D11Device* device)
 {
 	std::vector<std::string> ambientStrVector;
 	std::vector<std::string> diffuseStrVector;
@@ -56,7 +56,6 @@ bool mtlReader(std::string mtlFile, ID3D11ShaderResourceView*& ambient, ID3D11Sh
 	string ambientStr = "missingTexture";
 	string diffuseStr = "missingTexture";
 	string specularStr = "missingTexture";
-
 
 	std::ifstream file("Scene/models/" + mtlFile);
 	if (!file.is_open())
@@ -104,7 +103,7 @@ bool mtlReader(std::string mtlFile, ID3D11ShaderResourceView*& ambient, ID3D11Sh
 					else if (word == "Ns")
 					{
 						iss >> word;
-						specularExponent.push_back(stof(word));
+						shineness = std::stof(word);
 					}
 				}
 			}

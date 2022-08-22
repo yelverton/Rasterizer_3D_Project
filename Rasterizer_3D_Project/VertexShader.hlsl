@@ -50,6 +50,7 @@ struct VertexShaderOutput
 	float4 posLightTwo : LIGHTPOSTWO;
 	float4 posLightThree : LIGHTPOSTHREE;
 	float4 posLightFour : LIGHTPOSFOUR;
+	float4 shiness : SHINESS;
 };
 
 VertexShaderOutput main(VertexShaderInput input)

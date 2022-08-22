@@ -125,13 +125,15 @@ bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, 
 					ID3D11ShaderResourceView* ambient;
 					ID3D11ShaderResourceView* diffuse;
 					ID3D11ShaderResourceView* specular;
+					float shineness;
 					
 					iss >> readArea;
-					mtlReader(mtlFile, ambient, diffuse, specular, readArea, specularExponent, device);
+					mtlReader(mtlFile, ambient, diffuse, specular, readArea, shineness, device);
 
 					ambientVec.push_back(ambient);
 					diffuseVec.push_back(diffuse);
 					specularVec.push_back(specular);
+					specularExponent.push_back(shineness);
 
 					ambient->Release();
 					diffuse->Release();
@@ -206,7 +208,7 @@ bool objReader(std::string modelName, vector<Mesh>& mesh, ID3D11Device* device, 
 	XMVECTOR biggest = XMVectorSet(biggestX, biggestY, biggestZ, 0.0f);
 
 	mesh.push_back(Mesh(device, immediateContext, vertex, indices, startLocation, indexCount,
-		ambientVec, diffuseVec, specularVec, worldPos, unique, smallest, biggest));
+		ambientVec, diffuseVec, specularVec, worldPos, unique, smallest, biggest, specularExponent));
 
 	return true;
 }

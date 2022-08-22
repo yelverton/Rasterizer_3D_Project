@@ -730,7 +730,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	}
 
-	mesh.size();
+	//for (int i = 0; i < modelName.size(); i++)
+	//{
+	//	if (!objReader(modelName[i], mesh, device, immediateContext, worldPos[i], i))
+	//		return -1;
+	//}
+
 
 	QuadTree quadTree;
 	quadTree.SetupQuadTree(mesh);

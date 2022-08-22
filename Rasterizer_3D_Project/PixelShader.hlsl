@@ -30,6 +30,12 @@ struct vsOutPut
 	float4 specularComponent : SV_TARGET5;
 };
 
+cbuffer Shiness : register(b0)
+{
+	float3 padding;
+	float shininess;
+};
+
 vsOutPut main(PixelShaderInput input) : SV_TARGET
 {
 	//// normalize
@@ -74,7 +80,8 @@ vsOutPut main(PixelShaderInput input) : SV_TARGET
 	
 	output.posWS = float4(input.posWS, 1.0f);
 	output.normal = float4(input.normal, 1.0f);
-	output.baseColour = float4(1.0f, 0.0f, 0.0f, 0.0f); // Behöver lägga till specular exponent fråga om det är shiness kan vara ej :D
+	output.baseColour = float4(1.0f, 1.0f, 1.0f, 0.0f);
+	output.baseColour.w = shininess;
 	output.ambinetComponent = Ambient.Sample(Sampler, input.uv).rgba;
 	output.ambinetComponent.w = shadow;
 	output.diffuseComponent = Deffuse.Sample(Sampler, input.uv).rgba;

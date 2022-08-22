@@ -94,3 +94,9 @@ struct CamData
     XMFLOAT3 cameraPosition;
     float padding;
 };
+
+struct Shineness
+{
+    XMFLOAT3 padding;
+    float shiness;
+};
