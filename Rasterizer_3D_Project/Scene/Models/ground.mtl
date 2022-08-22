@@ -8,6 +8,7 @@ Ns 18.00
 map_Kd sandRock
 map_Ka sandRock
 map_Ks sandRock
+Ns 120
 newmtl Blue
 # illum 4
 Kd 0.00 0.00 0.00

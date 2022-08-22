@@ -63,6 +63,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	float3 Normal = normalize(normal.Load(location).xyz);
 	float3 Pos = posWS.Load(location).xyz;
 	float3 camToPic = normalize(Pos - cameraPosition);
+	float shiness = baseColour.Load(location).w;
 	
 	// textures
 	float3 Ambient = ambinetComponent.Load(location).xyz * 0.4f;
@@ -75,7 +76,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	
 	// specular (direction light)
 	float3 reflectDirFour = normalize(reflect(lightDirection, Normal));
-	float3 specCompOne = pow(max(dot(reflectDirFour, -camToPic), 0.0f), 50);
+	float3 specCompOne = pow(max(dot(reflectDirFour, -camToPic), 0.0f), shiness);
 	
 	//spotlight(LightTwo)
 	
@@ -96,7 +97,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 			diffuseLevelTwo = pow(max(dot(-lightToPixelTwo, dirTwo), 0.0f), coneTwo);
 			
 			float3 recTwo = normalize(reflect(-dirTwo, Normal));
-			specCompTwo = pow(max(dot(recTwo, lightToPixelTwo), 0.0f), 120.0f);
+			specCompTwo = pow(max(dot(recTwo, lightToPixelTwo), 0.0f), shiness);
 		}
 	}
 	
@@ -118,7 +119,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 			diffuseLevelThree = pow(max(dot(-lightToPixelThree, dirThree), 0.0f), coneThree);
 			
 			float3 recThree = normalize(reflect(-dirThree, Normal));
-			specCompTwo = pow(max(dot(recThree, lightToPixelThree), 0.0f), 120.0f);
+			specCompTwo = pow(max(dot(recThree, lightToPixelThree), 0.0f), shiness);
 		}
 	}
 	
@@ -140,7 +141,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 			diffuseLevelFour = pow(max(dot(-lightToPixelFour, dirFour), 0.0f), coneFour);
 			
 			float3 recFour = normalize(reflect(-dirFour, Normal));
-			specCompTwo = pow(max(dot(recFour, lightToPixelFour), 0.0f), 120.0f);
+			specCompTwo = pow(max(dot(recFour, lightToPixelFour), 0.0f), shiness);
 		}
 	}
 	

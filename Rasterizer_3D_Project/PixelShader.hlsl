@@ -18,6 +18,7 @@ struct PixelShaderInput
 	float4 posLightTwo : LIGHTPOSTWO;
 	float4 posLightThree : LIGHTPOSTHREE;
 	float4 posLightFour : LIGHTPOSFOUR;
+	float4 shiness : SHINESS;
 };
 
 struct vsOutPut
@@ -74,7 +75,7 @@ vsOutPut main(PixelShaderInput input) : SV_TARGET
 	
 	output.posWS = float4(input.posWS, 1.0f);
 	output.normal = float4(input.normal, 1.0f);
-	output.baseColour = float4(1.0f, 0.0f, 0.0f, 0.0f); // Behöver lägga till specular exponent fråga om det är shiness kan vara ej :D
+	output.baseColour = float4(1.0f, 1.0f, 1.0f, input.shiness.x);
 	output.ambinetComponent = Ambient.Sample(Sampler, input.uv).rgba;
 	output.ambinetComponent.w = shadow;
 	output.diffuseComponent = Deffuse.Sample(Sampler, input.uv).rgba;

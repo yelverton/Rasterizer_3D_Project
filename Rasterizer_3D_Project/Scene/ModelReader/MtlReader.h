@@ -10,4 +10,4 @@
 using namespace std;
 
 bool mtlReader(std::string mtlFile, ID3D11ShaderResourceView*& ambient, ID3D11ShaderResourceView*& diffuse,
-	ID3D11ShaderResourceView*& specular, std::string readArea, std::vector<float>& specularExponent, ID3D11Device* device);
+	ID3D11ShaderResourceView*& specular, std::string readArea, float& shineness, ID3D11Device* device);
