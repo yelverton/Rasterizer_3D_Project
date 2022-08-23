@@ -94,7 +94,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 		
 		if (amountLightTwo > 0.0f)
 		{
-			Diffuse /= (attTwo[0] + (attTwo[1] * lightStrenghtTwo) + (attTwo[2] * (lightStrenghtTwo * lightStrenghtTwo)));
+			//Diffuse /= (attTwo[0] + (attTwo[1] * lightStrenghtTwo) + (attTwo[2] * (lightStrenghtTwo * lightStrenghtTwo)));
 			diffuseLevelTwo = pow(max(dot(-lightToPixelTwo, dirTwo), 0.0f), coneTwo);
 			
 			float3 recTwo = normalize(reflect(-dirTwo, Normal));
@@ -116,7 +116,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 		
 		if (amountLightThree > 0.0f)
 		{
-			Diffuse /= (attThree[0] + (attThree[1] * lightStrenghtThree) + (attThree[2] * (lightStrenghtThree * lightStrenghtThree)));
+			//Diffuse /= (attThree[0] + (attThree[1] * lightStrenghtThree) + (attThree[2] * (lightStrenghtThree * lightStrenghtThree)));
 			diffuseLevelThree = pow(max(dot(-lightToPixelThree, dirThree), 0.0f), coneThree);
 			
 			float3 recThree = normalize(reflect(-dirThree, Normal));
@@ -138,7 +138,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 		
 		if (amountLightFour > 0.0f)
 		{
-			Diffuse /= (attFour[0] + (attFour[1] * lightStrenghtFour) + (attFour[2] * (lightStrenghtFour * lightStrenghtFour)));
+			//Diffuse /= (attFour[0] + (attFour[1] * lightStrenghtFour) + (attFour[2] * (lightStrenghtFour * lightStrenghtFour)));
 			diffuseLevelFour = pow(max(dot(-lightToPixelFour, dirFour), 0.0f), coneFour);
 			
 			float3 recFour = normalize(reflect(-dirFour, Normal));

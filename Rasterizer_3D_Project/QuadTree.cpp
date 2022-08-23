@@ -1,28 +1,15 @@
 #include "QuadTree.h"
 #include "Helper\ErrorLog.h"
 
-void QuadTree::SetupBoundingBox(Node*& node)
+void QuadTree::SetupBoundingBox(Node* node)
 {
 	node->nodePoint = new NodePoint();
-	//node->nodePoint->box.Center = XMFLOAT3((float)node->boundingBoxCenter.x, 0.0f, (float)node->boundingBoxCenter.y);
-	//node->nodePoint->box.Extents = XMFLOAT3(node->boundingBoxCenter.x, 10.0f, float(node->boundingBoxCenter.y + node->boundingBoxSize.y));
-	/*node->nodePoint->box.Extents = XMFLOAT3(node->boundingBoxSize.y, node->boundingBoxSize.y, node->boundingBoxSize.y);*/
 
-	//XMFLOAT3 world = XMFLOAT3(node->boundingBoxCenter.x, 0.0f, node->boundingBoxCenter.y);
 	XMVECTOR smallest = XMVectorSet(-(node->boundingBoxSize.x) + node->boundingBoxCenter.x, -20.f, -(node->boundingBoxSize.y) + node->boundingBoxCenter.y, 0.0f);
 	XMVECTOR biggest = XMVectorSet(node->boundingBoxSize.x + node->boundingBoxCenter.x, 30.0f, node->boundingBoxSize.y + node->boundingBoxCenter.y, 0.0f);
 
 	DirectX::BoundingBox box;
 	DirectX::BoundingBox::CreateFromPoints(box, smallest, biggest);
-	//DirectX::XMMATRIX tempScale = DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f);
-	//DirectX::XMMATRIX tempRota = DirectX::XMMatrixRotationRollPitchYaw(0.0f, 0.0f, 0.0f);
-	//DirectX::XMMATRIX tempTrans = DirectX::XMMatrixTranslation(world.x, world.y, world.z);
-
-	//DirectX::XMMATRIX WMBB = XMMatrixIdentity();
-	//WMBB = DirectX::XMMatrixMultiply(tempScale, tempRota);
-	//WMBB = DirectX::XMMatrixMultiply(WMBB, tempTrans);
-
-	//box.Transform(box, WMBB);
 	node->nodePoint->box = box;
 }
 
@@ -55,6 +42,7 @@ void QuadTree::release()
 	for (int i = 0; i < inViewFrustomNode.size(); i++)
 		delete inViewFrustomNode[i];
 }
+
 
 void QuadTree::SetupQuadTreeEnpty(Node* node, int depth, float x, float z)
 {
@@ -153,7 +141,7 @@ void QuadTree::SetupQuadTreeEnpty(Node* node, int depth, float x, float z)
 
 }
 
-void QuadTree::ColliedWithQuadBox(Node* node, int depth, std::vector<Mesh>& mesh)
+void QuadTree::ColliedWithQuadBox(Node* node, int depth, std::vector<Mesh> mesh)
 {
 
 	for (int i = 0; i < 4; i++)
@@ -201,15 +189,11 @@ void QuadTree::ColliedWithQuadBox(Node* node, int depth, std::vector<Mesh>& mesh
 
 	if (node->nodePoint != nullptr && depth > 3)
 	{
-		inside++;
 		for (int i = 0; i < mesh.size(); i++)
 		{
 			if (mesh[i].getBoundingBox().Contains(node->nodePoint->box) != 0)
 			{
-				node->nodePoint->mesh.push_back(mesh[i]);
-				
-				collidedWithBox++;
-				found.push_back(mesh[i].getUniqueId());
+				node->nodePoint->meshID.push_back(mesh[i].getUniqueId());
 			}
 		}
 	}
@@ -262,12 +246,9 @@ void QuadTree::ColliedWithViewFrustom(Node* node, int depth, DirectX::BoundingFr
 	{
 		if (frosum.Contains(node->nodePoint->box) != 0)
 		{
-			for (int i = 0; i < node->nodePoint->mesh.size(); i++)
+			for (int i = 0; i < node->nodePoint->meshID.size(); i++)
 			{
-				//if (frosum.Contains(node->nodePoint->mesh[i].getBoundingBox()) != 0)
-				//{
-					inViewFrustom.push_back(node->nodePoint->mesh[i]);
-				//}
+				inViewFrustom.push_back(node->nodePoint->meshID[i]);
 			}
 		}
 	}
@@ -285,12 +266,12 @@ std::vector<int> QuadTree::AllInViewFrustom(DirectX::BoundingFrustum frosum)
 		bool found = false;
 		for (int j = 0; j < unique.size(); j++) 
 		{
-			if (unique[j] == inViewFrustom[i].getUniqueId())
+			if (unique[j] == inViewFrustom[i])
 				found = true;
 		}
 
 		if (!found)
-			unique.push_back(inViewFrustom[i].getUniqueId());
+			unique.push_back(inViewFrustom[i]);
 	}
 
 

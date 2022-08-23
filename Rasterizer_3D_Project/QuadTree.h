@@ -13,7 +13,7 @@ using namespace DirectX;
 struct NodePoint
 {
 	DirectX::BoundingBox box;
-	std::vector<Mesh> mesh;
+	std::vector<int> meshID;
 };
 
 struct Node
@@ -32,7 +32,7 @@ class QuadTree
 {
 private: 
 	Node* rootNode;
-	std::vector<Mesh> inViewFrustom;
+	std::vector<int> inViewFrustom;
 	std::vector<Node*> inViewFrustomNode;
 	std::vector<int> found;
 	int nrOf = 0;
@@ -41,8 +41,8 @@ private:
 
 protected:
 	void SetupQuadTreeEnpty(Node* node, int depth, float x, float z);
-	void SetupBoundingBox(Node*& node);
-	void ColliedWithQuadBox(Node* node, int depth, std::vector<Mesh>& mesh);
+	void SetupBoundingBox(Node* node);
+	void ColliedWithQuadBox(Node* node, int depth, std::vector<Mesh> mesh);
 	void ColliedWithViewFrustom(Node* node, int depth, DirectX::BoundingFrustum& frosum);
 public:
 	bool SetupQuadTree(std::vector<Mesh> mesh);

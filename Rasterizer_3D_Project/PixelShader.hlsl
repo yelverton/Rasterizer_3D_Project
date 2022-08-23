@@ -37,20 +37,14 @@ cbuffer Shiness : register(b0)
 };
 
 vsOutPut main(PixelShaderInput input) : SV_TARGET
-{
-	//// normalize
-	//input.posLight = normalize(input.posLight);
-	//input.posLightTwo = normalize(input.posLightTwo);
-	//input.posLightThree = normalize(input.posLightThree);
-	//input.posLightFour = normalize(input.posLightFour);
-	
-	// ndv
+{	
+	// normalized deivce coordinater
 	input.posLight.xy /= input.posLight.w;
 	input.posLightTwo.xy /= input.posLightTwo.w;
 	input.posLightThree.xy /= input.posLightThree.w;
 	input.posLightFour.xy /= input.posLightFour.w;
 	
-	//input.posLight.xy /= input.posLight.w;
+	// (0,1)
 	float2 smTex = float2((0.5f * input.posLight.x) + 0.5f, (-0.5f * input.posLight.y) + 0.5f);
 	float2 smTex2 = float2((0.5f * input.posLightTwo.x) + 0.5f, (-0.5f * input.posLightTwo.y) + 0.5f);
 	float2 smTex3 = float2((0.5f * input.posLightThree.x) + 0.5f, (-0.5f * input.posLightThree.y) + 0.5f);
@@ -62,10 +56,10 @@ vsOutPut main(PixelShaderInput input) : SV_TARGET
 	float depth4 = input.posLightFour.z / input.posLightFour.w;
 	float Epsilon = 0.00125f;
 	
-	float t0 = (DepthTexture.Sample(SampleDepth, smTex + float2(0.0f, 0.0f)).r + Epsilon < depth) ? 0.0f : 1.0f;
-	float t1 = (DepthTextureTwo.Sample(SampleDepth, smTex2 + float2(0.0f, 0.0f)).r + Epsilon < depth2) ? 0.0f : 1.0f;
-	float t2 = (DepthTextureThree.Sample(SampleDepth, smTex3 + float2(0.0f, 0.0f)).r + Epsilon < depth3) ? 0.0f : 1.0f;
-	float t3 = (DepthTextureFour.Sample(SampleDepth, smtex4 + float2(0.0f, 0.0f)).r + Epsilon < depth4) ? 0.0f : 1.0f;
+	float t0 = (DepthTexture.Sample(SampleDepth, smTex) + Epsilon < depth) ? 0.0f : 1.0f;
+	float t1 = (DepthTextureTwo.Sample(SampleDepth, smTex2) + Epsilon < depth2) ? 0.0f : 1.0f;
+	float t2 = (DepthTextureThree.Sample(SampleDepth, smTex3) + Epsilon < depth3) ? 0.0f : 1.0f;
+	float t3 = (DepthTextureFour.Sample(SampleDepth, smtex4) + Epsilon < depth4) ? 0.0f : 1.0f;
 	
 	//float2 texelPosition = smTex * 1024.0f;
 
