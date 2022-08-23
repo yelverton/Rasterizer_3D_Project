@@ -36,10 +36,10 @@ protected:
     HRESULT CreateVertexBuffer(std::vector<SimpleVertex> vertexTriangle);
     HRESULT SetupWorldMatrixs(XMFLOAT3 world);
     HRESULT SetupShinessBuffer(float s, int index);
-    void CreateBoundingBox(XMVECTOR smallest, XMVECTOR biggest, XMFLOAT3 world);
+    void CreateBoundingBox(XMFLOAT3 world);
     void SetContantBuffer();
     void SetShinessBuffer(int index);
-    void setWorldPos(XMFLOAT3 world);
+    void changeWorld(XMFLOAT3 world);
 
 public:
     Mesh(ID3D11Device* device, ID3D11DeviceContext* immediateContext, std::vector<SimpleVertex> vertexTriangle, 
@@ -52,8 +52,8 @@ public:
     void release();
     void Draw();
     void DrawPrePass();
+    void setWorldPos(XMFLOAT3 world);
     int NrOfSubMashes();
-    void changeWorld(XMFLOAT3 world);
     void setUniqueId(int unique);
     int getUniqueId();
     DirectX::BoundingBox getBoundingBox();

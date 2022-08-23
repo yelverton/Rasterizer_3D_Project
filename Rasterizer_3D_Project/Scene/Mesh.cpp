@@ -37,7 +37,7 @@ Mesh::Mesh(ID3D11Device* device, ID3D11DeviceContext* immediateContext, std::vec
 			ErrorLog::Log("Failed to setup specularBuffer on index : " + std::to_string(i));
 	}
 
-	CreateBoundingBox(smallest, biggest, world);
+	CreateBoundingBox(world);
 }
 
 void Mesh::release()
@@ -216,7 +216,7 @@ HRESULT Mesh::SetupShinessBuffer(float s, int index)
 	return hr;
 }
 
-void Mesh::CreateBoundingBox(XMVECTOR smallest, XMVECTOR biggest, XMFLOAT3 world)
+void Mesh::CreateBoundingBox(XMFLOAT3 world)
 {
 	DirectX::BoundingBox::CreateFromPoints(boundingBox, smallest, biggest);
 	DirectX::XMMATRIX tempScale = DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f);
@@ -256,7 +256,7 @@ void Mesh::setWorldPos(XMFLOAT3 world)
 	if (FAILED(SetupWorldMatrixs(world)))
 		ErrorLog::Log("Failed to setup worldBuffer!");
 
-	CreateBoundingBox(smallest, biggest, world);
+	CreateBoundingBox(world);
 }
 
 

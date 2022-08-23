@@ -715,7 +715,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			if (temp[j] == modelName[i])
 			{
 				mesh.push_back(mesh[j]);
-				mesh[i].changeWorld(worldPos[i]);
+				mesh[i].setWorldPos(worldPos[i]);
 				mesh[i].setUniqueId(i);
 				found = true;
 			}
