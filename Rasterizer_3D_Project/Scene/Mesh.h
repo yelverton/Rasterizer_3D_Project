@@ -22,20 +22,21 @@ private:
     std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> specular;
     DirectX::BoundingBox boundingBox;
     ID3D11Buffer* theWorldBuffer;
-    std::vector<ID3D11Buffer*> shinessBuffer;
+    ID3D11Buffer* shinessBuffer;
     XMVECTOR smallest;
     XMVECTOR biggest;
     std::vector<UINT> next;
     std::vector<UINT> size;
     TheWorld theWorld;
-    std::vector<Shineness> shineness;
+    std::vector<float> floatShiness;
+    Shineness shineness;
     int unique;
 
 protected:
     HRESULT CreateIndexBuffer(std::vector<DWORD> indexTriangle);
     HRESULT CreateVertexBuffer(std::vector<SimpleVertex> vertexTriangle);
     HRESULT SetupWorldMatrixs(XMFLOAT3 world);
-    HRESULT SetupShinessBuffer(float s, int index);
+    HRESULT SetupShinessBuffer();
     void CreateBoundingBox(XMFLOAT3 world);
     void SetContantBuffer();
     void SetShinessBuffer(int index);

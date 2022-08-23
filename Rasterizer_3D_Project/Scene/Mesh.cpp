@@ -18,6 +18,7 @@ Mesh::Mesh(ID3D11Device* device, ID3D11DeviceContext* immediateContext, std::vec
 	this->unique = unique;
 	this->smallest = smallest;
 	this->biggest = biggest;
+	this->floatShiness = specularExponent;
 
 	if (FAILED(CreateVertexBuffer(vertexTriangle)))
 		ErrorLog::Log("Failed to create Vertex Buffer!");
@@ -28,14 +29,8 @@ Mesh::Mesh(ID3D11Device* device, ID3D11DeviceContext* immediateContext, std::vec
 	if (FAILED(SetupWorldMatrixs(world)))
 		ErrorLog::Log("Failed to setup worldBuffer!");
 
-	shinessBuffer.resize(specularExponent.size());
-	shineness.resize(specularExponent.size());
-
-	for (int i = 0; i < specularExponent.size(); i++)
-	{
-		if (FAILED(SetupShinessBuffer(specularExponent[i], i)))
-			ErrorLog::Log("Failed to setup specularBuffer on index : " + std::to_string(i));
-	}
+	if (FAILED(SetupShinessBuffer()))
+		ErrorLog::Log("Failed to setup specularBuffer!");
 
 	CreateBoundingBox(world);
 }
@@ -43,17 +38,14 @@ Mesh::Mesh(ID3D11Device* device, ID3D11DeviceContext* immediateContext, std::vec
 void Mesh::release()
 {
 	theWorldBuffer->Release();
-	for (int i = 0; i < shinessBuffer.size(); i++)
-		shinessBuffer[i]->Release();
+	shinessBuffer->Release();
 	
 	ambient.clear();
 	diffuse.clear();
 	specular.clear();
 
-	shinessBuffer.clear();
 	next.clear();
 	size.clear();
-	shineness.clear();
 }
 
 void Mesh::Draw()
@@ -137,6 +129,7 @@ Mesh::Mesh(const Mesh& mesh)
 	this->smallest = mesh.smallest;
 	this->shineness = mesh.shineness;
 	this->shinessBuffer = mesh.shinessBuffer;
+	this->floatShiness = mesh.floatShiness;
 }
 
 
@@ -203,10 +196,10 @@ HRESULT Mesh::SetupWorldMatrixs(XMFLOAT3 world)
 	return hr;
 }
 
-HRESULT Mesh::SetupShinessBuffer(float s, int index)
+HRESULT Mesh::SetupShinessBuffer()
 {
-	shineness[index].padding = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	shineness[index].shiness = s;
+	shineness.padding = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	shineness.shiness = 1.0f;
 
 	D3D11_BUFFER_DESC desc;
 	desc.ByteWidth = sizeof(Shineness);
@@ -217,10 +210,10 @@ HRESULT Mesh::SetupShinessBuffer(float s, int index)
 	desc.StructureByteStride = 0;
 
 	D3D11_SUBRESOURCE_DATA data;
-	data.pSysMem = (void*)&shineness[index];
+	data.pSysMem = (void*)&shineness;
 	data.SysMemPitch = data.SysMemPitch = 0; // 1D resource 
 
-	HRESULT hr = device->CreateBuffer(&desc, &data, &shinessBuffer[index]);
+	HRESULT hr = device->CreateBuffer(&desc, &data, &shinessBuffer);
 	return hr;
 }
 
@@ -252,11 +245,13 @@ void Mesh::SetContantBuffer()
 
 void Mesh::SetShinessBuffer(int index)
 {
+	shineness.shiness = floatShiness[index];
+
 	D3D11_MAPPED_SUBRESOURCE subData = {};
-	immediateContext->Map(shinessBuffer[index], 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
-	std::memcpy(subData.pData, &shineness[index], sizeof(Shineness));
-	immediateContext->Unmap(shinessBuffer[index], 0);
-	immediateContext->PSSetConstantBuffers(0, 1, &shinessBuffer[index]);
+	immediateContext->Map(shinessBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
+	std::memcpy(subData.pData, &shineness, sizeof(Shineness));
+	immediateContext->Unmap(shinessBuffer, 0);
+	immediateContext->PSSetConstantBuffers(0, 1, &shinessBuffer);
 }
 
 void Mesh::setWorldPos(XMFLOAT3 world)
