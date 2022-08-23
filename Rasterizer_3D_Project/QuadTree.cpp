@@ -25,22 +25,12 @@ bool QuadTree::SetupQuadTree(std::vector<Mesh> mesh)
 
 	ColliedWithQuadBox(rootNode, 0, mesh);
 
-	//for (int i = 0; i < mesh.size(); i++)
-	//	ErrorLog::Log(std::to_string(mesh[i].getBoundingBox()));
-
-	//ErrorLog::Log(std::to_string(inside));
-	//ErrorLog::Log(std::to_string(collidedWithBox));
-	//for (int i = 0; i < found.size(); i++)
-	//	ErrorLog::Log(std::to_string(found[i]));
-
 	return true;
 }
 
 void QuadTree::release()
 {
 	delete rootNode;
-	for (int i = 0; i < inViewFrustomNode.size(); i++)
-		delete inViewFrustomNode[i];
 }
 
 
@@ -65,7 +55,6 @@ void QuadTree::SetupQuadTreeEnpty(Node* node, int depth, float x, float z)
 				if (depth > 0)
 				{
 					SetupBoundingBox(node);
-					nrOf++;
 				}
 
 				if (depth < 4)
@@ -84,7 +73,6 @@ void QuadTree::SetupQuadTreeEnpty(Node* node, int depth, float x, float z)
 				if (depth > 0)
 				{
 					SetupBoundingBox(node);
-					nrOf++;
 				}
 
 				if (depth < 4)
@@ -103,7 +91,6 @@ void QuadTree::SetupQuadTreeEnpty(Node* node, int depth, float x, float z)
 				if (depth > 0)
 				{
 					SetupBoundingBox(node);
-					nrOf++;
 				}
 
 				if (depth < 4)
@@ -122,7 +109,6 @@ void QuadTree::SetupQuadTreeEnpty(Node* node, int depth, float x, float z)
 				if (depth > 0)
 				{
 					SetupBoundingBox(node);
-					nrOf++;
 				}
 
 				if (depth < 4)

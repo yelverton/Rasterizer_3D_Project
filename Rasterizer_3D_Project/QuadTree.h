@@ -33,11 +33,6 @@ class QuadTree
 private: 
 	Node* rootNode;
 	std::vector<int> inViewFrustom;
-	std::vector<Node*> inViewFrustomNode;
-	std::vector<int> found;
-	int nrOf = 0;
-	double inside = 0;
-	double collidedWithBox = 0;
 
 protected:
 	void SetupQuadTreeEnpty(Node* node, int depth, float x, float z);

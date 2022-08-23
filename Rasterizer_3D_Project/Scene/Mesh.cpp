@@ -45,7 +45,15 @@ void Mesh::release()
 	theWorldBuffer->Release();
 	for (int i = 0; i < shinessBuffer.size(); i++)
 		shinessBuffer[i]->Release();
+	
+	ambient.clear();
+	diffuse.clear();
+	specular.clear();
+
 	shinessBuffer.clear();
+	next.clear();
+	size.clear();
+	shineness.clear();
 }
 
 void Mesh::Draw()
