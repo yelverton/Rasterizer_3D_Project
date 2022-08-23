@@ -49,6 +49,13 @@ bool QuadTree::SetupQuadTree(std::vector<Mesh> mesh)
 	return true;
 }
 
+void QuadTree::release()
+{
+	delete rootNode;
+	for (int i = 0; i < inViewFrustomNode.size(); i++)
+		delete inViewFrustomNode[i];
+}
+
 void QuadTree::SetupQuadTreeEnpty(Node* node, int depth, float x, float z)
 {
 	node->boundingBoxSize = XMFLOAT2(x, z);

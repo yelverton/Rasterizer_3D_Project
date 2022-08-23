@@ -46,5 +46,6 @@ protected:
 	void ColliedWithViewFrustom(Node* node, int depth, DirectX::BoundingFrustum& frosum);
 public:
 	bool SetupQuadTree(std::vector<Mesh> mesh);
+	void release();
 	std::vector<int> AllInViewFrustom(DirectX::BoundingFrustum frosum);
 };

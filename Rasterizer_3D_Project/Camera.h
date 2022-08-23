@@ -14,7 +14,7 @@ class Camera
 public:
 	Camera();
 
-	void moveCamera(Camera& cam, float dt);
+	void moveCamera(Camera*& cam, float dt);
 
 	const XMMATRIX& GetViewMatrix() const;
 	const XMMATRIX& GetProjection() const;
@@ -40,11 +40,11 @@ public:
 	const XMVECTOR& GetBackwardVector();
 	const XMVECTOR& GetLeftVector();
 
-	bool createConstantBuffer(Camera& cam, ID3D11Device* device, ID3D11DeviceContext* immediateContext);
+	bool createConstantBuffer(Camera*& cam, ID3D11Device* device, ID3D11DeviceContext* immediateContext);
 	void adjustProjectionMatrix(float FOV, float aspectRatio, float nearZ, float farZ);
-	void sendViewProjection(Camera& cam, int vertexShaderPos);
-	DirectX::BoundingFrustum sendFrustom(Camera& camera);
-	void sendViewProjectionGS(Camera& cam, int vertexShaderPos);
+	void sendViewProjection(Camera*& cam, int vertexShaderPos);
+	DirectX::BoundingFrustum sendFrustom(Camera*& camera);
+	void sendViewProjectionGS(Camera*& cam, int vertexShaderPos);
 
 private:
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> immediateContext;
