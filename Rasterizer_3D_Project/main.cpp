@@ -568,6 +568,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	if (!SetupSampleShadowShaders(device, sampleStateShadow))
 		return -1;
 
+	// Change to see Tesseleringen
 	if (!SetupRasterizerState(device, rasterizerState))
 		return -1;
 
