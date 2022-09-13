@@ -154,6 +154,7 @@
     <ClCompile Include="Scene\ModelReader\ObjHelper.cpp" />
     <ClCompile Include="Setup\CubeMappingHelper.cpp" />
     <ClCompile Include="Setup\D3D11Helper.cpp" />
+    <ClCompile Include="Setup\mainRender.cpp" />
     <ClCompile Include="Setup\ParticleHelper.cpp" />
     <ClCompile Include="Setup\PipelineHelper.cpp" />
     <ClCompile Include="Setup\ShadowHelper.cpp" />
@@ -281,10 +282,11 @@
     <ClInclude Include="Scene\ModelReader\MtlReader.h" />
     <ClInclude Include="Scene\ModelReader\ObjHelper.h" />
     <ClInclude Include="Setup\CubeMappingHelper.h" />
+    <ClInclude Include="Setup\mainRender.h" />
     <ClInclude Include="Setup\ParticleHelper.h" />
-    <ClInclude Include="Setup\ShadowHelper.h" />
     <ClInclude Include="Setup\D3D11Helper.h" />
     <ClInclude Include="Setup\PipelineHelper.h" />
+    <ClInclude Include="Setup\ShadowHelper.h" />
     <ClInclude Include="Setup\WindowHelper.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

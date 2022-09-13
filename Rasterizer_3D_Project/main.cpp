@@ -4,6 +4,7 @@
 #include "Setup/WindowHelper.h"
 #include "Setup/D3D11Helper.h"
 #include "Setup/PipelineHelper.h"
+#include "Setup/mainRender.h"
 #include "Setup\ShadowHelper.h"
 #include "Setup\ParticleHelper.h"
 #include "Setup/CubeMappingHelper.h"
@@ -429,7 +430,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_ LPWSTR    lpCmdLine,
 	_In_ int       nCmdShow)
 {
-	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	const UINT WIDTH = 1024;
 	const UINT HEIGHT = 1024;
 
@@ -539,8 +540,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, dsView, viewport))
 		return -1;
 
-	if (!SetupShadowHelper(device, immediateContext, viewportShadow, WIDTH, HEIGHT, dsViewShadow, SRVShadow,
-		gBufferRTV, gBufferSRV, swapChain, UAView))
+	if (!SetupMainRender(device, immediateContext, gBufferRTV, gBufferSRV, swapChain, UAView, WIDTH, HEIGHT))
+		return false;
+
+	if (!SetupShadowHelper(device, immediateContext, viewportShadow, WIDTH, HEIGHT, dsViewShadow, SRVShadow))
 		return -1;
 
 	if (!SetupParticleHelper(device, immediateContext, UAViewP, swapChain, particleBuffer, particels, particlePosition,
@@ -648,13 +651,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	//}
 
 
-	QuadTree* quadTree;
-	quadTree = new QuadTree();
+	QuadTree* quadtree;
+	quadtree = new QuadTree();
 
-	quadTree->SetupQuadTree(mesh);
+	quadtree->SetupQuadTree(mesh);
 
 
-	MSG msg = { };
+	/*MSG msg = { };
 	while (!(GetKeyState(VK_ESCAPE) & 0x8000) && msg.message != WM_QUIT)
 	{
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
@@ -716,7 +719,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> elapsed_seconds = end - start;
 		dt = elapsed_seconds.count();
-	}
+	}*/
 
 	particels.clear();
 
@@ -789,8 +792,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	for (int i = 0; i < mesh.size(); i++)
 		mesh[i].release();
 
-	quadTree->release();
-	delete quadTree;
+	quadtree->release();
+	delete quadtree;
 
 	delete camera;
 	delete lightCamera;
