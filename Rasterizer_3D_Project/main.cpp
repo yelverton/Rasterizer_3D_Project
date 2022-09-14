@@ -657,7 +657,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	quadtree->SetupQuadTree(mesh);
 
 
-	/*MSG msg = { };
+	MSG msg = { };
 	while (!(GetKeyState(VK_ESCAPE) & 0x8000) && msg.message != WM_QUIT)
 	{
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
@@ -686,7 +686,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 				RenderPreCube(immediateContext, dsView, viewport, vShader, pShader, inputLayoutVS, sampleState, camBuffer,
 					camData, cubeMappingCamera, gBufferRTV, lightCamera, SRVShadow, sampleState, i, lightCameraTwo,
 					lightCameraThree, lightCameraFour);
-				drawPreCube(immediateContext, mesh, quadTree->AllInViewFrustom(camera->sendFrustom(camera)));
+				drawPreCube(immediateContext, mesh, quadtree->AllInViewFrustom(camera->sendFrustom(camera)));
 				RenderComputerShader(immediateContext, cShader, UAVCubeMapping[i], gBufferSRV, camData, cubeMappingCamera, lightData,
 					lightCamera, lightBuffer, camBuffer, lightCameraTwo, lightCameraThree, lightCameraFour, lightDataTwo, lightDataThree,
 					lightDataFour, lightBufferTwo, lightBufferThree, lightBufferFour);
@@ -698,7 +698,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			camBuffer, lightData, camData, camera, gBufferRTV, playerPerspectiv, lightCamera, SRVShadow,
 			sampleStateShadow, hShader, dShader, rasterizerState, cubeMappingCamera, lightCameraTwo, lightCameraThree,
 			lightCameraFour);
-		draw(immediateContext, mesh, quadTree->AllInViewFrustom(camera->sendFrustom(camera)));
+		draw(immediateContext, mesh, quadtree->AllInViewFrustom(camera->sendFrustom(camera)));
 		RenderComputerShader(immediateContext, cShader, UAView, gBufferSRV, camData, camera, lightData,
 			lightCamera, lightBuffer, camBuffer, lightCameraTwo, lightCameraThree, lightCameraFour, lightDataTwo, lightDataThree,
 			lightDataFour, lightBufferTwo, lightBufferThree, lightBufferFour);
@@ -713,13 +713,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 				particels, getDTTimeBuffer, getDTTime);
 			cubeMappingSystem(immediateContext, inputLayoutVSMainCubeMapping, vShaderMainCubeMapping, viewportCubeMapping,
 				pShaderMainCubeMapping, sampleStateCubeMapping, srvCubeMapping, dsView, camera, camData, camBuffer, rtv);
-			drawCubeMapping(immediateContext, mesh, quadTree->AllInViewFrustom(camera->sendFrustom(camera)));
+			drawCubeMapping(immediateContext, mesh, quadtree->AllInViewFrustom(camera->sendFrustom(camera)));
 		}
 		swapChain->Present(0, 0);
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> elapsed_seconds = end - start;
 		dt = elapsed_seconds.count();
-	}*/
+	}
 
 	particels.clear();
 
