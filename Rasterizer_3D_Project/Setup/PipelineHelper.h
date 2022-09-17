@@ -5,16 +5,27 @@
 #include <directxmath.h>
 using namespace DirectX;
 
+class PipelineHelper
+{
+protected:
+	bool Reader(std::string type, std::string& shaderData);
 
-bool SetupShadowShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11InputLayout*& inputLayoutVS);
-bool SetupCubeMappingShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11InputLayout*& inputLayoutVS,
-	ID3D11PixelShader*& pShader);
-bool SetupRenderShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11InputLayout*& inputLayoutVS,
-	ID3D11HullShader*& hShader, ID3D11DomainShader*& dShader, ID3D11PixelShader*& pShader,
-	ID3D11ComputeShader*& cShader);
-bool SetupParticleShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11InputLayout*& inputLayoutVS,
-	ID3D11GeometryShader*& gShader, ID3D11PixelShader*& pShader, ID3D11ComputeShader*& cShader);
-bool SetupSampleShaders(ID3D11Device* device, ID3D11SamplerState*& sampleState);
-bool SetupSampleShadowShaders(ID3D11Device* device, ID3D11SamplerState*& sampleStateShadow);
-bool SetupRasterizerState(ID3D11Device* device, ID3D11RasterizerState*& rasterizerState);
-bool SetupSampleStateCubeMapping(ID3D11Device* device, ID3D11SamplerState*& sampleState);
+public:
+	PipelineHelper(ID3D11Device* d, std::string r = "");
+	~PipelineHelper();
+
+	bool VSet(ID3D11VertexShader*& vShader, ID3D11InputLayout*& inputLayoutVS);
+	bool HSet(ID3D11HullShader*& hShader);
+	bool DSet(ID3D11DomainShader*& dShader);
+	bool RSet(ID3D11RasterizerState*& rasterizerState);
+	bool GSet(ID3D11GeometryShader*& gShader);
+	bool PSet(ID3D11PixelShader*& pShader);
+	bool CSet(ID3D11ComputeShader*& cShader);
+
+	bool SetupSampleShadowShaders(ID3D11SamplerState*& sampleStateShadow);
+	bool SetupSampleStateCubeMapping(ID3D11SamplerState*& sampleState);
+
+private:
+	ID3D11Device* device;
+	std::string name;
+};

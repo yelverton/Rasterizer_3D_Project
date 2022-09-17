@@ -442,11 +442,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	ID3D11DeviceContext* immediateContext;
 	IDXGISwapChain* swapChain;
 	ID3D11RenderTargetView* rtv;
+	ID3D11DepthStencilView* dsView;
+	D3D11_VIEWPORT viewport;
+
+	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, dsView, viewport))
+		return -1;
 
 	ID3D11UnorderedAccessView* UAView;
 	ID3D11UnorderedAccessView* UAViewP;
 
-	ID3D11DepthStencilView* dsView;
 	ID3D11DepthStencilView* dsViewShadow[4];
 	ID3D11DepthStencilView* dsViewParticle;
 	ID3D11ShaderResourceView* SRVShadow[4];
@@ -454,7 +458,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	ID3D11RenderTargetView* gBufferRTVParticle;
 	ID3D11ShaderResourceView* gBufferSRV[6];
 	ID3D11ShaderResourceView* gBufferSRVParticle;
-	D3D11_VIEWPORT viewport;
 	D3D11_VIEWPORT viewportShadow;
 	D3D11_VIEWPORT viewportParticle;
 	D3D11_VIEWPORT viewportCubeMapping;
@@ -537,10 +540,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	int playerPerspectiv = 0;
 
-	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, dsView, viewport))
-		return -1;
-
-	if (!SetupMainRender(device, immediateContext, gBufferRTV, gBufferSRV, swapChain, UAView, WIDTH, HEIGHT))
+	MainRender* mainRender = new MainRender(WIDTH, HEIGHT);
+	if (!mainRender->Initilize(device, immediateContext, swapChain, UAView))
 		return false;
 
 	if (!SetupShadowHelper(device, immediateContext, viewportShadow, WIDTH, HEIGHT, dsViewShadow, SRVShadow))

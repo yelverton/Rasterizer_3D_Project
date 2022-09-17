@@ -17,18 +17,14 @@ D3D11_INPUT_ELEMENT_DESC onlyPosDesc[] =
 	{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
 };
 
-bool SetupShadowShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11InputLayout*& inputLayoutVS)
+bool PipelineHelper::Reader(std::string type, std::string& shaderData)
 {
-	std::string shaderData;
 	std::ifstream reader;
-	std::string vShaderByteCode;
 
-	// Vertex:
-
-	reader.open("../x64/Debug/VertexShaderDepth.cso", std::ios::binary | std::ios::ate);
+	reader.open("../x64/Debug/" + type + name + ".cso", std::ios::binary | std::ios::ate);
 	if (!reader.is_open())
 	{
-		ErrorLog::Log("Could not open VS file depth!");
+		ErrorLog::Log("Could not open: " + type + name);
 		return false;
 	}
 
@@ -39,20 +35,39 @@ bool SetupShadowShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D
 	shaderData.assign((std::istreambuf_iterator<char>(reader)),
 		std::istreambuf_iterator<char>());
 
+	reader.close();
+
+	return true;
+}
+
+PipelineHelper::PipelineHelper(ID3D11Device* d, std::string r = "")
+{
+	this->device = d;
+	this->name = r;
+}
+
+PipelineHelper::~PipelineHelper()
+{
+	device->Release();
+}
+
+
+bool PipelineHelper::VSet(ID3D11VertexShader*& vShader, ID3D11InputLayout*& inputLayout)
+{
+	std::string shaderData;
+	if (!Reader("VertexShader", shaderData))
+		return false;
+
+	// Vertex
 	if (FAILED(device->CreateVertexShader(shaderData.c_str(), shaderData.length(), nullptr, &vShader)))
 	{
 		ErrorLog::Log("Failed to create vertex shader!");
 		return false;
 	}
 
-	vShaderByteCode = shaderData;
-	shaderData.clear();
-	reader.close();
-
 	// layout
-
-	if (FAILED(device->CreateInputLayout(inputDesc, _countof(inputDesc), vShaderByteCode.c_str(),
-		vShaderByteCode.length(), &inputLayoutVS)))
+	if (FAILED(device->CreateInputLayout(inputDesc, _countof(inputDesc), shaderData.c_str(),
+		shaderData.length(), &inputLayout)))
 	{
 		ErrorLog::Log("Failed to create Input Layout vs Depth");
 		return false;
@@ -61,160 +76,24 @@ bool SetupShadowShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D
 	return true;
 }
 
-
-bool SetupCubeMappingShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11InputLayout*& inputLayoutVS,
-	ID3D11PixelShader*& pShader)
+bool PipelineHelper::HSet(ID3D11HullShader*& hShader)
 {
 	std::string shaderData;
-	std::ifstream reader;
-	std::string vShaderByteCode;
-
-	// Vertex:
-
-	reader.open("../x64/Debug/VertexShaderCubeMapping.cso", std::ios::binary | std::ios::ate);
-	if (!reader.is_open())
-	{
-		ErrorLog::Log("Could not open VS file Second!");
+	if (!Reader("HullShader", shaderData))
 		return false;
-	}
-
-	reader.seekg(0, std::ios::end);
-	shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
-	reader.seekg(0, std::ios::beg);
-
-	shaderData.assign((std::istreambuf_iterator<char>(reader)),
-		std::istreambuf_iterator<char>());
-
-	if (FAILED(device->CreateVertexShader(shaderData.c_str(), shaderData.length(), nullptr, &vShader)))
-	{
-		ErrorLog::Log("Failed to create vertex shader!");
-		return false;
-	}
-
-	vShaderByteCode = shaderData;
-	shaderData.clear();
-	reader.close();
-
-	// layout:
-
-	if (FAILED(device->CreateInputLayout(inputDesc, _countof(inputDesc), vShaderByteCode.c_str(),
-		vShaderByteCode.length(), &inputLayoutVS)))
-	{
-		ErrorLog::Log("Failed to create Input Layout vs");
-		return false;
-	}
-
-	// Pixel:
-
-	reader.open("../x64/Debug/PixelShaderCubeMapping.cso", std::ios::binary | std::ios::ate);
-	if (!reader.is_open())
-	{
-		ErrorLog::Log("Could not open PS file!");
-		return false;
-	}
-
-	reader.seekg(0, std::ios::end);
-	shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
-	reader.seekg(0, std::ios::beg);
-
-	shaderData.assign((std::istreambuf_iterator<char>(reader)),
-		std::istreambuf_iterator<char>());
-
-	if (FAILED(device->CreatePixelShader(shaderData.c_str(), shaderData.length(), nullptr, &pShader)))
-	{
-		ErrorLog::Log("Failed to create pixel shader!");
-		return false;
-	}
-
-	shaderData.clear();
-	reader.close();
-
-	return true;
-}
-
-bool SetupRenderShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11InputLayout*& inputLayoutVS,
-	ID3D11HullShader*& hShader, ID3D11DomainShader*& dShader, ID3D11PixelShader*& pShader, 
-	ID3D11ComputeShader*& cShader)
-{
-	std::string shaderData;
-	std::ifstream reader;
-	std::string vShaderByteCode;
-
-	// Vertex:
-
-	reader.open("../x64/Debug/VertexShader.cso", std::ios::binary | std::ios::ate);
-	if (!reader.is_open())
-	{
-		ErrorLog::Log("Could not open VS file!");
-		return false;
-	}
-
-	reader.seekg(0, std::ios::end);
-	shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
-	reader.seekg(0, std::ios::beg);
-
-	shaderData.assign((std::istreambuf_iterator<char>(reader)),
-		std::istreambuf_iterator<char>());
-
-	if (FAILED(device->CreateVertexShader(shaderData.c_str(), shaderData.length(), nullptr, &vShader)))
-	{
-		ErrorLog::Log("Failed to create vertex shader!");
-		return false;
-	}
-
-	vShaderByteCode = shaderData;
-	shaderData.clear();
-	reader.close();
-
-	// layout:
-
-	if (FAILED(device->CreateInputLayout(inputDesc, _countof(inputDesc), vShaderByteCode.c_str(),
-		vShaderByteCode.length(), &inputLayoutVS)))
-	{
-		ErrorLog::Log("Failed to create Input Layout vs");
-		return false;
-	}
-
-	// Hull:
-
-	reader.open("../x64/Debug/HullShader.cso", std::ios::binary | std::ios::ate);
-	if (!reader.is_open())
-	{
-		ErrorLog::Log("Could not open HS file!");
-		return false;
-	}
-
-	reader.seekg(0, std::ios::end);
-	shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
-	reader.seekg(0, std::ios::beg);
-
-	shaderData.assign((std::istreambuf_iterator<char>(reader)),
-	std::istreambuf_iterator<char>());
 
 	if (FAILED(device->CreateHullShader(shaderData.c_str(), shaderData.length(), nullptr, &hShader)))
 	{
 		ErrorLog::Log("Failed to create hull shader!");
 		return false;
 	}
+}
 
-	shaderData.clear();
-	reader.close();
-
-	// Domain:
-
-	reader.open("../x64/Debug/DomainShader.cso", std::ios::binary | std::ios::ate);
-	if (!reader.is_open())
-	{
-		ErrorLog::Log("Could not open DS file!");
+bool PipelineHelper::DSet(ID3D11DomainShader*& dShader)
+{
+	std::string shaderData;
+	if (!Reader("DomainShader", shaderData))
 		return false;
-	}
-
-	reader.seekg(0, std::ios::end);
-	shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
-	reader.seekg(0, std::ios::beg);
-
-	shaderData.assign((std::istreambuf_iterator<char>(reader)),
-		std::istreambuf_iterator<char>());
 
 	if (FAILED(device->CreateDomainShader(shaderData.c_str(), shaderData.length(), nullptr, &dShader)))
 	{
@@ -222,117 +101,37 @@ bool SetupRenderShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D
 		return false;
 	}
 
-	shaderData.clear();
-	reader.close();
+	return true;
+}
 
-	// Pixel:
+bool PipelineHelper::RSet(ID3D11RasterizerState*& rasterizerState)
+{
+	D3D11_RASTERIZER_DESC desc;
+	desc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID; // för att se effekten : D3D11_FILL_WIREFRAME
+	desc.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
+	desc.FrontCounterClockwise = false;
+	desc.DepthBias = 0;
+	desc.DepthBiasClamp = 0.0f;
+	desc.SlopeScaledDepthBias = 0.0f;
+	desc.DepthClipEnable = true;
+	desc.ScissorEnable = false;
+	desc.MultisampleEnable = false;
+	desc.AntialiasedLineEnable = false;
 
-	reader.open("../x64/Debug/PixelShader.cso", std::ios::binary | std::ios::ate);
-	if (!reader.is_open())
+	if (FAILED(device->CreateRasterizerState(&desc, &rasterizerState)))
 	{
-		ErrorLog::Log("Could not open PS file!");
+		ErrorLog::Log("Failed to create rasterizer state");
 		return false;
 	}
-
-	reader.seekg(0, std::ios::end);
-	shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
-	reader.seekg(0, std::ios::beg);
-
-	shaderData.assign((std::istreambuf_iterator<char>(reader)),
-		std::istreambuf_iterator<char>());
-
-	if (FAILED(device->CreatePixelShader(shaderData.c_str(), shaderData.length(), nullptr, &pShader)))
-	{
-		ErrorLog::Log("Failed to create pixel shader!");
-		return false;
-	}
-
-	shaderData.clear();
-	reader.close();
-
-	// Computer:
-
-	reader.open("../x64/Debug/ComputeShader.cso", std::ios::binary | std::ios::ate);
-	if (!reader.is_open()) {
-		ErrorLog::Log("Could not open CS file!");
-		return false;
-	}
-
-	reader.seekg(0, std::ios::end);
-	shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
-	reader.seekg(0, std::ios::beg);
-
-	shaderData.assign((std::istreambuf_iterator<char>(reader)),
-		std::istreambuf_iterator<char>());
-
-	if (FAILED(device->CreateComputeShader(shaderData.c_str(), shaderData.length(), nullptr, &cShader))) {
-		ErrorLog::Log("Failed to create computer shader!");
-		return false;
-	}
-
-	shaderData.clear();
-	reader.close();
 
 	return true;
 }
 
-bool SetupParticleShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11InputLayout*& inputLayoutVS,
-	ID3D11GeometryShader*& gShader, ID3D11PixelShader*& pShader, ID3D11ComputeShader*& cShader)
+bool PipelineHelper::GSet(ID3D11GeometryShader*& gShader)
 {
 	std::string shaderData;
-	std::ifstream reader;
-	std::string vShaderByteCode;
-
-	// Vertex:
-
-	reader.open("../x64/Debug/VertexShaderParticle.cso", std::ios::binary | std::ios::ate);
-	if (!reader.is_open())
-	{
-		ErrorLog::Log("Could not open VS Depth file Particle!");
+	if (!Reader("GeomentryShader", shaderData))
 		return false;
-	}
-
-	reader.seekg(0, std::ios::end);
-	shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
-	reader.seekg(0, std::ios::beg);
-
-	shaderData.assign((std::istreambuf_iterator<char>(reader)),
-		std::istreambuf_iterator<char>());
-
-	if (FAILED(device->CreateVertexShader(shaderData.c_str(), shaderData.length(), nullptr, &vShader)))
-	{
-		ErrorLog::Log("Failed to create vertex shader Particle!");
-		return false;
-	}
-
-	vShaderByteCode = shaderData;
-	shaderData.clear();
-	reader.close();
-
-	// layout:
-
-	if (FAILED(device->CreateInputLayout(onlyPosDesc, _countof(onlyPosDesc), vShaderByteCode.c_str(),
-		vShaderByteCode.length(), &inputLayoutVS)))
-	{
-		ErrorLog::Log("Failed to create Input Layout vs");
-		return false;
-	}
-
-	// Geomentry:
-
-	reader.open("../x64/Debug/GeometryShaderParticle.cso", std::ios::binary | std::ios::ate);
-	if (!reader.is_open())
-	{
-		ErrorLog::Log("Could not open GS file Particle!");
-		return false;
-	}
-
-	reader.seekg(0, std::ios::end);
-	shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
-	reader.seekg(0, std::ios::beg);
-
-	shaderData.assign((std::istreambuf_iterator<char>(reader)),
-		std::istreambuf_iterator<char>());
 
 	if (FAILED(device->CreateGeometryShader(shaderData.c_str(), shaderData.length(), nullptr, &gShader)))
 	{
@@ -340,82 +139,39 @@ bool SetupParticleShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID
 		return false;
 	}
 
-	shaderData.clear();
-	reader.close();
+	return true;
+}
 
-	// Pixel:
-
-	reader.open("../x64/Debug/PixelShaderParticle.cso", std::ios::binary | std::ios::ate);
-	if (!reader.is_open())
-	{
-		ErrorLog::Log("Could not open PS file Particle!");
+bool PipelineHelper::PSet(ID3D11PixelShader*& pShader)
+{
+	std::string shaderData;
+	if (!Reader("PixelShader", shaderData))
 		return false;
-	}
-
-	reader.seekg(0, std::ios::end);
-	shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
-	reader.seekg(0, std::ios::beg);
-
-	shaderData.assign((std::istreambuf_iterator<char>(reader)),
-		std::istreambuf_iterator<char>());
 
 	if (FAILED(device->CreatePixelShader(shaderData.c_str(), shaderData.length(), nullptr, &pShader)))
 	{
-		ErrorLog::Log("Failed to create pixel shader cubeMapping!");
+		ErrorLog::Log("Failed to create pixel shader!");
 		return false;
 	}
 
-	shaderData.clear();
-	reader.close();
+	return true;
+}
 
-	// Computer: 
-
-	reader.open("../x64/Debug/ComputeShaderParticle.cso", std::ios::binary | std::ios::ate);
-	if (!reader.is_open()) {
-		ErrorLog::Log("Could not open CS Particle file!");
+bool PipelineHelper::CSet(ID3D11ComputeShader*& cShader)
+{
+	std::string shaderData;
+	if (!Reader("ComputerShader", shaderData))
 		return false;
-	}
-
-	reader.seekg(0, std::ios::end);
-	shaderData.reserve(static_cast<unsigned int>(reader.tellg()));
-	reader.seekg(0, std::ios::beg);
-
-	shaderData.assign((std::istreambuf_iterator<char>(reader)),
-		std::istreambuf_iterator<char>());
 
 	if (FAILED(device->CreateComputeShader(shaderData.c_str(), shaderData.length(), nullptr, &cShader))) {
 		ErrorLog::Log("Failed to create computer shader!");
 		return false;
 	}
 
-	shaderData.clear();
-	reader.close();
-
 	return true;
 }
 
-bool SetupSampleShaders(ID3D11Device* device, ID3D11SamplerState*& sampleState)
-{
-	D3D11_SAMPLER_DESC samplerDesc;
-	ZeroMemory(&samplerDesc, sizeof(D3D11_SAMPLER_DESC));
-
-	samplerDesc.Filter = D3D11_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	samplerDesc.MinLOD = 0;
-	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-
-	if (FAILED(device->CreateSamplerState(&samplerDesc, &sampleState))) {
-		ErrorLog::Log("Failed to create sampler state!");
-		return false;
-	}
-
-	return true;
-}
-
-bool SetupSampleShadowShaders(ID3D11Device* device, ID3D11SamplerState*& sampleStateShadow)
+bool PipelineHelper::SetupSampleShadowShaders(ID3D11SamplerState*& sampleStateShadow)
 {
 	D3D11_SAMPLER_DESC samplerDesc;
 	ZeroMemory(&samplerDesc, sizeof(D3D11_SAMPLER_DESC));
@@ -443,7 +199,7 @@ bool SetupSampleShadowShaders(ID3D11Device* device, ID3D11SamplerState*& sampleS
 	return true;
 }
 
-bool SetupSampleStateCubeMapping(ID3D11Device* device, ID3D11SamplerState*& sampleState)
+bool PipelineHelper::SetupSampleStateCubeMapping(ID3D11SamplerState*& sampleState)
 {
 	D3D11_SAMPLER_DESC samplerDesc;
 	ZeroMemory(&samplerDesc, sizeof(D3D11_SAMPLER_DESC));
@@ -464,25 +220,4 @@ bool SetupSampleStateCubeMapping(ID3D11Device* device, ID3D11SamplerState*& samp
 	return true;
 }
 
-bool SetupRasterizerState(ID3D11Device* device, ID3D11RasterizerState*& rasterizerState)
-{
-	D3D11_RASTERIZER_DESC desc;
-	desc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID; // för att se effekten : D3D11_FILL_WIREFRAME
-	desc.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
-	desc.FrontCounterClockwise = false;
-	desc.DepthBias = 0;
-	desc.DepthBiasClamp = 0.0f;
-	desc.SlopeScaledDepthBias = 0.0f;
-	desc.DepthClipEnable = true;
-	desc.ScissorEnable = false;
-	desc.MultisampleEnable = false;
-	desc.AntialiasedLineEnable = false;
 
-	if (FAILED(device->CreateRasterizerState(&desc, &rasterizerState)))
-	{
-		ErrorLog::Log("Failed to create rasterizer state");
-		return false;
-	}
-
-	return true;
-}
