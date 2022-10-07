@@ -61,7 +61,8 @@ void setCubeMappingRotation(Camera*& cubeMappingCamera, int index)
 
 
 void moveAbility(int& playerPerspectiv, Camera*& camera, Camera*& lightCamera, Camera*& cubeMappingCamera,
-	vector<XMFLOAT3>& worldPos, Camera*& lightCameraTwo, Camera*& lightCameraThree, Camera*& lightCameraFour)
+	vector<XMFLOAT3>& worldPos, Camera*& lightCameraTwo, Camera*& lightCameraThree, Camera*& lightCameraFour, 
+	ID3D11RasterizerState*& rasterizerState, bool& seeWorld, ID3D11Device* device)
 {
 	if (GetAsyncKeyState('X'))
 		playerPerspectiv = 0;
@@ -73,6 +74,10 @@ void moveAbility(int& playerPerspectiv, Camera*& camera, Camera*& lightCamera, C
 		playerPerspectiv = 3;
 	else if (GetAsyncKeyState('N'))
 		playerPerspectiv = 4;
+	else if (GetAsyncKeyState('O'))
+		SetupRasterizerState(device, rasterizerState, true);
+	else if (GetAsyncKeyState('P'))
+		SetupRasterizerState(device, rasterizerState, false);
 
 	if (playerPerspectiv == 0) {
 		camera->moveCamera(camera, dt);
@@ -541,7 +546,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		return -1;
 
 	if (!SetupMainRender(device, immediateContext, gBufferRTV, gBufferSRV, swapChain, UAView, WIDTH, HEIGHT))
-		return false;
+		return -1;
 
 	if (!SetupShadowHelper(device, immediateContext, viewportShadow, WIDTH, HEIGHT, dsViewShadow, SRVShadow))
 		return -1;
@@ -572,7 +577,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	if (!SetupSampleShadowShaders(device, sampleStateShadow))
 		return -1;
 
-	if (!SetupRasterizerState(device, rasterizerState))
+	if (!SetupRasterizerState(device, rasterizerState, true))
 		return -1;
 
 	if (!SetupSampleStateCubeMapping(device, sampleStateCubeMapping))
@@ -644,19 +649,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	temp.clear();
 	modelName.clear();
 
-	//for (int i = 0; i < modelName.size(); i++)
-	//{
-	//	if (!objReader(modelName[i], mesh, device, immediateContext, worldPos[i], i))
-	//		return -1;
-	//}
-
 
 	QuadTree* quadtree;
 	quadtree = new QuadTree();
 
 	quadtree->SetupQuadTree(mesh);
 
-
+	bool seeWorld = true;
 	MSG msg = { };
 	while (!(GetKeyState(VK_ESCAPE) & 0x8000) && msg.message != WM_QUIT)
 	{
@@ -669,7 +668,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		auto start = std::chrono::system_clock::now();
 		clearBig(immediateContext, dsViewShadow, gBufferRTV, dsView, dsViewParticle, rtv);
 		std::vector<int> frosumRender;
-		moveAbility(playerPerspectiv, camera, lightCamera, cubeMappingCamera, worldPos, lightCameraTwo, lightCameraThree, lightCameraFour);
+		moveAbility(playerPerspectiv, camera, lightCamera, cubeMappingCamera, worldPos, lightCameraTwo, lightCameraThree, lightCameraFour,
+			rasterizerState, seeWorld, device);
 
 		for (int i = 0; i < 4; i++)
 		{

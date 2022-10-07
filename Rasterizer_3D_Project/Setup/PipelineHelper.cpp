@@ -464,10 +464,17 @@ bool SetupSampleStateCubeMapping(ID3D11Device* device, ID3D11SamplerState*& samp
 	return true;
 }
 
-bool SetupRasterizerState(ID3D11Device* device, ID3D11RasterizerState*& rasterizerState)
+bool SetupRasterizerState(ID3D11Device* device, ID3D11RasterizerState*& rasterizerState, bool seeWorld)
 {
 	D3D11_RASTERIZER_DESC desc;
-	desc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID; // för att se effekten : D3D11_FILL_WIREFRAME
+	if (seeWorld == true)
+	{
+		desc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID; // för att se effekten : D3D11_FILL_WIREFRAME
+	}
+	else
+	{
+		desc.FillMode = D3D11_FILL_MODE::D3D11_FILL_WIREFRAME;
+	}
 	desc.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
 	desc.FrontCounterClockwise = false;
 	desc.DepthBias = 0;
