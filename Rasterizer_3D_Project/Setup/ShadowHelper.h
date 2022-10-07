@@ -4,4 +4,4 @@
 #include <iostream>
 
 bool SetupShadowHelper(ID3D11Device*& device, ID3D11DeviceContext*& immediateContext, D3D11_VIEWPORT& viewportShadow,
-	UINT width, UINT height, ID3D11DepthStencilView* dsViewShadow[], ID3D11ShaderResourceView* SRVShadow[]);
+	UINT width, UINT height, ID3D11DepthStencilView* dsViewShadow[], ID3D11ShaderResourceView*& SRVShadow);

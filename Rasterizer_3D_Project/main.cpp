@@ -129,7 +129,7 @@ void drawPrePass(ID3D11DeviceContext* immediateContext, vector<Mesh> mesh)
 void RenderPreCube(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT viewport,
 	ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* sampleState,
 	ID3D11Buffer* camBuffer, struct CamData camData, Camera* camera, ID3D11RenderTargetView* gBufferRTV[], Camera* lightCamera, 
-	ID3D11ShaderResourceView* SRVShadow[], ID3D11SamplerState* sampleStateShadow, int index, Camera* lightCameraTwo, Camera* lightCameraThree,
+	ID3D11ShaderResourceView* SRVShadow, ID3D11SamplerState* sampleStateShadow, int index, Camera* lightCameraTwo, Camera* lightCameraThree,
 	Camera* lightCameraFour)
 {
 	setCubeMappingRotation(camera, index);
@@ -149,16 +149,13 @@ void RenderPreCube(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView
 	lightCameraThree->sendViewProjection(lightCameraThree, 4);
 	lightCameraFour->sendViewProjection(lightCameraFour, 5);
 
-	immediateContext->PSSetShaderResources(3, 1, &SRVShadow[0]);
-	immediateContext->PSSetShaderResources(4, 1, &SRVShadow[1]);
-	immediateContext->PSSetShaderResources(5, 1, &SRVShadow[2]);
-	immediateContext->PSSetShaderResources(6, 1, &SRVShadow[3]);
+	immediateContext->PSSetShaderResources(3, 1, &SRVShadow);
 }
 
 void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT viewport, 
 	ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* sampleState, 
 	ID3D11Buffer* lightBuffer, ID3D11Buffer* camBuffer, struct LightData lightData, struct CamData camData, Camera* camera,
-	ID3D11RenderTargetView* gBufferRTV[], int playerPerspectiv, Camera* lightCamera, ID3D11ShaderResourceView* SRVShadow[],
+	ID3D11RenderTargetView* gBufferRTV[], int playerPerspectiv, Camera* lightCamera, ID3D11ShaderResourceView* SRVShadow,
 	ID3D11SamplerState* sampleStateShadow, ID3D11HullShader* hShader, ID3D11DomainShader* dShader,
 	ID3D11RasterizerState* rasterizerState, Camera* cubeMappingCamera, Camera* lightCameraTwo, Camera* lightCameraThree,
 	Camera* lightCameraFour)
@@ -201,11 +198,7 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11DepthStencilView* dsVie
 	lightCameraThree->sendViewProjection(lightCameraThree, 4);
 	lightCameraFour->sendViewProjection(lightCameraFour, 5);
 
-	immediateContext->PSSetShaderResources(3, 1, &SRVShadow[0]);
-	immediateContext->PSSetShaderResources(4, 1, &SRVShadow[1]);
-	immediateContext->PSSetShaderResources(5, 1, &SRVShadow[2]);
-	immediateContext->PSSetShaderResources(6, 1, &SRVShadow[3]);
-
+	immediateContext->PSSetShaderResources(3, 1, &SRVShadow);
 }
 
 void draw(ID3D11DeviceContext* immediateContext, vector<Mesh>& mesh, std::vector<int> viewFrustom)
@@ -454,7 +447,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	ID3D11DepthStencilView* dsView;
 	ID3D11DepthStencilView* dsViewShadow[4];
 	ID3D11DepthStencilView* dsViewParticle;
-	ID3D11ShaderResourceView* SRVShadow[4];
+	ID3D11ShaderResourceView* SRVShadow;
 	ID3D11RenderTargetView* gBufferRTV[6];
 	ID3D11RenderTargetView* gBufferRTVParticle;
 	ID3D11ShaderResourceView* gBufferSRV[6];
@@ -736,8 +729,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		dsViewShadow[i]->Release();
 
 	dsViewParticle->Release();
-	for (int i = 0; i < 4; i++)
-		SRVShadow[i]->Release();
+	SRVShadow->Release();
 
 	for (int i = 0; i < 6; i++)
 		gBufferRTV[i]->Release();
