@@ -10,47 +10,47 @@ Camera::Camera()
 	this->UpdateViewMatrix();
 }
 
-void Camera::moveCamera(Camera*& cam, float dt)
+void Camera::moveCamera(Camera& cam, float dt)
 {
 	if (GetAsyncKeyState('W')) {
-		cam->AdjustPosition(cam->GetForwardVector() * dt * 50);
+		cam.AdjustPosition(cam.GetForwardVector() * dt * 50);
 	}
 	else if (GetAsyncKeyState('S')) {
-		cam->AdjustPosition(cam->GetForwardVector() * dt * -50);
+		cam.AdjustPosition(cam.GetForwardVector() * dt * -50);
 	}
 
 	if (GetAsyncKeyState('A')) {
-		cam->AdjustPosition(cam->GetRightVector() * dt * -50);
+		cam.AdjustPosition(cam.GetRightVector() * dt * -50);
 	}
 	else if (GetAsyncKeyState('D')) {
-		cam->AdjustPosition(cam->GetRightVector() * dt * 50);
+		cam.AdjustPosition(cam.GetRightVector() * dt * 50);
 	}
 
 	if (GetAsyncKeyState('K')) {
-		cam->AdjustRotation(cam->GetRightVector() * dt * 5);
+		cam.AdjustRotation(cam.GetRightVector() * dt * 5);
 	}
 	else if (GetAsyncKeyState('I')) {
-		cam->AdjustRotation(cam->GetRightVector() * dt * -5);
+		cam.AdjustRotation(cam.GetRightVector() * dt * -5);
 	}
 
 	if (GetAsyncKeyState('J')) {
-		cam->AdjustRotation(0, -0.05, 0);
+		cam.AdjustRotation(0, -0.05, 0);
 	}
 	else if (GetAsyncKeyState('L')) {
-		cam->AdjustRotation(0, 0.005, 0);
+		cam.AdjustRotation(0, 0.005, 0);
 	}
 
 	if (GetAsyncKeyState('Q')) {
-		cam->AdjustPosition(0, -0.1, 0);
+		cam.AdjustPosition(0, -0.1, 0);
 	}
 	else if (GetAsyncKeyState('E')) {
-		cam->AdjustPosition(0, +0.1, 0);
+		cam.AdjustPosition(0, +0.1, 0);
 	}
 
 	if (GetAsyncKeyState(' '))
 	{
-		cam->SetRotation(0, 0, 0);
-		cam->SetPosition(0, 0, -2);
+		cam.SetRotation(0, 0, 0);
+		cam.SetPosition(0, 0, -2);
 	}
 
 	/*cam.UpdateViewMatrix();*/
@@ -198,12 +198,12 @@ const XMVECTOR& Camera::GetLeftVector()
 	return this->vec_left;
 }
 
-bool Camera::createConstantBuffer(Camera*& cam, ID3D11Device* device, ID3D11DeviceContext* immediateContext)
+bool Camera::createConstantBuffer(Camera& cam, ID3D11Device* device, ID3D11DeviceContext* immediateContext)
 {
 	this->immediateContext = immediateContext;
 
-	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(cam->GetViewMatrix()));
-	XMStoreFloat4x4(&VP.projection, XMMatrixTranspose(cam->GetProjection()));
+	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(cam.GetViewMatrix()));
+	XMStoreFloat4x4(&VP.projection, XMMatrixTranspose(cam.GetProjection()));
 
 	D3D11_BUFFER_DESC bufferDesc = {};
 	bufferDesc.ByteWidth = sizeof(VP);
@@ -227,12 +227,12 @@ void Camera::adjustProjectionMatrix(float FOV, float aspectRatio, float nearZ, f
 	this->projection = DirectX::XMMatrixPerspectiveFovLH(FOV, aspectRatio, nearZ, farZ);
 }
 
-void Camera::sendViewProjection(Camera*& cam, int vertexShaderPos)
+void Camera::sendViewProjection(Camera& cam, int vertexShaderPos)
 {
-	cam->UpdateViewMatrix();
+	cam.UpdateViewMatrix();
 
-	XMMATRIX viewTemp = cam->GetViewMatrix();
-	XMMATRIX projectionTemp = cam->GetProjection();
+	XMMATRIX viewTemp = cam.GetViewMatrix();
+	XMMATRIX projectionTemp = cam.GetProjection();
 	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(viewTemp));
 	XMStoreFloat4x4(&VP.projection, XMMatrixTranspose(projectionTemp));
 
@@ -244,9 +244,9 @@ void Camera::sendViewProjection(Camera*& cam, int vertexShaderPos)
 	immediateContext->VSSetConstantBuffers(vertexShaderPos, 1, ConstantBuffer.GetAddressOf());
 }
 
-DirectX::BoundingFrustum Camera::sendFrustom(Camera*& camera)
+DirectX::BoundingFrustum Camera::sendFrustom(Camera& camera)
 {
-	camera->UpdateViewMatrix();
+	camera.UpdateViewMatrix();
 
 	DirectX::BoundingFrustum frosum;
 	DirectX::BoundingFrustum::CreateFromMatrix(frosum, projection);
@@ -258,12 +258,12 @@ DirectX::BoundingFrustum Camera::sendFrustom(Camera*& camera)
 }
 
 
-void Camera::sendViewProjectionGS(Camera*& cam, int vertexShaderPos)
+void Camera::sendViewProjectionGS(Camera& cam, int vertexShaderPos)
 {
-	cam->UpdateViewMatrix();
+	cam.UpdateViewMatrix();
 
-	XMMATRIX viewTemp = cam->GetViewMatrix();
-	XMMATRIX projectionTemp = cam->GetProjection();
+	XMMATRIX viewTemp = cam.GetViewMatrix();
+	XMMATRIX projectionTemp = cam.GetProjection();
 	XMStoreFloat4x4(&VP.view, XMMatrixTranspose(viewTemp));
 	XMStoreFloat4x4(&VP.projection, XMMatrixTranspose(projectionTemp));
 

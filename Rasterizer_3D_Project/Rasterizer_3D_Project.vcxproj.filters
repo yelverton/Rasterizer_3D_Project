@@ -196,5 +196,8 @@
     <ClInclude Include="QuadTree.h">
       <Filter>Header Files\Helper</Filter>
     </ClInclude>
+    <ClInclude Include="Id3d11.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
