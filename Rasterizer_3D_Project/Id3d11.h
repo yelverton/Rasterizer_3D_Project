@@ -95,4 +95,9 @@ namespace getNames
 
 	std::vector<std::string> modelName;
 	std::vector<XMFLOAT3> worldPos;
+
+	void release()
+	{
+
+	}
 }

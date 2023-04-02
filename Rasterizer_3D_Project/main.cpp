@@ -360,8 +360,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_ LPWSTR    lpCmdLine,
 	_In_ int       nCmdShow)
 {
-	const UINT WIDTH = 1024;
-	const UINT HEIGHT = 1024;
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
+	const UINT WIDTH = 1000;
+	const UINT HEIGHT = 1000;
 
 	HWND window;
 	if (!SetupWindow(hInstance, WIDTH, HEIGHT, nCmdShow, window))
@@ -527,8 +529,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		dt = elapsed_seconds.count();
 	}
 
-	particels.clear();
-
 	device->Release();
 	immediateContext->Release();
 	swapChain->Release();
@@ -595,11 +595,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	worldPos.clear();
 	
-	for (int i = 0; i < mesh.size(); i++)
+	/*for (int i = 0; i < mesh.size(); i++)
 		mesh[i].release();
 
-	quadTree->release();
-	delete quadTree;
+	quadTree->release();*/
+	/*delete quadTree;*/
 
 	return 0;
 }

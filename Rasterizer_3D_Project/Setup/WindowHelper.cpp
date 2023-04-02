@@ -1,6 +1,9 @@
 #include "WindowHelper.h"
 #include <iostream>
 
+#define SCREEN_WIDTH GetSystemMetrics(SM_CXSCREEN)
+#define SCREEN_HEIGHT GetSystemMetrics(SM_CYSCREEN)
+
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	// sort through and find what code to run for the message given
@@ -23,7 +26,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
 bool SetupWindow(HINSTANCE instance, UINT width, UINT height, int nCmdShow, HWND& window)
 {
-	const wchar_t CLASS_NAME[] = L"Test Window Class";
+	const wchar_t CLASS_NAME[] = L"Eget Projekt";
 
 	WNDCLASS wc = { };
 
@@ -33,15 +36,32 @@ bool SetupWindow(HINSTANCE instance, UINT width, UINT height, int nCmdShow, HWND
 
 	RegisterClass(&wc);
 
-	window = CreateWindowEx(0, CLASS_NAME, L"TEST WINDOW", WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, 0, width, height, nullptr, nullptr, instance, nullptr);
+	int CenterX = (SCREEN_WIDTH / 2) - (width / 2);
+	int CenterY = (SCREEN_HEIGHT / 2) - (height / 2);
 
-	if (window == nullptr)
-	{
-		ErrorLog::Log("HWND was nullptr, last error: ");
-		return false;
-	}
+	RECT wr;
+	wr.left = CenterX;
+	wr.top = CenterY;
+	wr.right = wr.left + width;
+	wr.bottom = wr.top + height;
 
-	ShowWindow(window, nCmdShow);
+	window = CreateWindowEx(NULL,
+		CLASS_NAME,
+		L"Eget Projekt",
+		WS_OVERLAPPEDWINDOW,
+		wr.left,
+		wr.top,
+		wr.right - wr.left,
+		wr.bottom - wr.top,
+		NULL,
+		NULL,
+		instance,
+		NULL);
+
+	if (window != nullptr)
+		ShowWindow(window, nCmdShow);
+	else
+		ErrorLog::Log("Failed to create Window, window = nullptr");
+
 	return true;
 }
